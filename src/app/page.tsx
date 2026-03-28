@@ -1,18 +1,99 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Header from "@/components/Header";
 import CategorySection from "@/components/CategorySection";
 import { categories } from "@/data/problems";
+import type { Difficulty } from "@/data/types";
+
+type DifficultyFilter = Difficulty | "All";
 
 export default function Home() {
+  const [search, setSearch] = useState("");
+  const [difficulty, setDifficulty] = useState<DifficultyFilter>("All");
+
+  const filteredCategories = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return categories
+      .map((category) => {
+        const filtered = category.problems.filter((p) => {
+          if (difficulty !== "All" && p.difficulty !== difficulty) return false;
+          if (q && !p.title.toLowerCase().includes(q) && !String(p.id).includes(q))
+            return false;
+          return true;
+        });
+        return { ...category, problems: filtered };
+      })
+      .filter((c) => c.problems.length > 0);
+  }, [search, difficulty]);
+
+  const hasFilters = search.length > 0 || difficulty !== "All";
+
   return (
     <>
       <Header />
       <main className="max-w-4xl mx-auto px-4 py-8 w-full">
+        <div className="flex gap-3 mb-6">
+          <div className="relative flex-1">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search problems..."
+              className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-colors"
+            />
+          </div>
+          <div className="flex gap-1.5">
+            {(["All", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map(
+              (d) => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                    difficulty === d
+                      ? d === "Easy"
+                        ? "bg-easy/20 text-easy border-easy/40"
+                        : d === "Medium"
+                          ? "bg-medium/20 text-medium border-medium/40"
+                          : d === "Hard"
+                            ? "bg-hard/20 text-hard border-hard/40"
+                            : "bg-card-hover text-foreground border-border"
+                      : "bg-card text-gray-400 border-border hover:text-foreground hover:bg-card-hover"
+                  }`}
+                >
+                  {d}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+
         <div className="space-y-4">
-          {categories.map((category) => (
-            <CategorySection key={category.slug} category={category} />
+          {filteredCategories.map((category) => (
+            <CategorySection
+              key={category.slug}
+              category={category}
+              defaultOpen={hasFilters}
+            />
           ))}
+          {filteredCategories.length === 0 && (
+            <div className="text-center py-12 text-gray-500">
+              No problems match your search.
+            </div>
+          )}
         </div>
       </main>
     </>
