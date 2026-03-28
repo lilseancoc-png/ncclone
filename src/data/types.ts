@@ -89,6 +89,9 @@ export interface AnimationStep {
 }
 
 export interface SolutionData {
+  label?: string;
+  timeComplexity?: string;
+  spaceComplexity?: string;
   code: string;
   steps: AnimationStep[];
 }

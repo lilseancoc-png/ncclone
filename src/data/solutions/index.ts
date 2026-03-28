@@ -1,6 +1,8 @@
 import type { SolutionData } from "../types";
 
-const solutionLoaders: Record<string, () => Promise<{ default: SolutionData }>> = {
+type SolutionModule = { default: SolutionData | SolutionData[] };
+
+const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   // Arrays & Hashing
   "contains-duplicate": () => import("./contains-duplicate"),
   "two-sum": () => import("./two-sum"),
@@ -54,11 +56,12 @@ const solutionLoaders: Record<string, () => Promise<{ default: SolutionData }>> 
   "longest-common-subsequence": () => import("./longest-common-subsequence"),
 };
 
-export async function loadSolution(slug: string): Promise<SolutionData | null> {
+export async function loadSolutions(slug: string): Promise<SolutionData[]> {
   const loader = solutionLoaders[slug];
-  if (!loader) return null;
+  if (!loader) return [];
   const mod = await loader();
-  return mod.default;
+  const data = mod.default;
+  return Array.isArray(data) ? data : [data];
 }
 
 export function hasSolution(slug: string): boolean {

@@ -3,16 +3,18 @@
 import { useEffect, useState } from "react";
 import { SolutionData } from "@/data/types";
 import AlgorithmVisualizer from "@/components/visualizer/AlgorithmVisualizer";
-import { loadSolution } from "@/data/solutions";
+import { loadSolutions } from "@/data/solutions";
 
 export default function SolutionTab({ slug }: { slug: string }) {
-  const [solution, setSolution] = useState<SolutionData | null>(null);
+  const [solutions, setSolutions] = useState<SolutionData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => {
     setLoading(true);
-    loadSolution(slug).then((data) => {
-      setSolution(data);
+    setActiveIdx(0);
+    loadSolutions(slug).then((data) => {
+      setSolutions(data);
       setLoading(false);
     });
   }, [slug]);
@@ -29,7 +31,7 @@ export default function SolutionTab({ slug }: { slug: string }) {
     );
   }
 
-  if (!solution) {
+  if (solutions.length === 0) {
     return (
       <div className="flex items-center justify-center h-40 text-gray-500 text-sm">
         Solution walkthrough coming soon.
@@ -37,5 +39,46 @@ export default function SolutionTab({ slug }: { slug: string }) {
     );
   }
 
-  return <AlgorithmVisualizer solution={solution} />;
+  const current = solutions[activeIdx];
+
+  return (
+    <div className="space-y-4">
+      {/* Approach selector - only show if multiple solutions */}
+      {solutions.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {solutions.map((sol, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIdx(i)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                activeIdx === i
+                  ? "bg-easy/20 text-easy border-easy/40"
+                  : "bg-card text-gray-400 border-border hover:text-foreground hover:bg-card-hover"
+              }`}
+            >
+              {sol.label || `Approach ${i + 1}`}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Complexity badges */}
+      {(current.timeComplexity || current.spaceComplexity) && (
+        <div className="flex gap-3 text-xs">
+          {current.timeComplexity && (
+            <span className="px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-300/90">
+              Time: {current.timeComplexity}
+            </span>
+          )}
+          {current.spaceComplexity && (
+            <span className="px-2 py-1 rounded bg-purple-500/10 border border-purple-500/20 text-purple-300/90">
+              Space: {current.spaceComplexity}
+            </span>
+          )}
+        </div>
+      )}
+
+      <AlgorithmVisualizer key={activeIdx} solution={current} />
+    </div>
+  );
 }
