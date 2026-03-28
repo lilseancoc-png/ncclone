@@ -20,6 +20,7 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "container-with-most-water": () => import("./container-with-most-water"),
   // Sliding Window
   "best-time-to-buy-and-sell-stock": () => import("./best-time-to-buy-and-sell-stock"),
+  "longest-substring-without-repeating-characters": () => import("./longest-substring-without-repeating-characters"),
   // Stack
   "valid-parentheses": () => import("./valid-parentheses"),
   "min-stack": () => import("./min-stack"),
@@ -30,10 +31,20 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "binary-search": () => import("./binary-search"),
   "search-a-2d-matrix": () => import("./search-a-2d-matrix"),
   "koko-eating-bananas": () => import("./koko-eating-bananas"),
+  // Trees
+  "invert-binary-tree": () => import("./invert-binary-tree"),
+  "maximum-depth-of-binary-tree": () => import("./maximum-depth-of-binary-tree"),
+  "same-tree": () => import("./same-tree"),
+  "balanced-binary-tree": () => import("./balanced-binary-tree"),
+  "binary-tree-level-order-traversal": () => import("./binary-tree-level-order-traversal"),
+  "validate-binary-search-tree": () => import("./validate-binary-search-tree"),
   // Linked List
   "reverse-linked-list": () => import("./reverse-linked-list"),
   "merge-two-sorted-lists": () => import("./merge-two-sorted-lists"),
   "linked-list-cycle": () => import("./linked-list-cycle"),
+  // Heap / Priority Queue
+  "kth-largest-element-in-a-stream": () => import("./kth-largest-element-in-a-stream"),
+  "last-stone-weight": () => import("./last-stone-weight"),
   // Graphs
   "number-of-islands": () => import("./number-of-islands"),
   // Greedy
@@ -49,6 +60,9 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "combination-sum": () => import("./combination-sum"),
   "permutations": () => import("./permutations"),
   // 1-D Dynamic Programming
+  "climbing-stairs": () => import("./climbing-stairs"),
+  "house-robber": () => import("./house-robber"),
+  "coin-change": () => import("./coin-change"),
   "word-break": () => import("./word-break"),
   "longest-increasing-subsequence": () => import("./longest-increasing-subsequence"),
   // 2-D Dynamic Programming
