@@ -42,11 +42,17 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "reverse-linked-list": () => import("./reverse-linked-list"),
   "merge-two-sorted-lists": () => import("./merge-two-sorted-lists"),
   "linked-list-cycle": () => import("./linked-list-cycle"),
+  "remove-nth-node-from-end-of-list": () => import("./remove-nth-node-from-end-of-list"),
+  "add-two-numbers": () => import("./add-two-numbers"),
+  "reorder-list": () => import("./reorder-list"),
   // Heap / Priority Queue
   "kth-largest-element-in-a-stream": () => import("./kth-largest-element-in-a-stream"),
   "last-stone-weight": () => import("./last-stone-weight"),
   // Graphs
   "number-of-islands": () => import("./number-of-islands"),
+  "clone-graph": () => import("./clone-graph"),
+  "course-schedule": () => import("./course-schedule"),
+  "rotting-oranges": () => import("./rotting-oranges"),
   // Greedy
   "maximum-subarray": () => import("./maximum-subarray"),
   "jump-game": () => import("./jump-game"),
@@ -55,10 +61,16 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   // Bit Manipulation
   "single-number": () => import("./single-number"),
   "missing-number": () => import("./missing-number"),
+  // Math & Geometry
+  "rotate-image": () => import("./rotate-image"),
+  "spiral-matrix": () => import("./spiral-matrix"),
+  "set-matrix-zeroes": () => import("./set-matrix-zeroes"),
   // Backtracking
   "subsets": () => import("./subsets"),
   "combination-sum": () => import("./combination-sum"),
   "permutations": () => import("./permutations"),
+  "word-search": () => import("./word-search"),
+  "letter-combinations-of-a-phone-number": () => import("./letter-combinations-of-a-phone-number"),
   // 1-D Dynamic Programming
   "climbing-stairs": () => import("./climbing-stairs"),
   "house-robber": () => import("./house-robber"),
