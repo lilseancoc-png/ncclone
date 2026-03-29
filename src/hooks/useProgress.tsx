@@ -8,8 +8,13 @@ import {
   useCallback,
   ReactNode,
 } from "react";
+import { useAuth } from "./useAuth";
 
 const STORAGE_KEY = "neetcode-progress";
+
+function getStorageKey(userId: string | null): string {
+  return userId ? `${STORAGE_KEY}-${userId}` : STORAGE_KEY;
+}
 
 interface ProgressContextType {
   isCompleted: (slug: string) => boolean;
@@ -28,24 +33,44 @@ const ProgressContext = createContext<ProgressContextType>({
 });
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
+  const { user, mounted: authMounted } = useAuth();
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [mounted, setMounted] = useState(false);
 
+  // Load progress when auth state resolves or user changes
   useEffect(() => {
+    if (!authMounted) return;
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const key = getStorageKey(user?.id ?? null);
+      const stored = localStorage.getItem(key);
       if (stored) {
         setCompleted(JSON.parse(stored));
+      } else if (user) {
+        // New user — migrate guest progress if any
+        const guestData = localStorage.getItem(STORAGE_KEY);
+        if (guestData) {
+          const parsed = JSON.parse(guestData);
+          setCompleted(parsed);
+          localStorage.setItem(getStorageKey(user.id), guestData);
+        } else {
+          setCompleted({});
+        }
+      } else {
+        setCompleted({});
       }
-    } catch {}
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+    } catch {
+      setCompleted({});
     }
-  }, [completed, mounted]);
+    setMounted(true);
+  }, [authMounted, user]);
+
+  // Persist progress
+  useEffect(() => {
+    if (mounted && authMounted) {
+      const key = getStorageKey(user?.id ?? null);
+      localStorage.setItem(key, JSON.stringify(completed));
+    }
+  }, [completed, mounted, authMounted, user]);
 
   const isCompleted = useCallback(
     (slug: string) => !!completed[slug],
