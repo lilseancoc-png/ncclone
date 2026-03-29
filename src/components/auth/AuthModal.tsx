@@ -148,6 +148,15 @@ export default function AuthModal({ mode, onClose, onSwitchMode }: AuthModalProp
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2.5 text-red-400 text-sm">
               {error}
+              {error.includes("No account found") && (
+                <button
+                  type="button"
+                  onClick={onSwitchMode}
+                  className="block mt-1.5 text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                >
+                  Create an account instead?
+                </button>
+              )}
             </div>
           )}
 
