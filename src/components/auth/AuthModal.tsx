@@ -22,34 +22,39 @@ export default function AuthModal({ mode, onClose, onSwitchMode }: AuthModalProp
 
   const isRegister = mode === "register";
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    if (isRegister) {
-      if (password !== confirmPassword) {
-        setError("Passwords do not match");
-        setLoading(false);
-        return;
+    try {
+      if (isRegister) {
+        if (password !== confirmPassword) {
+          setError("Passwords do not match");
+          setLoading(false);
+          return;
+        }
+        const result = await register(email, displayName || email.split("@")[0], password);
+        if (!result.success) {
+          setError(result.error || "Registration failed");
+          setLoading(false);
+          return;
+        }
+      } else {
+        const result = await login(email, password);
+        if (!result.success) {
+          setError(result.error || "Login failed");
+          setLoading(false);
+          return;
+        }
       }
-      const result = register(email, displayName || email.split("@")[0], password);
-      if (!result.success) {
-        setError(result.error || "Registration failed");
-        setLoading(false);
-        return;
-      }
-    } else {
-      const result = login(email, password);
-      if (!result.success) {
-        setError(result.error || "Login failed");
-        setLoading(false);
-        return;
-      }
-    }
 
-    setLoading(false);
-    onClose();
+      setLoading(false);
+      onClose();
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
   }
 
   return (
