@@ -56,8 +56,16 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   // Greedy
   "maximum-subarray": () => import("./maximum-subarray"),
   "jump-game": () => import("./jump-game"),
+  // Tries
+  "implement-trie-prefix-tree": () => import("./implement-trie-prefix-tree"),
+  "design-add-and-search-words-data-structure": () => import("./design-add-and-search-words-data-structure"),
+  // Advanced Graphs
+  "min-cost-to-connect-all-points": () => import("./min-cost-to-connect-all-points"),
+  "network-delay-time": () => import("./network-delay-time"),
   // Intervals
   "merge-intervals": () => import("./merge-intervals"),
+  "insert-interval": () => import("./insert-interval"),
+  "non-overlapping-intervals": () => import("./non-overlapping-intervals"),
   // Bit Manipulation
   "single-number": () => import("./single-number"),
   "missing-number": () => import("./missing-number"),
@@ -80,6 +88,8 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   // 2-D Dynamic Programming
   "unique-paths": () => import("./unique-paths"),
   "longest-common-subsequence": () => import("./longest-common-subsequence"),
+  "coin-change-ii": () => import("./coin-change-ii"),
+  "target-sum": () => import("./target-sum"),
 };
 
 export async function loadSolutions(slug: string): Promise<SolutionData[]> {

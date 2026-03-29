@@ -1,16 +1,28 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import CategorySection from "@/components/CategorySection";
 import { categories } from "@/data/problems";
+import { useProgress } from "@/hooks/useProgress";
 import type { Difficulty } from "@/data/types";
 
 type DifficultyFilter = Difficulty | "All";
 
 export default function Home() {
+  const router = useRouter();
+  const { isCompleted } = useProgress();
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<DifficultyFilter>("All");
+
+  const goToRandomProblem = useCallback(() => {
+    const allProblems = categories.flatMap((c) => c.problems);
+    const unsolved = allProblems.filter((p) => !isCompleted(p.slug));
+    const pool = unsolved.length > 0 ? unsolved : allProblems;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    router.push(`/problem/${pick.slug}`);
+  }, [isCompleted, router]);
 
   const filteredCategories = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -56,6 +68,15 @@ export default function Home() {
               className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-colors"
             />
           </div>
+          <button
+            onClick={goToRandomProblem}
+            title="Random unsolved problem"
+            className="px-3 py-2.5 bg-card border border-border rounded-lg text-gray-400 hover:text-foreground hover:border-gray-500 transition-colors flex-shrink-0"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+            </svg>
+          </button>
           <div className="flex gap-1.5">
             {(["All", "Easy", "Medium", "Hard"] as DifficultyFilter[]).map(
               (d) => (

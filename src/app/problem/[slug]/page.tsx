@@ -3,7 +3,7 @@
 import { use, useState, useCallback } from "react";
 import Link from "next/link";
 import { categories } from "@/data/problems";
-import { findProblemBySlug } from "@/lib/utils";
+import { findProblemBySlug, getAdjacentProblems } from "@/lib/utils";
 import { Language } from "@/data/types";
 import DifficultyBadge from "@/components/DifficultyBadge";
 import { useProgress } from "@/hooks/useProgress";
@@ -95,6 +95,48 @@ export default function ProblemPage({
   );
 }
 
+function ProblemNav({ slug }: { slug: string }) {
+  const { prev, next } = getAdjacentProblems(categories, slug);
+  return (
+    <div className="flex items-center gap-1">
+      {prev ? (
+        <Link
+          href={`/problem/${prev.slug}`}
+          className="p-1 text-gray-400 hover:text-foreground transition-colors"
+          title={prev.title}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
+      ) : (
+        <span className="p-1 text-gray-600">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </span>
+      )}
+      {next ? (
+        <Link
+          href={`/problem/${next.slug}`}
+          className="p-1 text-gray-400 hover:text-foreground transition-colors"
+          title={next.title}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
+      ) : (
+        <span className="p-1 text-gray-600">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      )}
+    </div>
+  );
+}
+
 function IDELayout({
   problem,
   category,
@@ -138,6 +180,7 @@ function IDELayout({
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
+        <ProblemNav slug={slug} />
         <span className="text-sm font-medium flex-1">
           {problem.id}. {problem.title}
         </span>
