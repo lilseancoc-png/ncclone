@@ -21,6 +21,9 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   // Sliding Window
   "best-time-to-buy-and-sell-stock": () => import("./best-time-to-buy-and-sell-stock"),
   "longest-substring-without-repeating-characters": () => import("./longest-substring-without-repeating-characters"),
+  "longest-repeating-character-replacement": () => import("./longest-repeating-character-replacement"),
+  "permutation-in-string": () => import("./permutation-in-string"),
+  "minimum-window-substring": () => import("./minimum-window-substring"),
   // Stack
   "valid-parentheses": () => import("./valid-parentheses"),
   "min-stack": () => import("./min-stack"),
@@ -31,6 +34,8 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "binary-search": () => import("./binary-search"),
   "search-a-2d-matrix": () => import("./search-a-2d-matrix"),
   "koko-eating-bananas": () => import("./koko-eating-bananas"),
+  "find-minimum-in-rotated-sorted-array": () => import("./find-minimum-in-rotated-sorted-array"),
+  "search-in-rotated-sorted-array": () => import("./search-in-rotated-sorted-array"),
   // Trees
   "invert-binary-tree": () => import("./invert-binary-tree"),
   "maximum-depth-of-binary-tree": () => import("./maximum-depth-of-binary-tree"),
@@ -38,6 +43,9 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "balanced-binary-tree": () => import("./balanced-binary-tree"),
   "binary-tree-level-order-traversal": () => import("./binary-tree-level-order-traversal"),
   "validate-binary-search-tree": () => import("./validate-binary-search-tree"),
+  "subtree-of-another-tree": () => import("./subtree-of-another-tree"),
+  "lowest-common-ancestor-of-a-binary-search-tree": () => import("./lowest-common-ancestor-of-a-binary-search-tree"),
+  "diameter-of-binary-tree": () => import("./diameter-of-binary-tree"),
   // Linked List
   "reverse-linked-list": () => import("./reverse-linked-list"),
   "merge-two-sorted-lists": () => import("./merge-two-sorted-lists"),
@@ -56,6 +64,8 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   // Greedy
   "maximum-subarray": () => import("./maximum-subarray"),
   "jump-game": () => import("./jump-game"),
+  "jump-game-ii": () => import("./jump-game-ii"),
+  "gas-station": () => import("./gas-station"),
   // Tries
   "implement-trie-prefix-tree": () => import("./implement-trie-prefix-tree"),
   "design-add-and-search-words-data-structure": () => import("./design-add-and-search-words-data-structure"),
@@ -69,6 +79,8 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   // Bit Manipulation
   "single-number": () => import("./single-number"),
   "missing-number": () => import("./missing-number"),
+  "number-of-1-bits": () => import("./number-of-1-bits"),
+  "counting-bits": () => import("./counting-bits"),
   // Math & Geometry
   "rotate-image": () => import("./rotate-image"),
   "spiral-matrix": () => import("./spiral-matrix"),
