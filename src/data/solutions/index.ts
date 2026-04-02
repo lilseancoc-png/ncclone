@@ -46,6 +46,9 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "subtree-of-another-tree": () => import("./subtree-of-another-tree"),
   "lowest-common-ancestor-of-a-binary-search-tree": () => import("./lowest-common-ancestor-of-a-binary-search-tree"),
   "diameter-of-binary-tree": () => import("./diameter-of-binary-tree"),
+  "kth-smallest-element-in-a-bst": () => import("./kth-smallest-element-in-a-bst"),
+  "binary-tree-right-side-view": () => import("./binary-tree-right-side-view"),
+  "count-good-nodes-in-binary-tree": () => import("./count-good-nodes-in-binary-tree"),
   // Linked List
   "reverse-linked-list": () => import("./reverse-linked-list"),
   "merge-two-sorted-lists": () => import("./merge-two-sorted-lists"),
@@ -56,16 +59,27 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   // Heap / Priority Queue
   "kth-largest-element-in-a-stream": () => import("./kth-largest-element-in-a-stream"),
   "last-stone-weight": () => import("./last-stone-weight"),
+  "k-closest-points-to-origin": () => import("./k-closest-points-to-origin"),
+  "kth-largest-element-in-an-array": () => import("./kth-largest-element-in-an-array"),
+  "task-scheduler": () => import("./task-scheduler"),
   // Graphs
   "number-of-islands": () => import("./number-of-islands"),
   "clone-graph": () => import("./clone-graph"),
   "course-schedule": () => import("./course-schedule"),
+  "max-area-of-island": () => import("./max-area-of-island"),
+  "pacific-atlantic-water-flow": () => import("./pacific-atlantic-water-flow"),
+  "surrounded-regions": () => import("./surrounded-regions"),
   "rotting-oranges": () => import("./rotting-oranges"),
+  "course-schedule-ii": () => import("./course-schedule-ii"),
+  "redundant-connection": () => import("./redundant-connection"),
   // Greedy
   "maximum-subarray": () => import("./maximum-subarray"),
   "jump-game": () => import("./jump-game"),
   "jump-game-ii": () => import("./jump-game-ii"),
   "gas-station": () => import("./gas-station"),
+  "hand-of-straights": () => import("./hand-of-straights"),
+  "partition-labels": () => import("./partition-labels"),
+  "valid-parenthesis-string": () => import("./valid-parenthesis-string"),
   // Tries
   "implement-trie-prefix-tree": () => import("./implement-trie-prefix-tree"),
   "design-add-and-search-words-data-structure": () => import("./design-add-and-search-words-data-structure"),
@@ -76,6 +90,8 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "merge-intervals": () => import("./merge-intervals"),
   "insert-interval": () => import("./insert-interval"),
   "non-overlapping-intervals": () => import("./non-overlapping-intervals"),
+  "meeting-rooms": () => import("./meeting-rooms"),
+  "meeting-rooms-ii": () => import("./meeting-rooms-ii"),
   // Bit Manipulation
   "single-number": () => import("./single-number"),
   "missing-number": () => import("./missing-number"),
@@ -97,6 +113,10 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "coin-change": () => import("./coin-change"),
   "word-break": () => import("./word-break"),
   "longest-increasing-subsequence": () => import("./longest-increasing-subsequence"),
+  "min-cost-climbing-stairs": () => import("./min-cost-climbing-stairs"),
+  "house-robber-ii": () => import("./house-robber-ii"),
+  "longest-palindromic-substring": () => import("./longest-palindromic-substring"),
+  "decode-ways": () => import("./decode-ways"),
   // 2-D Dynamic Programming
   "unique-paths": () => import("./unique-paths"),
   "longest-common-subsequence": () => import("./longest-common-subsequence"),
