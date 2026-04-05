@@ -54,6 +54,7 @@ export interface SetVisualState {
   values: (string | number)[];
   lastAdded?: string | number;
   highlightValues?: (string | number)[];
+  highlights?: Record<number, string>;
 }
 
 export interface HashMapVisualState {
@@ -61,6 +62,7 @@ export interface HashMapVisualState {
   label?: string;
   entries: [string | number, string | number][];
   highlightKeys?: (string | number)[];
+  highlights?: Record<string | number, string>;
 }
 
 export interface StackVisualState {
@@ -68,11 +70,39 @@ export interface StackVisualState {
   label?: string;
   values: (string | number)[];
   topHighlight?: boolean;
+  highlights?: Record<number, string>;
 }
 
 export interface VariableVisualState {
   type: "variables";
+  label?: string;
   entries: { name: string; value: string | number | boolean; highlight?: boolean }[];
+}
+
+export interface TreeNode {
+  value: string | number;
+  highlight?: string;
+  left?: TreeNode | null;
+  right?: TreeNode | null;
+}
+
+export interface TreeVisualState {
+  type: "tree";
+  label?: string;
+  root: TreeNode | null;
+}
+
+export interface LinkedListNode {
+  value: string | number;
+  highlight?: string;
+}
+
+export interface LinkedListVisualState {
+  type: "linkedlist";
+  label?: string;
+  nodes: LinkedListNode[];
+  pointers?: { index: number; label: string; color?: string }[];
+  cycleIndex?: number; // index where tail connects back (for cycle detection)
 }
 
 export type DataStructureState =
@@ -80,7 +110,9 @@ export type DataStructureState =
   | SetVisualState
   | HashMapVisualState
   | StackVisualState
-  | VariableVisualState;
+  | VariableVisualState
+  | TreeVisualState
+  | LinkedListVisualState;
 
 export interface AnimationStep {
   description: string;
@@ -92,6 +124,6 @@ export interface SolutionData {
   label?: string;
   timeComplexity?: string;
   spaceComplexity?: string;
-  code: string;
+  code?: string;
   steps: AnimationStep[];
 }

@@ -18,12 +18,13 @@ const solution: SolutionData = {
       codeHighlightLines: [1, 2, 3],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: {},
+          type: "linkedlist", label: "linked list",
+          nodes: [{ value: 3 }, { value: 2 }, { value: 0 }, { value: -4 }],
           pointers: [
             { index: 0, label: "slow", color: "purple" },
             { index: 0, label: "fast", color: "cyan" },
           ],
+          cycleIndex: 1,
         },
         { type: "variables", entries: [{ name: "cycle target", value: "index 1 (value 2)" }] },
       ],
@@ -34,12 +35,13 @@ const solution: SolutionData = {
       codeHighlightLines: [5, 6, 7],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 1: "pointer-i", 2: "pointer-j" },
+          type: "linkedlist", label: "linked list",
+          nodes: [{ value: 3 }, { value: 2, highlight: "pointer-i" }, { value: 0, highlight: "pointer-j" }, { value: -4 }],
           pointers: [
             { index: 1, label: "slow", color: "purple" },
             { index: 2, label: "fast", color: "cyan" },
           ],
+          cycleIndex: 1,
         },
         { type: "variables", entries: [{ name: "slow == fast?", value: false }] },
       ],
@@ -50,12 +52,13 @@ const solution: SolutionData = {
       codeHighlightLines: [5, 6, 7],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 2: "pointer-i", 1: "pointer-j" },
+          type: "linkedlist", label: "linked list",
+          nodes: [{ value: 3 }, { value: 2, highlight: "pointer-j" }, { value: 0, highlight: "pointer-i" }, { value: -4 }],
           pointers: [
             { index: 2, label: "slow", color: "purple" },
             { index: 1, label: "fast", color: "cyan" },
           ],
+          cycleIndex: 1,
         },
         { type: "variables", entries: [{ name: "slow == fast?", value: false }] },
       ],
@@ -66,12 +69,13 @@ const solution: SolutionData = {
       codeHighlightLines: [5, 6, 7],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 3: "found" },
+          type: "linkedlist", label: "linked list",
+          nodes: [{ value: 3 }, { value: 2 }, { value: 0 }, { value: -4, highlight: "found" }],
           pointers: [
             { index: 3, label: "slow", color: "purple" },
             { index: 3, label: "fast", color: "cyan" },
           ],
+          cycleIndex: 1,
         },
         { type: "variables", entries: [{ name: "slow == fast?", value: true, highlight: true }] },
       ],
@@ -82,11 +86,12 @@ const solution: SolutionData = {
       codeHighlightLines: [8, 9],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 3: "success" },
+          type: "linkedlist", label: "linked list",
+          nodes: [{ value: 3 }, { value: 2 }, { value: 0 }, { value: -4, highlight: "success" }],
           pointers: [
             { index: 3, label: "slow=fast", color: "green" },
           ],
+          cycleIndex: 1,
         },
         { type: "variables", entries: [{ name: "return", value: true, highlight: true }] },
       ],
@@ -97,8 +102,9 @@ const solution: SolutionData = {
       codeHighlightLines: [5, 10],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 1: "success", 2: "success", 3: "success" },
+          type: "linkedlist", label: "linked list",
+          nodes: [{ value: 3 }, { value: 2, highlight: "success" }, { value: 0, highlight: "success" }, { value: -4, highlight: "success" }],
+          cycleIndex: 1,
         },
         { type: "variables", entries: [
           { name: "Time", value: "O(n)" },

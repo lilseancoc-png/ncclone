@@ -168,30 +168,38 @@ function useSupabaseAuth() {
   }, [configured]);
 
   const login = useCallback(async (email: string, password: string): Promise<AuthResult> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      if (error.message.includes("Invalid login"))
-        return { success: false, error: "Invalid email or password" };
-      return { success: false, error: error.message };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        if (error.message.includes("Invalid login"))
+          return { success: false, error: "Invalid email or password" };
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch {
+      return { success: false, error: "Unable to connect. Please check your internet connection and try again." };
     }
-    return { success: true };
   }, []);
 
   const register = useCallback(
     async (email: string, displayName: string, password: string): Promise<AuthResult> => {
       if (password.length < 6)
         return { success: false, error: "Password must be at least 6 characters" };
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { display_name: displayName || email.split("@")[0] } },
-      });
-      if (error) {
-        if (error.message.includes("already registered"))
-          return { success: false, error: "An account with that email already exists" };
-        return { success: false, error: error.message };
+      try {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { display_name: displayName || email.split("@")[0] } },
+        });
+        if (error) {
+          if (error.message.includes("already registered"))
+            return { success: false, error: "An account with that email already exists" };
+          return { success: false, error: error.message };
+        }
+        return { success: true };
+      } catch {
+        return { success: false, error: "Unable to connect. Please check your internet connection and try again." };
       }
-      return { success: true };
     },
     []
   );

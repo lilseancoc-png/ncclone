@@ -28,7 +28,7 @@ export default function AlgorithmVisualizer({
   return (
     <div className="space-y-4">
       {/* Solution code with line highlighting */}
-      <div className="rounded-lg border border-border/30 bg-[#1e1e2e] overflow-hidden">
+      {solution.code && <div className="rounded-lg border border-border/30 bg-[#1e1e2e] overflow-hidden">
         <div className="px-3 py-1.5 border-b border-border/20 text-[10px] text-gray-500 font-medium">
           Python Solution
         </div>
@@ -55,7 +55,7 @@ export default function AlgorithmVisualizer({
             );
           })}
         </pre>
-      </div>
+      </div>}
 
       {/* Step description */}
       <div className="px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm text-blue-200/90 min-h-[40px] flex items-center transition-all duration-300">
