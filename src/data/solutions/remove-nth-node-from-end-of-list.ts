@@ -20,7 +20,7 @@ const solution: SolutionData = {
         "Remove the nth node from the end in one pass. The trick: use two pointers spaced n+1 apart. When the fast pointer reaches the end, slow is right before the node to remove. A dummy node handles the edge case of removing the head. List: [1→2→3→4→5], n=2.",
       codeHighlightLines: [1, 2, 3],
       structures: [
-        { type: "array", label: "list", values: ["d", 1, 2, 3, 4, 5], pointers: [{ index: 0, label: "fast=slow" }] },
+        { type: "linkedlist", label: "list", nodes: [{ value: "d", label: "fast/slow" }, { value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }, { value: 5 }] },
         { type: "variables", entries: [{ name: "n", value: 2 }, { name: "gap needed", value: "n+1 = 3" }] },
       ],
     },
@@ -29,7 +29,7 @@ const solution: SolutionData = {
         "Advance fast n+1=3 times: dummy→1→2→3. Now fast is at node 3, slow is still at dummy. The gap between them is 3 nodes.",
       codeHighlightLines: [4, 5],
       structures: [
-        { type: "array", label: "list", values: ["d", 1, 2, 3, 4, 5], highlights: { 3: "active" }, pointers: [{ index: 0, label: "slow" }, { index: 3, label: "fast" }] },
+        { type: "linkedlist", label: "list", nodes: [{ value: "d", label: "slow" }, { value: 1 }, { value: 2 }, { value: 3, highlight: "active", label: "fast" }, { value: 4 }, { value: 5 }] },
         { type: "variables", entries: [{ name: "gap", value: 3, highlight: true }] },
       ],
     },
@@ -38,7 +38,7 @@ const solution: SolutionData = {
         "Move both pointers together until fast reaches null. fast: 3→4→5→null. slow: dummy→1→2→3. Now slow is at node 3 — right before node 4 (the 2nd from end that we want to remove).",
       codeHighlightLines: [6, 7, 8],
       structures: [
-        { type: "array", label: "list", values: ["d", 1, 2, 3, 4, 5], highlights: { 3: "active", 4: "found" }, pointers: [{ index: 3, label: "slow" }] },
+        { type: "linkedlist", label: "list", nodes: [{ value: "d" }, { value: 1 }, { value: 2 }, { value: 3, highlight: "active", label: "slow" }, { value: 4, highlight: "found" }, { value: 5 }] },
         { type: "variables", entries: [{ name: "fast", value: "null" }, { name: "slow", value: "node 3" }, { name: "to remove", value: "node 4 (2nd from end)", highlight: true }] },
       ],
     },

@@ -14,96 +14,96 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Detect a cycle using Floyd's algorithm. Use slow (1 step) and fast (2 steps) pointers. List: 3->2->0->-4->2 (cycle back to index 1).",
+        "Detect a cycle using Floyd's algorithm. slow moves 1 step, fast moves 2 steps. List: 3→2→0→-4→(back to 2).",
       codeHighlightLines: [1, 2, 3],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: {},
-          pointers: [
-            { index: 0, label: "slow", color: "purple" },
-            { index: 0, label: "fast", color: "cyan" },
+          type: "linkedlist",
+          label: "linked list (cycle at index 1)",
+          nodes: [
+            { value: 3, label: "slow/fast" },
+            { value: 2 },
+            { value: 0 },
+            { value: -4 },
           ],
+          cycle: 1,
         },
-        { type: "variables", entries: [{ name: "cycle target", value: "index 1 (value 2)" }] },
       ],
     },
     {
       description:
-        "Step 1: slow moves to index 1 (value 2). fast moves 2 steps to index 2 (value 0). They haven't met.",
+        "Step 1: slow → index 1 (val 2). fast → index 2 (val 0). They haven't met yet.",
       codeHighlightLines: [5, 6, 7],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 1: "pointer-i", 2: "pointer-j" },
-          pointers: [
-            { index: 1, label: "slow", color: "purple" },
-            { index: 2, label: "fast", color: "cyan" },
+          type: "linkedlist",
+          label: "linked list",
+          nodes: [
+            { value: 3 },
+            { value: 2, highlight: "active", label: "slow" },
+            { value: 0, highlight: "checked", label: "fast" },
+            { value: -4 },
           ],
-        },
-        { type: "variables", entries: [{ name: "slow == fast?", value: false }] },
-      ],
-    },
-    {
-      description:
-        "Step 2: slow moves to index 2 (value 0). fast moves 2 steps: index 3 (-4) then cycles back to index 1 (value 2).",
-      codeHighlightLines: [5, 6, 7],
-      structures: [
-        {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 2: "pointer-i", 1: "pointer-j" },
-          pointers: [
-            { index: 2, label: "slow", color: "purple" },
-            { index: 1, label: "fast", color: "cyan" },
-          ],
+          cycle: 1,
         },
         { type: "variables", entries: [{ name: "slow == fast?", value: false }] },
       ],
     },
     {
       description:
-        "Step 3: slow moves to index 3 (value -4). fast moves 2 steps from index 1: to index 2, then index 3. Both are at index 3!",
+        "Step 2: slow → index 2 (val 0). fast goes to index 3 (-4), then cycles back to index 1 (val 2).",
       codeHighlightLines: [5, 6, 7],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 3: "found" },
-          pointers: [
-            { index: 3, label: "slow", color: "purple" },
-            { index: 3, label: "fast", color: "cyan" },
+          type: "linkedlist",
+          label: "linked list",
+          nodes: [
+            { value: 3 },
+            { value: 2, highlight: "checked", label: "fast" },
+            { value: 0, highlight: "active", label: "slow" },
+            { value: -4 },
           ],
+          cycle: 1,
+        },
+        { type: "variables", entries: [{ name: "slow == fast?", value: false }] },
+      ],
+    },
+    {
+      description:
+        "Step 3: slow → index 3 (-4). fast goes from index 1→2→3. Both at index 3! They met!",
+      codeHighlightLines: [5, 6, 7, 8],
+      structures: [
+        {
+          type: "linkedlist",
+          label: "linked list — pointers met!",
+          nodes: [
+            { value: 3 },
+            { value: 2 },
+            { value: 0 },
+            { value: -4, highlight: "found", label: "slow=fast" },
+          ],
+          cycle: 1,
         },
         { type: "variables", entries: [{ name: "slow == fast?", value: true, highlight: true }] },
       ],
     },
     {
       description:
-        "slow == fast! The pointers met, which means there is a cycle. Return True.",
+        "Return True — cycle detected! If no cycle existed, fast would reach None and we'd return False. Time: O(n), Space: O(1).",
       codeHighlightLines: [8, 9],
       structures: [
         {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 3: "success" },
-          pointers: [
-            { index: 3, label: "slow=fast", color: "green" },
+          type: "linkedlist",
+          label: "cycle confirmed",
+          nodes: [
+            { value: 3, highlight: "success" },
+            { value: 2, highlight: "success" },
+            { value: 0, highlight: "success" },
+            { value: -4, highlight: "success" },
           ],
+          cycle: 1,
         },
         { type: "variables", entries: [{ name: "return", value: true, highlight: true }] },
-      ],
-    },
-    {
-      description:
-        "Key insight: if there is no cycle, fast reaches the end (None) and we return False. If there IS a cycle, fast laps slow and they eventually meet.",
-      codeHighlightLines: [5, 10],
-      structures: [
-        {
-          type: "array", label: "linked list", values: [3, 2, 0, -4],
-          highlights: { 1: "success", 2: "success", 3: "success" },
-        },
-        { type: "variables", entries: [
-          { name: "Time", value: "O(n)" },
-          { name: "Space", value: "O(1)" },
-        ] },
       ],
     },
   ],
