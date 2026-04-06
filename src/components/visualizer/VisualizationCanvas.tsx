@@ -6,6 +6,8 @@ import SetViz from "./structures/SetViz";
 import HashMapViz from "./structures/HashMapViz";
 import StackViz from "./structures/StackViz";
 import VariablesViz from "./structures/VariablesViz";
+import TreeViz from "./structures/TreeViz";
+import LinkedListViz from "./structures/LinkedListViz";
 
 export default function VisualizationCanvas({
   structures,
@@ -26,6 +28,10 @@ export default function VisualizationCanvas({
             return <StackViz key={`${s.type}-${s.label}-${i}`} state={s} />;
           case "variables":
             return <VariablesViz key={`${s.type}-${i}`} state={s} />;
+          case "tree":
+            return <TreeViz key={`${s.type}-${s.label}-${i}`} state={s} />;
+          case "linkedlist":
+            return <LinkedListViz key={`${s.type}-${s.label}-${i}`} state={s} />;
           default:
             return null;
         }

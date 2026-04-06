@@ -75,12 +75,40 @@ export interface VariableVisualState {
   entries: { name: string; value: string | number | boolean; highlight?: boolean }[];
 }
 
+export interface TreeNodeState {
+  value: string | number;
+  highlight?: string; // "active" | "found" | "checked" | "success" etc.
+  label?: string; // e.g. "root", "p", "q"
+}
+
+export interface TreeVisualState {
+  type: "tree";
+  label?: string;
+  // Level-order array representation. null = missing node.
+  nodes: (TreeNodeState | null)[];
+}
+
+export interface LinkedListNodeState {
+  value: string | number;
+  highlight?: string;
+  label?: string; // e.g. "head", "curr", "prev"
+}
+
+export interface LinkedListVisualState {
+  type: "linkedlist";
+  label?: string;
+  nodes: LinkedListNodeState[];
+  cycle?: number; // index that the tail points back to (for cycle detection problems)
+}
+
 export type DataStructureState =
   | ArrayVisualState
   | SetVisualState
   | HashMapVisualState
   | StackVisualState
-  | VariableVisualState;
+  | VariableVisualState
+  | TreeVisualState
+  | LinkedListVisualState;
 
 export interface AnimationStep {
   description: string;

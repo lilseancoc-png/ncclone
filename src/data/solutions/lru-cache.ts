@@ -35,25 +35,21 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "LRU Cache needs O(1) get and put. Use a hash map for O(1) key lookup and a doubly linked list for O(1) insertion/removal to track recency. Most recently used goes to tail; least recently used is at head.",
+          "LRU Cache needs O(1) get and put. Use a hash map for O(1) key lookup and a doubly linked list for O(1) insertion/removal to track recency. Most recently used goes to tail; LRU is at head.",
         codeHighlightLines: [1, 2, 3, 4, 5, 6, 7, 8],
         structures: [
-          {
-            type: "variables",
-            entries: [{ name: "capacity", value: 2 }],
-          },
+          { type: "variables", entries: [{ name: "capacity", value: 2 }] },
           { type: "hashmap", label: "cache", entries: [] },
           {
-            type: "array",
+            type: "linkedlist",
             label: "DLL: head ↔ ... ↔ tail",
-            values: ["HEAD", "TAIL"],
-            highlights: {},
+            nodes: [{ value: "H", label: "head" }, { value: "T", label: "tail" }],
           },
         ],
       },
       {
         description:
-          "put(1, 1): Create node, add to map and tail of list. put(2, 2): Same. Cache is now full (capacity=2). List order: HEAD ↔ 1 ↔ 2 ↔ TAIL (1 is LRU).",
+          "put(1, 1): Create node, add to map and before tail. put(2, 2): Same. Cache full (capacity=2). DLL order: HEAD ↔ 1 ↔ 2 ↔ TAIL (1 is LRU).",
         codeHighlightLines: [18, 19, 20, 21, 22],
         structures: [
           {
@@ -63,33 +59,38 @@ const solutions: SolutionData[] = [
             highlightKeys: [1, 2],
           },
           {
-            type: "array",
-            label: "DLL order (LRU → MRU)",
-            values: [1, 2],
-            highlights: { 0: "checked", 1: "active" },
+            type: "linkedlist",
+            label: "DLL (LRU → MRU)",
+            nodes: [
+              { value: "H", label: "head" },
+              { value: 1, highlight: "checked", label: "LRU" },
+              { value: 2, highlight: "active", label: "MRU" },
+              { value: "T", label: "tail" },
+            ],
           },
         ],
       },
       {
         description:
-          "get(1): Found! Move node 1 to tail (most recent). Return 1. Now list: HEAD ↔ 2 ↔ 1 ↔ TAIL. Key 2 is now the LRU.",
+          "get(1): Found! Move node 1 to tail (most recent). Return 1. Now: HEAD ↔ 2 ↔ 1 ↔ TAIL. Key 2 is now LRU.",
         codeHighlightLines: [10, 11, 12, 13, 14, 15],
         structures: [
           {
-            type: "array",
-            label: "DLL order (LRU → MRU)",
-            values: [2, 1],
-            highlights: { 1: "success" },
+            type: "linkedlist",
+            label: "DLL after get(1)",
+            nodes: [
+              { value: "H", label: "head" },
+              { value: 2, highlight: "checked", label: "LRU" },
+              { value: 1, highlight: "success", label: "MRU" },
+              { value: "T", label: "tail" },
+            ],
           },
-          {
-            type: "variables",
-            entries: [{ name: "return", value: 1, highlight: true }],
-          },
+          { type: "variables", entries: [{ name: "return", value: 1, highlight: true }] },
         ],
       },
       {
         description:
-          "put(3, 3): Cache full! Evict LRU (key=2, at head.next). Remove from list and map. Add node 3. Cache: {1:1, 3:3}. get(2) would return -1 (evicted).",
+          "put(3, 3): Cache full! Evict LRU (key=2 at head.next). Remove from list and map. Add node 3. Cache: {1:1, 3:3}. get(2) → -1 (evicted).",
         codeHighlightLines: [23, 24, 25, 26],
         structures: [
           {
@@ -99,15 +100,16 @@ const solutions: SolutionData[] = [
             highlightKeys: [3],
           },
           {
-            type: "array",
-            label: "DLL order (LRU → MRU)",
-            values: [1, 3],
-            highlights: { 1: "active" },
+            type: "linkedlist",
+            label: "DLL after eviction",
+            nodes: [
+              { value: "H", label: "head" },
+              { value: 1, highlight: "checked" },
+              { value: 3, highlight: "active", label: "MRU" },
+              { value: "T", label: "tail" },
+            ],
           },
-          {
-            type: "variables",
-            entries: [{ name: "evicted", value: "key=2", highlight: true }],
-          },
+          { type: "variables", entries: [{ name: "evicted", value: "key=2", highlight: true }] },
         ],
       },
     ],

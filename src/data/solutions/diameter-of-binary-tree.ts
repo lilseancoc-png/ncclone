@@ -22,7 +22,7 @@ const solution: SolutionData = {
         "The diameter is the longest path between any two nodes (number of edges). At each node, the path through it = left height + right height. Track the max. Tree: [1,2,3,4,5].",
       codeHighlightLines: [1, 2, 3, 4, 5, 6],
       structures: [
-        { type: "array", label: "tree", values: [1, 2, 3, 4, 5] },
+        { type: "tree", label: "tree", nodes: [{ value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }, { value: 5 }] },
         { type: "variables", entries: [{ name: "diameter", value: 0 }] },
       ],
     },
@@ -31,7 +31,7 @@ const solution: SolutionData = {
         "DFS post-order. Node 4: leaf, returns height 0. Node 5: leaf, returns height 0. Node 2: left=1(from 4), right=1(from 5). Path through 2: 1+1=2. diameter=2. Returns height 1+1=2.",
       codeHighlightLines: [7, 8, 9, 10],
       structures: [
-        { type: "array", label: "tree", values: [1, 2, 3, 4, 5], highlights: { 1: "active", 3: "checked", 4: "checked" } },
+        { type: "tree", label: "tree", nodes: [{ value: 1 }, { value: 2, highlight: "active" }, { value: 3 }, { value: 4, highlight: "checked" }, { value: 5, highlight: "checked" }] },
         { type: "variables", entries: [{ name: "node 2", value: "left=1, right=1" }, { name: "path through 2", value: "1+1=2" }, { name: "diameter", value: 2, highlight: true }] },
       ],
     },
@@ -40,7 +40,7 @@ const solution: SolutionData = {
         "Node 3: leaf, returns 0. Node 1 (root): left=2(from 2), right=1(from 3). Path through 1: 2+1=3. diameter=max(2,3)=3. This is the longest path: 4→2→1→3.",
       codeHighlightLines: [7, 8, 9, 10],
       structures: [
-        { type: "array", label: "tree", values: [1, 2, 3, 4, 5], highlights: { 0: "success", 1: "success", 2: "success", 3: "success" } },
+        { type: "tree", label: "tree", nodes: [{ value: 1, highlight: "success" }, { value: 2, highlight: "success" }, { value: 3, highlight: "success" }, { value: 4, highlight: "success" }, { value: 5 }] },
         { type: "variables", entries: [{ name: "path through root", value: "2+1=3" }, { name: "diameter", value: 3, highlight: true }, { name: "path", value: "4→2→1→3" }] },
       ],
     },

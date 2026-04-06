@@ -31,10 +31,9 @@ const solutions: SolutionData[] = [
         codeHighlightLines: [1, 2, 3],
         structures: [
           {
-            type: "array",
+            type: "linkedlist",
             label: "linked list",
-            values: [1, 2, 3, 4, 5],
-            highlights: {},
+            nodes: [{ value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }, { value: 5 }],
           },
           { type: "variables", entries: [{ name: "k", value: 2 }] },
         ],
@@ -45,10 +44,9 @@ const solutions: SolutionData[] = [
         codeHighlightLines: [5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17],
         structures: [
           {
-            type: "array",
+            type: "linkedlist",
             label: "list after group 1",
-            values: [2, 1, 3, 4, 5],
-            highlights: { 0: "success", 1: "success" },
+            nodes: [{ value: 2, highlight: "success" }, { value: 1, highlight: "success" }, { value: 3 }, { value: 4 }, { value: 5 }],
           },
           {
             type: "variables",
@@ -62,10 +60,9 @@ const solutions: SolutionData[] = [
         codeHighlightLines: [5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17],
         structures: [
           {
-            type: "array",
+            type: "linkedlist",
             label: "list after group 2",
-            values: [2, 1, 4, 3, 5],
-            highlights: { 2: "success", 3: "success" },
+            nodes: [{ value: 2 }, { value: 1 }, { value: 4, highlight: "success" }, { value: 3, highlight: "success" }, { value: 5 }],
           },
         ],
       },
