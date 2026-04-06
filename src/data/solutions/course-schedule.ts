@@ -25,37 +25,81 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Can you finish all courses given prerequisites? This is cycle detection in a directed graph. If there's a cycle (A requires B, B requires A), it's impossible. Use DFS with 3 states: unvisited (0), in-progress (1), done (2). numCourses=4, prereqs=[[1,0],[2,1],[3,2]].",
+        "Can you finish all courses given prerequisites? This is cycle detection in a directed graph. numCourses=4, prereqs=[[1,0],[2,1],[3,2]]: 1→0, 2→1, 3→2.",
       codeHighlightLines: [1, 2, 3, 4, 5, 6],
       structures: [
-        { type: "array", label: "graph (course → prereqs)", values: ["0:[]", "1:[0]", "2:[1]", "3:[2]"] },
+        {
+          type: "graph",
+          label: "prerequisite graph",
+          directed: true,
+          nodes: [
+            { id: 0 },
+            { id: 1 },
+            { id: 2 },
+            { id: 3 },
+          ],
+          edges: [
+            { from: 1, to: 0 },
+            { from: 2, to: 1 },
+            { from: 3, to: 2 },
+          ],
+        },
         { type: "array", label: "state", values: [0, 0, 0, 0] },
       ],
     },
     {
       description:
-        "DFS from course 0: no prereqs → mark done (2). DFS from course 1: prereq is 0 (already done) → mark 1 as done. No cycles found so far.",
+        "DFS from course 0: no prereqs → mark done (2). DFS from course 1: prereq 0 is done → mark 1 done.",
       codeHighlightLines: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
       structures: [
+        {
+          type: "graph",
+          label: "exploring courses 0, 1",
+          directed: true,
+          nodes: [
+            { id: 0, highlight: "success" },
+            { id: 1, highlight: "success" },
+            { id: 2 },
+            { id: 3 },
+          ],
+          edges: [
+            { from: 1, to: 0, highlight: "success" },
+            { from: 2, to: 1 },
+            { from: 3, to: 2 },
+          ],
+        },
         { type: "array", label: "state", values: [2, 2, 0, 0], highlights: { 0: "success", 1: "success" } },
-        { type: "variables", entries: [{ name: "course 0", value: "no prereqs → done" }, { name: "course 1", value: "prereq 0 done → done", highlight: true }] },
       ],
     },
     {
       description:
-        "DFS from course 2: prereq 1 is done → mark 2 as done. DFS from course 3: prereq 2 is done → mark 3 as done. All courses processed, no cycles detected!",
+        "DFS from course 2: prereq 1 done → mark 2 done. DFS from course 3: prereq 2 done → mark 3 done. No cycles!",
       codeHighlightLines: [12, 13, 14, 15, 16],
       structures: [
+        {
+          type: "graph",
+          label: "all courses verified",
+          directed: true,
+          nodes: [
+            { id: 0, highlight: "success" },
+            { id: 1, highlight: "success" },
+            { id: 2, highlight: "success" },
+            { id: 3, highlight: "success" },
+          ],
+          edges: [
+            { from: 1, to: 0, highlight: "success" },
+            { from: 2, to: 1, highlight: "success" },
+            { from: 3, to: 2, highlight: "success" },
+          ],
+        },
         { type: "array", label: "state", values: [2, 2, 2, 2], highlights: { 0: "success", 1: "success", 2: "success", 3: "success" } },
-        { type: "variables", entries: [{ name: "cycles found", value: 0 }] },
       ],
     },
     {
       description:
-        "Return True — all courses can be finished. The 3-state approach is key: state=1 means \"currently being explored.\" If we revisit a node with state=1, we've found a back edge (cycle). State=2 means fully verified — skip it. Time: O(V+E). Space: O(V+E) for the graph + state array.",
+        "Return True — all courses can be finished. If state[node]==1 during DFS, we found a back edge (cycle) and would return False. Time: O(V+E).",
       codeHighlightLines: [18],
       structures: [
-        { type: "array", label: "state (all done)", values: [2, 2, 2, 2], highlights: { 0: "success", 1: "success", 2: "success", 3: "success" } },
         { type: "variables", entries: [{ name: "return", value: true, highlight: true }] },
       ],
     },

@@ -22,38 +22,81 @@ def clone_graph(node):
   steps: [
     {
       description:
-        "Deep copy a graph. The challenge: nodes reference each other, so we must clone nodes before wiring up their neighbor lists. Use a hashmap {original → clone} to track what's been cloned. BFS ensures we visit every node. Graph: 1—2, 1—4, 2—3, 3—4.",
+        "Deep copy a graph. Use a hashmap {original → clone} and BFS. Graph: 1—2, 1—4, 2—3, 3—4.",
       codeHighlightLines: [1, 3, 4, 5, 6, 7],
       structures: [
-        { type: "array", label: "adjacency", values: ["1:[2,4]", "2:[1,3]", "3:[2,4]", "4:[1,3]"] },
-        { type: "hashmap", label: "clones (orig → clone)", entries: [[1, "Node(1)"]] },
+        {
+          type: "graph",
+          label: "original graph",
+          nodes: [
+            { id: 1, highlight: "active" },
+            { id: 2 },
+            { id: 3 },
+            { id: 4 },
+          ],
+          edges: [
+            { from: 1, to: 2 },
+            { from: 1, to: 4 },
+            { from: 2, to: 3 },
+            { from: 3, to: 4 },
+          ],
+        },
+        { type: "hashmap", label: "clones (orig → clone)", entries: [[1, "Node(1)"]], highlightKeys: [1] },
       ],
     },
     {
       description:
-        "Dequeue node 1. Neighbors: 2 and 4. Neither is in clones → create clone(2) and clone(4), enqueue 2 and 4. Wire clone(1).neighbors = [clone(2), clone(4)].",
+        "Dequeue 1. Neighbors 2, 4 not cloned → create clones, enqueue. Wire clone(1).neighbors = [clone(2), clone(4)].",
       codeHighlightLines: [8, 9, 10, 11, 12, 13, 14],
       structures: [
+        {
+          type: "graph",
+          label: "BFS from node 1",
+          nodes: [
+            { id: 1, highlight: "checked" },
+            { id: 2, highlight: "active" },
+            { id: 3 },
+            { id: 4, highlight: "active" },
+          ],
+          edges: [
+            { from: 1, to: 2, highlight: "active" },
+            { from: 1, to: 4, highlight: "active" },
+            { from: 2, to: 3 },
+            { from: 3, to: 4 },
+          ],
+        },
         { type: "hashmap", label: "clones", entries: [[1, "Node(1)"], [2, "Node(2)"], [4, "Node(4)"]], highlightKeys: [2, 4] },
-        { type: "array", label: "queue", values: [2, 4], highlights: { 0: "active", 1: "active" } },
-        { type: "variables", entries: [{ name: "clone(1).neighbors", value: "[clone(2), clone(4)]", highlight: true }] },
       ],
     },
     {
       description:
-        "Dequeue 2. Neighbors: 1 (already cloned), 3 (new → create clone(3), enqueue). Wire clone(2).neighbors = [clone(1), clone(3)]. Dequeue 4. Neighbors: 1 (cloned), 3 (cloned). Wire clone(4).neighbors = [clone(1), clone(3)].",
+        "Dequeue 2: clone neighbor 3. Dequeue 4: neighbors 1,3 already cloned. Dequeue 3: neighbors 2,4 already cloned. All wired up.",
       codeHighlightLines: [10, 11, 12, 13, 14],
       structures: [
-        { type: "hashmap", label: "clones", entries: [[1, "Node(1)"], [2, "Node(2)"], [4, "Node(4)"], [3, "Node(3)"]], highlightKeys: [3] },
-        { type: "array", label: "queue", values: [3], highlights: { 0: "active" } },
+        {
+          type: "graph",
+          label: "all nodes cloned",
+          nodes: [
+            { id: 1, highlight: "success" },
+            { id: 2, highlight: "success" },
+            { id: 3, highlight: "success" },
+            { id: 4, highlight: "success" },
+          ],
+          edges: [
+            { from: 1, to: 2, highlight: "success" },
+            { from: 1, to: 4, highlight: "success" },
+            { from: 2, to: 3, highlight: "success" },
+            { from: 3, to: 4, highlight: "success" },
+          ],
+        },
+        { type: "hashmap", label: "clones (complete)", entries: [[1, "Node(1)"], [2, "Node(2)"], [3, "Node(3)"], [4, "Node(4)"]] },
       ],
     },
     {
       description:
-        "Dequeue 3. Neighbors: 2 (cloned), 4 (cloned). Wire clone(3).neighbors = [clone(2), clone(4)]. Queue empty. Return clones[node] = clone(1). Time: O(V+E) — visit each node and edge once. Space: O(V) for the hashmap and queue.",
+        "Return clone(1). The entire graph has been deep copied with all neighbor relationships preserved. Time: O(V+E). Space: O(V).",
       codeHighlightLines: [15],
       structures: [
-        { type: "hashmap", label: "clones (complete)", entries: [[1, "Node(1)"], [2, "Node(2)"], [3, "Node(3)"], [4, "Node(4)"]] },
         { type: "variables", entries: [{ name: "return", value: "clone(1)", highlight: true }] },
       ],
     },

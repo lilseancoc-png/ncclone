@@ -8,6 +8,8 @@ import StackViz from "./structures/StackViz";
 import VariablesViz from "./structures/VariablesViz";
 import TreeViz from "./structures/TreeViz";
 import LinkedListViz from "./structures/LinkedListViz";
+import MatrixViz from "./structures/MatrixViz";
+import GraphViz from "./structures/GraphViz";
 
 export default function VisualizationCanvas({
   structures,
@@ -32,6 +34,10 @@ export default function VisualizationCanvas({
             return <TreeViz key={`${s.type}-${s.label}-${i}`} state={s} />;
           case "linkedlist":
             return <LinkedListViz key={`${s.type}-${s.label}-${i}`} state={s} />;
+          case "matrix":
+            return <MatrixViz key={`${s.type}-${s.label}-${i}`} state={s} />;
+          case "graph":
+            return <GraphViz key={`${s.type}-${s.label}-${i}`} state={s} />;
           default:
             return null;
         }
