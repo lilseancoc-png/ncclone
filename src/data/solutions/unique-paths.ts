@@ -10,109 +10,86 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "We want to count all unique paths from top-left to bottom-right of a 3x3 grid. We can only move right or down. We'll use a 2D DP table where dp[i][j] = number of ways to reach cell (i, j).",
+        "Count unique paths from top-left to bottom-right of a 3x3 grid, moving only right or down. Use DP where dp[i][j] = number of paths to reach cell (i,j).",
       codeHighlightLines: [1],
       structures: [
         {
           type: "variables",
-          entries: [
-            { name: "m", value: 3 },
-            { name: "n", value: 3 },
-          ],
+          entries: [{ name: "m", value: 3 }, { name: "n", value: 3 }],
         },
-        { type: "array", label: "Grid (3x3)", values: ["?", "?", "?", "?", "?", "?", "?", "?", "?"] },
       ],
     },
     {
       description:
-        "Initialize the DP table. The first row and first column are all 1s because there's only one way to reach any cell along the edges (go all right, or go all down).",
+        "Initialize: first row and first column are all 1s — only one way to reach any edge cell (go all right, or all down).",
       codeHighlightLines: [2],
       structures: [
-        { type: "array", label: "Row 0", values: [1, 1, 1], highlights: { 0: "success", 1: "success", 2: "success" } },
-        { type: "array", label: "Row 1", values: [1, "?", "?"], highlights: { 0: "success" } },
-        { type: "array", label: "Row 2", values: [1, "?", "?"], highlights: { 0: "success" } },
+        {
+          type: "matrix",
+          label: "dp table",
+          rows: [
+            [{ value: 1, highlight: "success" }, { value: 1, highlight: "success" }, { value: 1, highlight: "success" }],
+            [{ value: 1, highlight: "success" }, { value: "?", highlight: "active" }, { value: "?" }],
+            [{ value: 1, highlight: "success" }, { value: "?" }, { value: "?" }],
+          ],
+          colHeaders: [0, 1, 2],
+          rowHeaders: [0, 1, 2],
+        },
       ],
     },
     {
       description:
-        "Start filling in. i=1, j=1: dp[1][1] = dp[0][1] + dp[1][0] = 1 + 1 = 2. There are 2 ways to reach the center cell.",
+        "dp[1][1] = dp[0][1] + dp[1][0] = 1 + 1 = 2. Two ways to reach center: right-down or down-right.",
       codeHighlightLines: [3, 4, 5],
       structures: [
-        { type: "array", label: "Row 0", values: [1, 1, 1] },
-        { type: "array", label: "Row 1", values: [1, 2, "?"], highlights: { 1: "active" } },
-        { type: "array", label: "Row 2", values: [1, "?", "?"] },
         {
-          type: "variables",
-          entries: [
-            { name: "i", value: 1 },
-            { name: "j", value: 1 },
-            { name: "dp[0][1] + dp[1][0]", value: "1 + 1 = 2", highlight: true },
+          type: "matrix",
+          label: "dp table",
+          rows: [
+            [{ value: 1 }, { value: 1, highlight: "checked" }, { value: 1 }],
+            [{ value: 1, highlight: "checked" }, { value: 2, highlight: "active" }, { value: "?" }],
+            [{ value: 1 }, { value: "?" }, { value: "?" }],
           ],
+          colHeaders: [0, 1, 2],
+          rowHeaders: [0, 1, 2],
         },
+        { type: "variables", entries: [{ name: "dp[0][1] + dp[1][0]", value: "1 + 1 = 2", highlight: true }] },
       ],
     },
     {
       description:
-        "i=1, j=2: dp[1][2] = dp[0][2] + dp[1][1] = 1 + 2 = 3. Three paths reach this cell.",
+        "dp[1][2] = dp[0][2] + dp[1][1] = 1 + 2 = 3. dp[2][1] = dp[1][1] + dp[2][0] = 2 + 1 = 3.",
       codeHighlightLines: [5],
       structures: [
-        { type: "array", label: "Row 0", values: [1, 1, 1] },
-        { type: "array", label: "Row 1", values: [1, 2, 3], highlights: { 2: "active" } },
-        { type: "array", label: "Row 2", values: [1, "?", "?"] },
         {
-          type: "variables",
-          entries: [
-            { name: "i", value: 1 },
-            { name: "j", value: 2 },
-            { name: "dp[0][2] + dp[1][1]", value: "1 + 2 = 3", highlight: true },
+          type: "matrix",
+          label: "dp table",
+          rows: [
+            [{ value: 1 }, { value: 1 }, { value: 1, highlight: "checked" }],
+            [{ value: 1 }, { value: 2, highlight: "checked" }, { value: 3, highlight: "active" }],
+            [{ value: 1, highlight: "checked" }, { value: 3, highlight: "active" }, { value: "?" }],
           ],
+          colHeaders: [0, 1, 2],
+          rowHeaders: [0, 1, 2],
         },
       ],
     },
     {
       description:
-        "i=2, j=1: dp[2][1] = dp[1][1] + dp[2][0] = 2 + 1 = 3. Three paths reach this cell as well.",
-      codeHighlightLines: [5],
+        "dp[2][2] = dp[1][2] + dp[2][1] = 3 + 3 = 6. Return 6 — there are 6 unique paths.",
+      codeHighlightLines: [5, 6],
       structures: [
-        { type: "array", label: "Row 0", values: [1, 1, 1] },
-        { type: "array", label: "Row 1", values: [1, 2, 3] },
-        { type: "array", label: "Row 2", values: [1, 3, "?"], highlights: { 1: "active" } },
         {
-          type: "variables",
-          entries: [
-            { name: "i", value: 2 },
-            { name: "j", value: 1 },
-            { name: "dp[1][1] + dp[2][0]", value: "2 + 1 = 3", highlight: true },
+          type: "matrix",
+          label: "dp table — complete",
+          rows: [
+            [{ value: 1, highlight: "path" }, { value: 1 }, { value: 1 }],
+            [{ value: 1 }, { value: 2 }, { value: 3, highlight: "checked" }],
+            [{ value: 1 }, { value: 3, highlight: "checked" }, { value: 6, highlight: "success" }],
           ],
+          colHeaders: [0, 1, 2],
+          rowHeaders: [0, 1, 2],
         },
-      ],
-    },
-    {
-      description:
-        "i=2, j=2: dp[2][2] = dp[1][2] + dp[2][1] = 3 + 3 = 6. The bottom-right corner has 6 unique paths.",
-      codeHighlightLines: [5],
-      structures: [
-        { type: "array", label: "Row 0", values: [1, 1, 1] },
-        { type: "array", label: "Row 1", values: [1, 2, 3] },
-        { type: "array", label: "Row 2", values: [1, 3, 6], highlights: { 2: "found" } },
-        {
-          type: "variables",
-          entries: [
-            { name: "i", value: 2 },
-            { name: "j", value: 2 },
-            { name: "dp[1][2] + dp[2][1]", value: "3 + 3 = 6", highlight: true },
-          ],
-        },
-      ],
-    },
-    {
-      description:
-        "Return dp[2][2] = 6. There are 6 unique paths from the top-left to the bottom-right of a 3x3 grid.",
-      codeHighlightLines: [6],
-      structures: [
-        { type: "array", label: "Row 0", values: [1, 1, 1], highlights: { 0: "success" } },
-        { type: "array", label: "Row 1", values: [1, 2, 3] },
-        { type: "array", label: "Row 2", values: [1, 3, 6], highlights: { 2: "success" } },
         { type: "variables", entries: [{ name: "return", value: 6, highlight: true }] },
       ],
     },

@@ -14,84 +14,98 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Find the longest common subsequence of text1=\"abcde\" and text2=\"ace\". We build a 2D DP table where dp[i][j] = LCS length of text1[:i] and text2[:j]. Initialize all to 0.",
+        'Find the LCS of text1="abcde" and text2="ace". Build a DP table where dp[i][j] = LCS length of text1[:i] and text2[:j].',
       codeHighlightLines: [1, 2, 3],
       structures: [
         { type: "array", label: "text1", values: ["a", "b", "c", "d", "e"] },
         { type: "array", label: "text2", values: ["a", "c", "e"] },
-        { type: "array", label: "dp[0] (base)", values: [0, 0, 0, 0] },
         {
-          type: "variables",
-          entries: [
-            { name: "m", value: 5 },
-            { name: "n", value: 3 },
+          type: "matrix",
+          label: "dp table (initialized to 0)",
+          colHeaders: ["", "a", "c", "e"],
+          rowHeaders: ["", "a", "b", "c", "d", "e"],
+          rows: [
+            [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
           ],
         },
       ],
     },
     {
       description:
-        "i=1 (text1[0]='a'): Compare 'a' with each char in text2. text2[0]='a' matches! dp[1][1] = dp[0][0] + 1 = 1. 'b' and 'e' don't match, so we take the max of neighbors.",
+        "i=1 (a): text1[0]='a' matches text2[0]='a' → dp[1][1] = dp[0][0]+1 = 1. No match with 'c','e' → carry forward.",
       codeHighlightLines: [4, 5, 6, 7],
       structures: [
-        { type: "array", label: "text1", values: ["a", "b", "c", "d", "e"], highlights: { 0: "active" } },
-        { type: "array", label: "text2", values: ["a", "c", "e"], highlights: { 0: "found" } },
-        { type: "array", label: "dp[0]", values: [0, 0, 0, 0] },
-        { type: "array", label: "dp[1]", values: [0, 1, 1, 1], highlights: { 1: "success" } },
+        {
+          type: "matrix",
+          label: "dp — row 1 filled",
+          colHeaders: ["", "a", "c", "e"],
+          rowHeaders: ["", "a", "b", "c", "d", "e"],
+          rows: [
+            [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }],
+            [{ value: 0 }, { value: 1, highlight: "success" }, { value: 1 }, { value: 1 }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+          ],
+        },
       ],
     },
     {
       description:
-        "i=2 (text1[1]='b'): 'b' doesn't match any character in text2. Each cell takes the max of the cell above or to the left.",
-      codeHighlightLines: [8, 9],
-      structures: [
-        { type: "array", label: "text1", values: ["a", "b", "c", "d", "e"], highlights: { 1: "active" } },
-        { type: "array", label: "text2", values: ["a", "c", "e"] },
-        { type: "array", label: "dp[1]", values: [0, 1, 1, 1] },
-        { type: "array", label: "dp[2]", values: [0, 1, 1, 1], highlights: { 1: "checked", 2: "checked", 3: "checked" } },
-      ],
-    },
-    {
-      description:
-        "i=3 (text1[2]='c'): text2[1]='c' matches! dp[3][2] = dp[2][1] + 1 = 2. The LCS so far includes 'a' and 'c'.",
+        "i=2 (b): No match with any text2 char. i=3 (c): text2[1]='c' matches → dp[3][2] = dp[2][1]+1 = 2. LCS so far: 'a','c'.",
       codeHighlightLines: [6, 7],
       structures: [
-        { type: "array", label: "text1", values: ["a", "b", "c", "d", "e"], highlights: { 2: "active" } },
-        { type: "array", label: "text2", values: ["a", "c", "e"], highlights: { 1: "found" } },
-        { type: "array", label: "dp[2]", values: [0, 1, 1, 1] },
-        { type: "array", label: "dp[3]", values: [0, 1, 2, 2], highlights: { 2: "success" } },
+        {
+          type: "matrix",
+          label: "dp — rows 2-3 filled",
+          colHeaders: ["", "a", "c", "e"],
+          rowHeaders: ["", "a", "b", "c", "d", "e"],
+          rows: [
+            [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }],
+            [{ value: 0 }, { value: 1 }, { value: 1 }, { value: 1 }],
+            [{ value: 0 }, { value: 1 }, { value: 1 }, { value: 1 }],
+            [{ value: 0 }, { value: 1 }, { value: 2, highlight: "success" }, { value: 2 }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+            [{ value: 0 }, { value: "?" }, { value: "?" }, { value: "?" }],
+          ],
+        },
       ],
     },
     {
       description:
-        "i=4 (text1[3]='d'): No match with any text2 character. Values carry forward from neighbors.",
-      codeHighlightLines: [8, 9],
-      structures: [
-        { type: "array", label: "text1", values: ["a", "b", "c", "d", "e"], highlights: { 3: "active" } },
-        { type: "array", label: "text2", values: ["a", "c", "e"] },
-        { type: "array", label: "dp[3]", values: [0, 1, 2, 2] },
-        { type: "array", label: "dp[4]", values: [0, 1, 2, 2], highlights: { 1: "checked", 2: "checked", 3: "checked" } },
-      ],
-    },
-    {
-      description:
-        "i=5 (text1[4]='e'): text2[2]='e' matches! dp[5][3] = dp[4][2] + 1 = 3. The LCS now includes 'a', 'c', 'e'.",
+        "i=4 (d): No match. i=5 (e): text2[2]='e' matches → dp[5][3] = dp[4][2]+1 = 3. LCS = 'ace'.",
       codeHighlightLines: [6, 7],
       structures: [
-        { type: "array", label: "text1", values: ["a", "b", "c", "d", "e"], highlights: { 4: "active" } },
-        { type: "array", label: "text2", values: ["a", "c", "e"], highlights: { 2: "found" } },
-        { type: "array", label: "dp[4]", values: [0, 1, 2, 2] },
-        { type: "array", label: "dp[5]", values: [0, 1, 2, 3], highlights: { 3: "success" } },
+        {
+          type: "matrix",
+          label: "dp — complete",
+          colHeaders: ["", "a", "c", "e"],
+          rowHeaders: ["", "a", "b", "c", "d", "e"],
+          rows: [
+            [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }],
+            [{ value: 0 }, { value: 1, highlight: "success" }, { value: 1 }, { value: 1 }],
+            [{ value: 0 }, { value: 1 }, { value: 1 }, { value: 1 }],
+            [{ value: 0 }, { value: 1 }, { value: 2, highlight: "success" }, { value: 2 }],
+            [{ value: 0 }, { value: 1 }, { value: 2 }, { value: 2 }],
+            [{ value: 0 }, { value: 1 }, { value: 2 }, { value: 3, highlight: "success" }],
+          ],
+        },
       ],
     },
     {
       description:
-        "Return dp[5][3] = 3. The longest common subsequence of \"abcde\" and \"ace\" is \"ace\" with length 3.",
+        'Return dp[5][3] = 3. The LCS of "abcde" and "ace" is "ace" with length 3.',
       codeHighlightLines: [10],
       structures: [
-        { type: "array", label: "text1", values: ["a", "b", "c", "d", "e"], highlights: { 0: "success", 2: "success", 4: "success" } },
-        { type: "array", label: "text2", values: ["a", "c", "e"], highlights: { 0: "success", 1: "success", 2: "success" } },
-        { type: "variables", entries: [{ name: "return", value: 3, highlight: true }] },
+        { type: "array", label: "text1 (matched)", values: ["a", "b", "c", "d", "e"], highlights: { 0: "success", 2: "success", 4: "success" } },
+        { type: "array", label: "text2 (matched)", values: ["a", "c", "e"], highlights: { 0: "success", 1: "success", 2: "success" } },
+        { type: "variables", entries: [{ name: "LCS", value: '"ace"' }, { name: "return", value: 3, highlight: true }] },
       ],
     },
   ],

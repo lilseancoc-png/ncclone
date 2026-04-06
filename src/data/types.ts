@@ -101,6 +101,41 @@ export interface LinkedListVisualState {
   cycle?: number; // index that the tail points back to (for cycle detection problems)
 }
 
+export interface MatrixCellState {
+  value: string | number;
+  highlight?: string;
+  label?: string;
+}
+
+export interface MatrixVisualState {
+  type: "matrix";
+  label?: string;
+  rows: MatrixCellState[][];
+  colHeaders?: (string | number)[];
+  rowHeaders?: (string | number)[];
+}
+
+export interface GraphNodeState {
+  id: string | number;
+  label?: string;
+  highlight?: string;
+}
+
+export interface GraphEdgeState {
+  from: string | number;
+  to: string | number;
+  highlight?: string;
+  label?: string;
+}
+
+export interface GraphVisualState {
+  type: "graph";
+  label?: string;
+  nodes: GraphNodeState[];
+  edges: GraphEdgeState[];
+  directed?: boolean;
+}
+
 export type DataStructureState =
   | ArrayVisualState
   | SetVisualState
@@ -108,7 +143,9 @@ export type DataStructureState =
   | StackVisualState
   | VariableVisualState
   | TreeVisualState
-  | LinkedListVisualState;
+  | LinkedListVisualState
+  | MatrixVisualState
+  | GraphVisualState;
 
 export interface AnimationStep {
   description: string;
