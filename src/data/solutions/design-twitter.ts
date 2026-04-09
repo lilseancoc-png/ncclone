@@ -34,32 +34,32 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "Design Twitter with: postTweet, getNewsFeed (10 most recent from user + followees), follow, unfollow. Store tweets per user with timestamps. For news feed, use a max-heap (merge k sorted lists pattern) to get the 10 most recent across all followed users.",
+          "Design a simplified Twitter with four operations: postTweet (post a tweet), getNewsFeed (get 10 most recent tweets from user and their followees), follow, and unfollow. The core challenge is getNewsFeed: merging multiple users' tweet streams into a single sorted feed. This is exactly the 'merge k sorted lists' pattern! Each user's tweets are sorted by time, and we need the top 10 across all k followed users. A max-heap (negate timestamps for Python's min-heap) efficiently selects the most recent.",
         codeHighlightLines: [1, 2, 3, 4, 5],
         structures: [
           {
             type: "hashmap",
-            label: "tweets",
+            label: "tweets (userId → [(time, tweetId)])",
             entries: [],
           },
           {
             type: "hashmap",
-            label: "following",
+            label: "following (userId → set of followees)",
             entries: [],
           },
         ],
       },
       {
         description:
-          "User 1 posts tweet 5, then tweet 3. User 2 posts tweet 9. User 1 follows user 2. Each tweet gets an incrementing timestamp for ordering.",
+          "User 1 posts tweet 5 (time=0), then tweet 3 (time=1). User 2 posts tweet 9 (time=2). User 1 follows user 2. Each tweet gets a monotonically increasing timestamp so we can always determine recency. Tweets are appended to a per-user list, so each user's tweets are already sorted by time. This is the 'pre-sorted streams' property that makes the heap merge efficient.",
         codeHighlightLines: [7, 8, 9],
         structures: [
           {
             type: "hashmap",
             label: "tweets",
             entries: [
-              ["user1", "[(0,5), (1,3)]"],
-              ["user2", "[(2,9)]"],
+              ["user1", "[(0, tweet5), (1, tweet3)]"],
+              ["user2", "[(2, tweet9)]"],
             ],
             highlightKeys: ["user1", "user2"],
           },
@@ -72,18 +72,18 @@ const solutions: SolutionData[] = [
       },
       {
         description:
-          "getNewsFeed(1): User 1 follows {self, user2}. Push most recent tweet from each: (-2, 9, user2) and (-1, 3, user1). Pop (-2, 9) → feed=[9]. Push user2's prev if exists. Pop (-1, 3) → feed=[9,3]. Push (-0, 5). Pop (0, 5) → feed=[9,3,5].",
+          "getNewsFeed(1): User 1 follows {self, user2}. Initialize heap with each user's MOST RECENT tweet: user1's latest = (time=1, tweet3), user2's latest = (time=2, tweet9). Push as negated times: (-2, 9, user2, idx=0) and (-1, 3, user1, idx=1). Pop (-2, 9) → feed=[9]. User2 has no earlier tweets, nothing to push. Pop (-1, 3) → feed=[9,3]. Push user1's previous: (-0, 5, user1, idx=0). Pop (-0, 5) → feed=[9,3,5]. This lazy expansion avoids loading all tweets upfront — we only fetch tweets as needed, up to 10. Time: O(k log k) where k = number of followees.",
         codeHighlightLines: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
         structures: [
           {
             type: "array",
-            label: "news feed",
+            label: "news feed (most recent first)",
             values: [9, 3, 5],
             highlights: { 0: "success", 1: "success", 2: "success" },
           },
           {
             type: "variables",
-            entries: [{ name: "return", value: "[9, 3, 5]", highlight: true }],
+            entries: [{ name: "return", value: "[9, 3, 5]", highlight: true }, { name: "getNewsFeed", value: "O(k log k)" }, { name: "pattern", value: "merge k sorted lists" }],
           },
         ],
       },

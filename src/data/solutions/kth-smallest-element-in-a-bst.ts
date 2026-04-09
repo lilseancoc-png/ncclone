@@ -20,41 +20,40 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Find the kth smallest element in a BST. Key insight: inorder traversal of a BST visits nodes in sorted (ascending) order. So the kth node visited in inorder is the kth smallest. We use an explicit stack to simulate the recursion. Tree: [3, 1, 4, null, 2], k=1.",
+        "Find the kth smallest element in a Binary Search Tree. The fundamental BST property guarantees that inorder traversal (left → node → right) visits nodes in ascending sorted order. So the kth node visited in inorder is the kth smallest. Rather than collecting all values and sorting (O(n) space), we use an iterative approach with an explicit stack that can stop early after finding exactly k elements. This gives O(H+k) time — potentially much better than O(n) for small k. Tree: [3, 1, 4, null, 2], k=1.",
       codeHighlightLines: [1, 2, 3, 4],
       structures: [
-        { type: "tree", label: "tree", nodes: [{ value: 3 }, { value: 1 }, { value: 4 }, null, { value: 2 }] },
+        { type: "tree", label: "BST", nodes: [{ value: 3 }, { value: 1 }, { value: 4 }, null, { value: 2 }] },
         { type: "stack", label: "stack", values: [] },
-        { type: "variables", entries: [{ name: "k", value: 1 }, { name: "count", value: 0 }, { name: "curr", value: 3 }] },
+        { type: "variables", entries: [{ name: "k", value: 1 }, { name: "count", value: 0 }, { name: "inorder visits", value: "1 → 2 → 3 → 4" }] },
       ],
     },
     {
       description:
-        "Go as far left as possible: push 3, then 1 onto the stack (1 has no left child). This reaches the smallest element first. Now pop 1 from the stack — this is the first node in inorder. count becomes 1.",
+        "The iterative inorder pattern: go as far left as possible (pushing nodes onto the stack), then pop to visit, then move right. Starting at root 3: push 3, go left to 1, push 1, go left — null, stop. The stack holds [3, 1]. Pop 1 — this is the first node visited in inorder (the smallest element in the BST). Increment count to 1. In a BST, the leftmost node is always the minimum.",
       codeHighlightLines: [5, 6, 7, 8, 9],
       structures: [
-        { type: "tree", label: "tree", nodes: [{ value: 3 }, { value: 1, highlight: "active" }, { value: 4 }, null, { value: 2 }] },
+        { type: "tree", label: "BST", nodes: [{ value: 3 }, { value: 1, highlight: "active" }, { value: 4 }, null, { value: 2 }] },
         { type: "stack", label: "stack", values: ["3"], topHighlight: false },
-        { type: "variables", entries: [{ name: "popped", value: 1, highlight: true }, { name: "count", value: 1, highlight: true }] },
+        { type: "variables", entries: [{ name: "popped", value: 1, highlight: true }, { name: "count", value: 1 }, { name: "visited order", value: "[1]" }] },
       ],
     },
     {
       description:
-        "Check: count (1) == k (1)? YES! Return curr.val = 1. The first node in inorder traversal is node 1 — the smallest element. We didn't need to traverse the entire tree, just H steps down + k pops.",
+        "Check: count (1) == k (1)? YES! Return curr.val = 1 immediately. We found the 1st smallest without visiting the entire tree — just went left twice (H=2 steps) and popped once (k=1). If k were 3, we'd continue: after visiting 1, move to its right child (2), visit 2 (count=2), then pop 3 from the stack (count=3), and return 3.",
       codeHighlightLines: [10, 11],
       structures: [
-        { type: "tree", label: "tree", nodes: [{ value: 3 }, { value: 1, highlight: "success" }, { value: 4 }, null, { value: 2 }] },
-        { type: "stack", label: "stack", values: ["3"] },
+        { type: "tree", label: "BST", nodes: [{ value: 3 }, { value: 1, highlight: "success" }, { value: 4 }, null, { value: 2 }] },
         { type: "variables", entries: [{ name: "count == k?", value: "1 == 1 ✓", highlight: true }, { name: "return", value: 1, highlight: true }] },
       ],
     },
     {
       description:
-        "Return 1. Inorder traversal of this BST would visit: 1 → 2 → 3 → 4. The 1st smallest is 1. Time: O(H + k) — we go H steps deep, then pop k times. Space: O(H) for the stack holding at most H nodes (the height of the tree).",
+        "Return 1. The full inorder sequence would be 1→2→3→4, but we stopped after just 1 visit. Time: O(H + k) where H is tree height — we descend H levels to reach the leftmost node, then pop k nodes. For a balanced BST, H = log n, so finding the smallest is O(log n). For k=n (finding the largest), it degrades to O(n). Space: O(H) for the stack — in the worst case (skewed tree), this is O(n), but for balanced trees it's O(log n).",
       codeHighlightLines: [11],
       structures: [
-        { type: "array", label: "inorder", values: [1, 2, 3, 4], highlights: { 0: "success" } },
-        { type: "variables", entries: [{ name: "kth smallest", value: 1, highlight: true }, { name: "time", value: "O(H + k)" }, { name: "space", value: "O(H)" }] },
+        { type: "array", label: "inorder traversal", values: [1, 2, 3, 4], highlights: { 0: "success" } },
+        { type: "variables", entries: [{ name: "kth smallest", value: 1, highlight: true }, { name: "Time", value: "O(H + k)" }, { name: "Space", value: "O(H)" }] },
       ],
     },
   ],

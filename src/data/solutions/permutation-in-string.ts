@@ -30,38 +30,38 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        'Check if s2 contains a permutation of s1. Use a fixed-size sliding window (size = len(s1)) and compare character frequencies. s1="ab", s2="eidbaooo".',
-      codeHighlightLines: [1, 2, 3, 4, 5, 6, 7],
+        'Check if any permutation of s1 exists as a contiguous substring of s2. A permutation has the same characters in any order, so we need a substring of s2 with identical character frequencies to s1. The brute-force approach generates all permutations — O(n!). Instead, use a fixed-size sliding window of length len(s1) and track character frequencies. The clever optimization: maintain a "matches" counter (how many of 26 letters have equal counts), so each window slide is O(1). s1="ab", s2="eidbaooo".',
+      codeHighlightLines: [1, 2, 3, 4, 5, 6, 7, 8, 9],
       structures: [
         { type: "array", label: "s1", values: ["a", "b"] },
         { type: "array", label: "s2", values: ["e", "i", "d", "b", "a", "o", "o", "o"] },
-        { type: "variables", entries: [{ name: "window size", value: 2 }, { name: "s1_count", value: "{a:1, b:1}" }] },
+        { type: "variables", entries: [{ name: "window size", value: 2 }, { name: "s1_count", value: "{a:1, b:1}" }, { name: "matches goal", value: "all 26 letters have equal counts" }] },
       ],
     },
     {
       description:
-        'Initial window "ei": s2_count={e:1,i:1}. Doesn\'t match s1_count={a:1,b:1}. Slide window right. "id"→no. "db"→no.',
-      codeHighlightLines: [8, 9, 10],
+        'Initialize: count frequencies of first window "ei" in s2. s2_count = {e:1, i:1}. Compare all 26 letters: for most letters both counts are 0 (match!), but for a, b, e, i the counts differ. matches < 26. Slide the window: add right char, remove left char, update matches in O(1). Window "id" → no match. Window "db" → no match. Each slide adds one char and removes one, adjusting at most 2 of the 26 letter counts.',
+      codeHighlightLines: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
       structures: [
         { type: "array", label: "s2", values: ["e", "i", "d", "b", "a", "o", "o", "o"], highlights: { 0: "checked", 1: "checked", 2: "checked", 3: "checked" } },
-        { type: "variables", entries: [{ name: "window", value: '"db"' }, { name: "matches", value: "not 26 yet" }] },
+        { type: "variables", entries: [{ name: "window 'ei'", value: "no match" }, { name: "window 'id'", value: "no match" }, { name: "window 'db'", value: "no match" }] },
       ],
     },
     {
       description:
-        'Window slides to "ba" (indices 3-4): s2_count={b:1,a:1} matches s1_count={a:1,b:1}. All 26 character counts match → matches==26!',
-      codeHighlightLines: [11, 12, 13, 14, 15],
+        'Window slides to "ba" (indices 3-4): add \'a\' (s2_count[a] goes to 1, now matches s1_count[a]=1 → matches++). Remove \'d\' (s2_count[d] goes to 0, matches s1_count[d]=0 → matches++). s2_count = {b:1, a:1} = s1_count. All 26 character counts now match → matches == 26! A permutation of "ab" is found: "ba". We don\'t need to check the remaining windows.',
+      codeHighlightLines: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
       structures: [
         { type: "array", label: "s2", values: ["e", "i", "d", "b", "a", "o", "o", "o"], highlights: { 3: "success", 4: "success" } },
-        { type: "variables", entries: [{ name: "window", value: '"ba"' }, { name: "matches", value: 26, highlight: true }] },
+        { type: "variables", entries: [{ name: "window 'ba'", value: "{b:1, a:1}" }, { name: "matches", value: "26 — all equal!", highlight: true }] },
       ],
     },
     {
       description:
-        'Return True — "ba" is a permutation of "ab". O(n) time: each char added/removed in O(1) with the matches counter. O(1) space: only 26-element arrays.',
+        'Return True — "ba" at index 3 is a permutation of "ab". The matches counter is the key optimization: instead of comparing all 26 counts each time (O(26) per slide), we maintain the count incrementally. When adding/removing a char, only that letter\'s match status changes. This gives true O(1) per slide and O(n) overall. Space: O(1) — two fixed 26-element arrays regardless of input size.',
       codeHighlightLines: [22],
       structures: [
-        { type: "variables", entries: [{ name: "return", value: true, highlight: true }, { name: "permutation found", value: '"ba" at index 3' }] },
+        { type: "variables", entries: [{ name: "return", value: true, highlight: true }, { name: "found", value: '"ba" at index 3' }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(1)" }] },
       ],
     },
   ],
