@@ -17,42 +17,42 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Find minimum rooms needed for [[0,30],[5,10],[15,20]]. Sort by start time. Use a min-heap to track end times of ongoing meetings. Heap size = rooms in use.",
+        "Find the minimum number of conference rooms needed for all meetings. The key insight: process meetings in order of start time. Use a min-heap to track when each room becomes free (its meeting's end time). If the next meeting starts after the earliest ending room is free, reuse that room. Otherwise, allocate a new room. intervals=[[0,30],[5,10],[15,20]].",
       codeHighlightLines: [1, 2, 3, 4],
       structures: [
-        { type: "array", label: "intervals (sorted)", values: ["[0,30]", "[5,10]", "[15,20]"] },
-        { type: "array", label: "heap (end times)", values: [] },
-        { type: "variables", entries: [{ name: "rooms", value: 0 }] },
+        { type: "array", label: "intervals (sorted by start)", values: ["[0,30]", "[5,10]", "[15,20]"] },
+        { type: "stack", label: "heap (end times of active rooms)", values: [] },
+        { type: "variables", entries: [{ name: "rooms needed", value: 0 }] },
       ],
     },
     {
       description:
-        "Meeting [0,30]: heap is empty, so push end time 30. This meeting needs a new room. 1 room in use.",
+        "Meeting [0,30]: Heap is empty — no rooms available. Push end time 30 (allocate room 1). The heap now represents: 'room 1 is busy until time 30'. Heap size = 1 = rooms in use.",
       codeHighlightLines: [5, 8, 9],
       structures: [
-        { type: "array", label: "intervals", values: ["[0,30]", "[5,10]", "[15,20]"], highlights: { 0: "active" }, pointers: [{ index: 0, label: "i" }] },
-        { type: "array", label: "heap (end times)", values: [30], highlights: { 0: "active" } },
-        { type: "variables", entries: [{ name: "rooms", value: 1 }] },
+        { type: "array", label: "intervals", values: ["[0,30]", "[5,10]", "[15,20]"], highlights: { 0: "active" } },
+        { type: "stack", label: "heap (min-heap of end times)", values: [30] },
+        { type: "variables", entries: [{ name: "rooms in use", value: 1 }, { name: "action", value: "new room (heap was empty)" }] },
       ],
     },
     {
       description:
-        "Meeting [5,10]: start=5 < heap[0]=30 — the earliest ending meeting hasn't finished yet. Push end time 10. Need a second room! 2 rooms in use.",
+        "Meeting [5,10]: Start time 5. Is 5 >= heap[0]=30 (earliest room frees at 30)? NO — no room is free yet. Push end time 10 (allocate room 2). Heap = [10, 30]. Two meetings are happening simultaneously. Peak rooms = 2.",
       codeHighlightLines: [5, 6, 8, 9],
       structures: [
-        { type: "array", label: "intervals", values: ["[0,30]", "[5,10]", "[15,20]"], highlights: { 0: "checked", 1: "active" }, pointers: [{ index: 1, label: "i" }] },
-        { type: "array", label: "heap (end times)", values: [10, 30], highlights: { 0: "active", 1: "active" } },
-        { type: "variables", entries: [{ name: "start < heap[0]?", value: "5 < 30 = Yes", highlight: true }, { name: "rooms", value: 2 }] },
+        { type: "array", label: "intervals", values: ["[0,30]", "[5,10]", "[15,20]"], highlights: { 0: "checked", 1: "active" } },
+        { type: "stack", label: "heap", values: [10, 30], topHighlight: true },
+        { type: "variables", entries: [{ name: "5 >= 30?", value: "No → new room needed", highlight: true }, { name: "rooms in use", value: 2 }] },
       ],
     },
     {
       description:
-        "Meeting [15,20]: start=15 >= heap[0]=10 — a room freed up! Replace 10 with 20 (reuse that room). Heap=[20,30], still 2 rooms. Final answer: 2 rooms needed.",
+        "Meeting [15,20]: Start time 15. Is 15 >= heap[0]=10? YES — room with end time 10 is free! Use heapreplace: remove 10, push 20. We're reusing that room. Heap = [20, 30]. Still 2 rooms, not 3. All meetings processed. Return len(heap) = 2. The heap size at the end equals the maximum number of concurrent meetings. Time: O(n log n) for sorting + heap operations. Space: O(n) for the heap.",
       codeHighlightLines: [5, 6, 7, 10],
       structures: [
-        { type: "array", label: "intervals", values: ["[0,30]", "[5,10]", "[15,20]"], highlights: { 0: "checked", 1: "checked", 2: "success" }, pointers: [{ index: 2, label: "i" }] },
-        { type: "array", label: "heap (end times)", values: [20, 30], highlights: { 0: "success", 1: "success" } },
-        { type: "variables", entries: [{ name: "start >= heap[0]?", value: "15 >= 10 = Yes (reuse!)", highlight: true }, { name: "return", value: 2, highlight: true }] },
+        { type: "array", label: "intervals", values: ["[0,30]", "[5,10]", "[15,20]"], highlights: { 0: "checked", 1: "checked", 2: "success" } },
+        { type: "stack", label: "heap", values: [20, 30] },
+        { type: "variables", entries: [{ name: "15 >= 10?", value: "Yes → reuse room!", highlight: true }, { name: "return", value: 2, highlight: true }, { name: "Time", value: "O(n log n)" }] },
       ],
     },
   ],

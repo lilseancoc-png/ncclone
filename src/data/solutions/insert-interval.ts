@@ -26,38 +26,38 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Insert a new interval into a sorted list and merge if necessary. Three phases: add before, merge overlaps, add after. intervals=[[1,3],[6,9]], newInterval=[2,5].",
+        "Insert a new interval into a sorted, non-overlapping list of intervals and merge any overlaps. The elegant approach: three linear passes in one sweep. Phase 1: add all intervals that end BEFORE the new one starts (no overlap possible). Phase 2: merge all intervals that overlap with the new one. Phase 3: add all intervals that start AFTER the new one ends. intervals=[[1,3],[6,9]], newInterval=[2,5].",
       codeHighlightLines: [1, 2, 3, 4],
       structures: [
         { type: "array", label: "intervals", values: ["[1,3]", "[6,9]"] },
-        { type: "variables", entries: [{ name: "newInterval", value: "[2,5]", highlight: true }] },
+        { type: "variables", entries: [{ name: "newInterval", value: "[2,5]", highlight: true }, { name: "result", value: "[]" }] },
       ],
     },
     {
       description:
-        "Phase 1: Add intervals ending before new starts. [1,3] ends at 3, new starts at 2. 3 >= 2, so [1,3] is NOT before — skip to merge phase.",
+        "Phase 1 — Add before: Check if intervals[0]=[1,3] ends before newInterval starts. Does 3 < 2? No! So [1,3] is NOT entirely before [2,5] — they might overlap. Skip to Phase 2. (If intervals were [[0,1],[6,9]], then [0,1] ends at 1 < 2, so it would be added to result.)",
       codeHighlightLines: [5, 6, 7, 8],
       structures: [
         { type: "array", label: "intervals", values: ["[1,3]", "[6,9]"], highlights: { 0: "active" } },
-        { type: "variables", entries: [{ name: "result", value: "[]" }, { name: "i", value: 0 }, { name: "check", value: "3 < 2? No → merge" }] },
+        { type: "variables", entries: [{ name: "3 < 2?", value: "No → not before, check overlap" }, { name: "result", value: "[]" }, { name: "i", value: 0 }] },
       ],
     },
     {
       description:
-        "Phase 2: Merge overlaps. [1,3] overlaps [2,5] → merged to [1,5]. Next: [6,9] starts at 6 > 5, no overlap. Add merged [1,5] to result.",
+        "Phase 2 — Merge overlaps: Does [1,3] overlap [2,5]? Check: intervals[0][0]=1 <= newInterval[1]=5? Yes → overlap! Merge: new start = min(2,1) = 1, new end = max(5,3) = 5. newInterval becomes [1,5]. Next: does [6,9] overlap [1,5]? Check: 6 <= 5? No → stop merging. Append merged [1,5] to result.",
       codeHighlightLines: [9, 10, 11, 12, 13, 14],
       structures: [
         { type: "array", label: "result so far", values: ["[1,5]"], highlights: { 0: "success" } },
-        { type: "variables", entries: [{ name: "merged", value: "[1,5]", highlight: true }, { name: "i", value: 1 }] },
+        { type: "variables", entries: [{ name: "merge [1,3] + [2,5]", value: "[1,5]", highlight: true }, { name: "[6,9] overlap [1,5]?", value: "6 <= 5? No → stop" }] },
       ],
     },
     {
       description:
-        "Phase 3: Add remaining. [6,9] comes after merged interval, add it as-is. Result: [[1,5],[6,9]]. O(n) time — single pass through the list.",
+        "Phase 3 — Add remaining: [6,9] starts after the merged interval ends, so add it as-is. Result: [[1,5],[6,9]]. The three-phase approach handles all edge cases cleanly: new interval before all, after all, overlapping multiple intervals, or no overlaps. Time: O(n) — single pass, each interval examined once. Space: O(n) for the result array.",
       codeHighlightLines: [15, 16, 17, 18, 19],
       structures: [
-        { type: "array", label: "result", values: ["[1,5]", "[6,9]"], highlights: { 0: "success", 1: "success" } },
-        { type: "variables", entries: [{ name: "return", value: "[[1,5],[6,9]]", highlight: true }] },
+        { type: "array", label: "final result", values: ["[1,5]", "[6,9]"], highlights: { 0: "success", 1: "success" } },
+        { type: "variables", entries: [{ name: "return", value: "[[1,5],[6,9]]", highlight: true }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(n)" }] },
       ],
     },
   ],
