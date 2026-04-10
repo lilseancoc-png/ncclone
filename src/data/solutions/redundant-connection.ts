@@ -30,41 +30,40 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Find the edge that creates a cycle in an undirected graph. Union-Find: each node starts as its own parent. For each edge, union the two nodes. If they already share a root, that edge creates a cycle. edges = [[1,2],[1,3],[2,3]].",
+        "Given a graph that is a tree plus one extra edge, find and return that redundant edge (the one that creates a cycle). A tree with n nodes has exactly n-1 edges. We're given n edges, so exactly one creates a cycle. Union-Find detects cycles efficiently: process edges one by one, merging components. When both endpoints of an edge are already in the same component, that edge would create a cycle — it's the redundant one. edges = [[1,2],[1,3],[2,3]].",
       codeHighlightLines: [1, 2, 3],
       structures: [
-        { type: "array", label: "parent", values: ["_", 1, 2, 3], highlights: { 1: "active", 2: "active", 3: "active" } },
+        { type: "array", label: "parent (each node is own root)", values: ["_", 1, 2, 3], highlights: { 1: "active", 2: "active", 3: "active" } },
         { type: "array", label: "rank", values: ["_", 0, 0, 0], highlights: {} },
         { type: "array", label: "edges", values: ["[1,2]", "[1,3]", "[2,3]"], highlights: {} },
       ],
     },
     {
       description:
-        "Process edge [1,2]: find(1)=1, find(2)=2. Different roots — union them. parent[2]=1. Process edge [1,3]: find(1)=1, find(3)=3. Different — union. parent[3]=1.",
-      codeHighlightLines: [9, 10, 11, 14, 15, 16, 17, 20, 21],
+        "Edge [1,2]: find(1)=1, find(2)=2 — different roots, so they're in separate components. Union them: parent[2]=1, rank[1]++ = 1. Nodes 1 and 2 are now connected. Edge [1,3]: find(1)=1, find(3)=3 — different roots. Union: parent[3]=1. Now all three nodes are in one component. Each union operation is nearly O(1) thanks to path compression (find flattens the tree) and union by rank (shorter tree attached under taller).",
+      codeHighlightLines: [5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
       structures: [
         { type: "array", label: "parent", values: ["_", 1, 1, 1], highlights: { 2: "checked", 3: "checked" } },
         { type: "array", label: "rank", values: ["_", 1, 0, 0], highlights: { 1: "active" } },
-        { type: "array", label: "edges", values: ["[1,2]", "[1,3]", "[2,3]"], highlights: { 0: "success", 1: "success" } },
+        { type: "array", label: "edges processed", values: ["[1,2] ✓", "[1,3] ✓", "[2,3]"], highlights: { 0: "success", 1: "success" } },
       ],
     },
     {
       description:
-        "Process edge [2,3]: find(2) follows path compression 2→1, find(3) follows 3→1. Both have root 1 — same component! This edge creates a cycle. Return [2,3].",
+        "Edge [2,3]: find(2) → parent[2]=1, so root is 1. find(3) → parent[3]=1, root is 1. Both endpoints have the SAME root — they're already connected! Adding this edge would create a cycle: 1-2-3-1. This is the redundant edge. Return [2,3] immediately. Path compression also applied: any long chains get flattened during find(), keeping future lookups fast.",
       codeHighlightLines: [10, 11, 12, 21, 22],
       structures: [
         { type: "array", label: "parent", values: ["_", 1, 1, 1], highlights: { 1: "found", 2: "found", 3: "found" } },
-        { type: "array", label: "edges", values: ["[1,2]", "[1,3]", "[2,3]"], highlights: { 2: "found" } },
-        { type: "variables", entries: [{ name: "find(2)", value: "1" }, { name: "find(3)", value: "1" }, { name: "same root?", value: "YES — cycle!", highlight: true }] },
+        { type: "variables", entries: [{ name: "find(2)", value: "root = 1" }, { name: "find(3)", value: "root = 1" }, { name: "same root!", value: "cycle detected → [2,3] is redundant", highlight: true }] },
       ],
     },
     {
       description:
-        "Return [2,3] — the redundant edge. Union-Find with path compression and union by rank runs in O(alpha(n)) per operation, nearly O(1). Total time: O(n*alpha(n)).",
+        "Return [2,3]. Without this edge, the graph is a valid tree: 1-2 and 1-3 (two edges connecting three nodes). Union-Find with path compression and union by rank achieves O(α(n)) per operation, where α is the inverse Ackermann function — effectively constant. Total time: O(n·α(n)) ≈ O(n). Space: O(n) for the parent and rank arrays. If multiple edges could be redundant, the problem guarantees we return the one appearing last in the input.",
       codeHighlightLines: [22],
       structures: [
         { type: "array", label: "edges", values: ["[1,2]", "[1,3]", "[2,3]"], highlights: { 0: "success", 1: "success", 2: "found" } },
-        { type: "variables", entries: [{ name: "return", value: "[2, 3]", highlight: true }] },
+        { type: "variables", entries: [{ name: "return", value: "[2, 3]", highlight: true }, { name: "Time", value: "O(n · α(n)) ≈ O(n)" }, { name: "Space", value: "O(n)" }] },
       ],
     },
   ],
