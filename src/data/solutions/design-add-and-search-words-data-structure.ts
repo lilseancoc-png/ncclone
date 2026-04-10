@@ -37,40 +37,74 @@ class WordDictionary:
   steps: [
     {
       description:
-        'Like a Trie, but search supports "." wildcard matching any character. We use DFS to explore all branches when we hit a dot. Add "bad", "dad", "mad".',
-      codeHighlightLines: [1, 2, 3, 4, 9, 10, 11, 12, 13, 14],
+        "Design a data structure supporting addWord and search, where search can contain '.' wildcards matching any character. A regular hash set can't handle wildcards efficiently. A Trie (prefix tree) lets us walk character by character, and when we hit '.', we branch into ALL children using DFS.",
+      codeHighlightLines: [1, 2, 3, 4, 6, 7, 8],
       structures: [
-        { type: "array", label: "words", values: ["bad", "dad", "mad"] },
-        { type: "variables", entries: [{ name: "trie", value: "3 words inserted" }] },
+        { type: "variables", entries: [{ name: "root", value: "TrieNode (empty)" }, { name: "'.' wildcard", value: "matches any single character" }] },
       ],
     },
     {
       description:
-        'Search "pad": traverse p — not in root.children → return False. Search "bad": traverse b→a→d, is_end=True → return True.',
-      codeHighlightLines: [24, 25],
+        'addWord("bad"): Walk from root, creating nodes: root→b→a→d. Mark d.is_end=True. addWord("dad"): root→d→a→d. addWord("mad"): root→m→a→d. The trie now has 3 branches from root (b, d, m), sharing the "ad" suffix pattern.',
+      codeHighlightLines: [10, 11, 12, 13, 14, 15],
+      structures: [
+        {
+          type: "hashmap",
+          label: "trie structure (root children → paths)",
+          entries: [
+            ["b", "b → a → d*"],
+            ["d", "d → a → d*"],
+            ["m", "m → a → d*"],
+          ],
+          highlightKeys: ["b", "d", "m"],
+        },
+        { type: "variables", entries: [{ name: "words added", value: "bad, dad, mad" }, { name: "* = is_end", value: "complete word marker" }] },
+      ],
+    },
+    {
+      description:
+        'search("pad"): Start at root, look for child \'p\'. Root has children {b, d, m} — no \'p\'! Return False immediately. search("bad"): root→b (found)→a (found)→d (found, is_end=True). Return True. Exact matches work like a standard Trie lookup.',
+      codeHighlightLines: [23, 24, 25],
       structures: [
         { type: "array", label: 'search "pad"', values: ["p", "a", "d"], highlights: { 0: "found" } },
         { type: "array", label: 'search "bad"', values: ["b", "a", "d"], highlights: { 0: "checked", 1: "checked", 2: "success" } },
-        { type: "variables", entries: [{ name: 'search("pad")', value: false }, { name: 'search("bad")', value: true, highlight: true }] },
+        { type: "variables", entries: [{ name: '"pad"', value: "False (no 'p' child)" }, { name: '"bad"', value: "True (exact match)", highlight: true }] },
       ],
     },
     {
       description:
-        'Search ".ad": dot at index 0 matches any char. DFS tries all children: b→a→d (is_end=True, found!). The wildcard branches to b, d, and m.',
+        'search(".ad"): The "." at position 0 means try ALL children of root. DFS tries child \'b\': walk b→a→d, is_end=True — match found! Return True immediately (no need to try d or m). The "." triggers branching: we explore every possible character at that position.',
       codeHighlightLines: [18, 19, 20, 21, 22],
       structures: [
         { type: "array", label: 'search ".ad"', values: [".", "a", "d"], highlights: { 0: "active" } },
-        { type: "array", label: "branches tried", values: ["b→a→d", "d→a→d", "m→a→d"], highlights: { 0: "success", 1: "success", 2: "success" } },
-        { type: "variables", entries: [{ name: 'search(".ad")', value: true, highlight: true }, { name: "note", value: "all 3 match!" }] },
+        {
+          type: "hashmap",
+          label: "DFS branches at '.'",
+          entries: [
+            ["try 'b'", "b→a→d* ✓ MATCH!"],
+            ["try 'd'", "(not needed)"],
+            ["try 'm'", "(not needed)"],
+          ],
+          highlightKeys: ["try 'b'"],
+        },
+        { type: "variables", entries: [{ name: "result", value: "True (found via 'b' branch)", highlight: true }] },
       ],
     },
     {
       description:
-        'Search "b..": b exists, then "." matches a, then "." matches d → True. Worst case with all dots is O(26^n), but typical usage is much faster. addWord is always O(n).',
+        'search("b.."): \'b\' matches exactly → walk to b node. First "." at position 1: b has child \'a\', try it. Second "." at position 2: a has child \'d\', try it. is_end=True → match! search("..d"): both dots branch, all 3 paths (bad, dad, mad) reach \'d\' with is_end=True.',
       codeHighlightLines: [18, 19, 20, 21, 22, 23, 24, 25, 26],
       structures: [
         { type: "array", label: 'search "b.."', values: ["b", ".", "."], highlights: { 0: "checked", 1: "active", 2: "active" } },
-        { type: "variables", entries: [{ name: 'search("b..")', value: true, highlight: true }, { name: "time (add)", value: "O(n)" }, { name: "time (search)", value: "O(26^n) worst" }] },
+        { type: "variables", entries: [{ name: '"b.."', value: "True (b→a→d)", highlight: true }, { name: '"..d"', value: "True (all 3 words match)" }] },
+      ],
+    },
+    {
+      description:
+        'Why Trie over hash set? A hash set needs O(26^k) to try all possible words for k wildcards. A Trie prunes branches early — if no words start with the matched prefix so far, that branch dies immediately. addWord: O(n) — just walks the trie. search without dots: O(n). search with dots: O(26^n) worst case (all dots, wide trie), but typically much faster due to pruning. Space: O(total characters across all words).',
+      codeHighlightLines: [27],
+      structures: [
+        { type: "variables", entries: [{ name: "addWord", value: "O(n)" }, { name: "search (no dots)", value: "O(n)" }, { name: "search (dots)", value: "O(26^n) worst, usually fast", highlight: true }, { name: "Space", value: "O(total chars)" }] },
       ],
     },
   ],
