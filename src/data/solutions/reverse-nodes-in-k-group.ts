@@ -27,56 +27,80 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "Reverse a linked list in groups of k nodes. If fewer than k nodes remain at the end, leave them as-is. This is one of the hardest linked list problems because it combines three challenges: (1) counting k nodes ahead, (2) reversing a sublist in-place, and (3) reconnecting the reversed group with both the previous group and the next. A dummy node simplifies tracking the connection point. List: 1→2→3→4→5, k=2.",
+          "Reverse a linked list in groups of k. If fewer than k nodes remain, leave them as-is. This combines three operations per group: (1) count k nodes ahead, (2) reverse the sublist in-place, (3) reconnect with previous and next groups. A dummy node handles the edge case of the first group. List: 1→2→3→4→5, k=2.",
         codeHighlightLines: [1, 2, 3],
         structures: [
           {
             type: "linkedlist",
-            label: "linked list",
-            nodes: [{ value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }, { value: 5 }],
+            label: "original list",
+            nodes: [{ value: "d", label: "prev_group" }, { value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }, { value: 5 }],
           },
           { type: "variables", entries: [{ name: "k", value: 2 }, { name: "groups", value: "[1,2] [3,4] [5]" }] },
         ],
       },
       {
         description:
-          "Group 1 — nodes [1,2]: First, advance kth pointer k=2 steps from prev_group to find node 2 (the group's tail). Save next_group = node 3. Now reverse k nodes: start with prev=next_group (so reversed tail points to the next group), curr=node 1. Iteration 1: 1.next → node 3, prev=1, curr=2. Iteration 2: 2.next → 1, prev=2, curr=3. Now reconnect: prev_group.next = kth (node 2, new group head). The old group head (node 1) becomes the new group tail, so prev_group = node 1.",
-        codeHighlightLines: [5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+          "Group 1 — Find the kth node: advance kth pointer k=2 steps from prev_group (dummy). kth lands on node 2 — this is the tail of group 1. Save next_group = node 3 (start of next group). Now prepare for reversal: prev = next_group (so reversed tail points forward), curr = prev_group.next (node 1, start of group).",
+        codeHighlightLines: [5, 6, 7, 8, 10, 11],
+        structures: [
+          {
+            type: "linkedlist",
+            label: "group 1 identified",
+            nodes: [{ value: "d", label: "prev_group" }, { value: 1, highlight: "active", label: "curr" }, { value: 2, highlight: "active", label: "kth" }, { value: 3, label: "next_group" }, { value: 4 }, { value: 5 }],
+          },
+          { type: "variables", entries: [{ name: "prev", value: "node 3 (next_group)" }, { name: "curr", value: "node 1" }] },
+        ],
+      },
+      {
+        description:
+          "Reverse group 1, iteration 1: Save tmp = curr.next (node 2). Point curr.next = prev (node 3). Now node 1 → node 3. Move prev = curr (node 1), curr = tmp (node 2). Iteration 2: Save tmp = curr.next (node 3). Point curr.next = prev (node 1). Now node 2 → node 1 → node 3. Move prev = node 2, curr = node 3. Reversal done — prev points to the new group head (node 2).",
+        codeHighlightLines: [12, 13, 14, 15, 16],
+        structures: [
+          {
+            type: "linkedlist",
+            label: "after reversing group 1",
+            nodes: [{ value: "d", label: "prev_group" }, { value: 2, highlight: "success", label: "prev (new head)" }, { value: 1, highlight: "success" }, { value: 3 }, { value: 4 }, { value: 5 }],
+          },
+          { type: "variables", entries: [{ name: "node 2.next", value: "→ node 1" }, { name: "node 1.next", value: "→ node 3", highlight: true }] },
+        ],
+      },
+      {
+        description:
+          "Reconnect group 1: prev_group.next = kth (node 2, new group head). The old head (node 1) is now the group tail. Set prev_group = node 1 (the new tail becomes the connection point for the next group). The list is now: dummy→2→1→3→4→5.",
+        codeHighlightLines: [17, 18, 19],
         structures: [
           {
             type: "linkedlist",
             label: "list after group 1",
-            nodes: [{ value: 2, highlight: "success", label: "new head" }, { value: 1, highlight: "success", label: "prev_group" }, { value: 3 }, { value: 4 }, { value: 5 }],
+            nodes: [{ value: "d" }, { value: 2, highlight: "success" }, { value: 1, highlight: "success", label: "prev_group" }, { value: 3 }, { value: 4 }, { value: 5 }],
           },
-          {
-            type: "variables",
-            entries: [{ name: "reversed", value: "[1,2] → [2,1]" }, { name: "prev_group", value: "node 1 (old head = new tail)", highlight: true }],
-          },
+          { type: "variables", entries: [{ name: "prev_group", value: "node 1 (old head = new tail)" }] },
         ],
       },
       {
         description:
-          "Group 2 — nodes [3,4]: Count k=2 from prev_group (node 1) → kth = node 4. Same process: reverse 3→4 to get 4→3. Reconnect: node 1.next = node 4, and node 3 points to node 5 (next_group). prev_group moves to node 3. Each group reversal is independent — the same 3-step pattern (count, reverse, reconnect) repeats.",
-        codeHighlightLines: [5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+          "Group 2 — Count k=2 from prev_group (node 1): kth = node 4. Same process: prev = node 5, curr = node 3. Reverse: node 3.next = node 5, then node 4.next = node 3. Reconnect: node 1.next = node 4. List: dummy→2→1→4→3→5. prev_group moves to node 3.",
+        codeHighlightLines: [5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
         structures: [
           {
             type: "linkedlist",
             label: "list after group 2",
-            nodes: [{ value: 2 }, { value: 1 }, { value: 4, highlight: "success" }, { value: 3, highlight: "success", label: "prev_group" }, { value: 5 }],
+            nodes: [{ value: "d" }, { value: 2 }, { value: 1 }, { value: 4, highlight: "success" }, { value: 3, highlight: "success", label: "prev_group" }, { value: 5 }],
           },
+          { type: "variables", entries: [{ name: "reversed", value: "[3,4] → [4,3]" }, { name: "prev_group", value: "node 3" }] },
         ],
       },
       {
         description:
-          "Group 3: Start counting from node 3. After 1 step we reach node 5, after 2 steps kth.next is null — only 1 node remains, which is less than k=2. Return dummy.next immediately (the incomplete group stays in original order). Final: 2→1→4→3→5. Each node is visited at most twice (once counting, once reversing), so Time: O(n). Space: O(1) — only pointer variables, no recursion or extra data structures.",
+          "Group 3: Count k=2 from node 3. After 1 step: kth = node 5. After 2 steps: kth.next is None — only 1 node remains, less than k=2. Return dummy.next immediately (incomplete group stays in original order). Final: 2→1→4→3→5. Time: O(n) — each node visited at most twice (once counting, once reversing). Space: O(1) — only pointer variables.",
         codeHighlightLines: [7, 8, 9],
         structures: [
           {
             type: "linkedlist",
             label: "final result",
-            nodes: [{ value: 2, highlight: "success" }, { value: 1, highlight: "success" }, { value: 4, highlight: "success" }, { value: 3, highlight: "success" }, { value: 5, highlight: "checked" }],
+            nodes: [{ value: 2, highlight: "success", label: "head" }, { value: 1, highlight: "success" }, { value: 4, highlight: "success" }, { value: 3, highlight: "success" }, { value: 5, highlight: "checked" }],
           },
-          { type: "variables", entries: [{ name: "return", value: "2→1→4→3→5", highlight: true }, { name: "node 5", value: "< k nodes, left as-is" }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(1)" }] },
+          { type: "variables", entries: [{ name: "return", value: "2→1→4→3→5", highlight: true }, { name: "node 5", value: "< k nodes, unchanged" }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(1)" }] },
         ],
       },
     ],

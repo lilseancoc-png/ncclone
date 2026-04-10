@@ -26,7 +26,7 @@ def swimInWater(grid):
     steps: [
       {
         description:
-          "Find the minimum time to swim from top-left (0,0) to bottom-right (n-1,n-1). At time t, you can swim through any cell with elevation ≤ t. The key insight: this is a shortest-path problem, but instead of minimizing total distance, we minimize the maximum elevation along the path. Use Dijkstra's algorithm with a min-heap — always expand the cell reachable with the lowest time. grid = [[0,2],[3,1]].",
+          "Find the minimum time to swim from (0,0) to (n-1,n-1). At time t, you can swim through any cell with elevation ≤ t. This is a shortest-path problem where we minimize the MAXIMUM elevation along the path (not total distance). Use Dijkstra's with a min-heap — always expand the cell reachable at the lowest time. grid = [[0,2],[3,1]].",
         codeHighlightLines: [3, 4, 5, 6],
         structures: [
           {
@@ -42,8 +42,8 @@ def swimInWater(grid):
       },
       {
         description:
-          "Start: push (t=0, r=0, c=0) onto the min-heap. Pop (0, 0, 0) — we're at cell (0,0) with max elevation 0. Mark visited. Push neighbors: cell (0,1) has elevation 2, so we'd need time max(0,2)=2 to reach it. Cell (1,0) has elevation 3, needing time max(0,3)=3. Heap: [(2,0,1), (3,1,0)]. The heap always gives us the cell reachable at the earliest time.",
-        codeHighlightLines: [7, 8, 13, 14, 15, 16, 17],
+          "Start: push (t=0, 0, 0) — we can be at cell (0,0) at time 0. Pop (0, 0, 0). Not the destination. Mark (0,0) visited. Explore neighbors: cell (0,1) has elevation 2, so reaching it requires time max(0, 2) = 2. Cell (1,0) has elevation 3, requiring time max(0, 3) = 3. Push both onto the heap.",
+        codeHighlightLines: [7, 8, 11, 12, 13, 14, 15, 16, 17],
         structures: [
           {
             type: "matrix",
@@ -59,18 +59,43 @@ def swimInWater(grid):
       },
       {
         description:
-          "Pop (2, 0, 1) — cell (0,1) reachable at t=2. Push neighbor (1,1): max(2, grid[1][1]) = max(2, 1) = 2. Heap: [(2,1,1), (3,1,0)]. Pop (2, 1, 1) — this is the destination (1,1)! Return t=2. The optimal path is (0,0)→(0,1)→(1,1) with max elevation 2. We wait until time 2, then swim through cells with elevations 0, 2, and 1 — all ≤ 2. The path through (1,0) would require t=3 (higher elevation), so Dijkstra correctly avoided it.",
+          "Pop (2, 0, 1) — cell (0,1) reachable at t=2. Not destination. Mark visited. Explore neighbors: (0,0) already visited, skip. (1,1) has elevation 1, needs max(2, 1) = 2. Push (2, 1, 1). The max function is key — even though cell (1,1) has low elevation, we still need t=2 because we had to pass through elevation 2 to get here.",
+        codeHighlightLines: [7, 8, 11, 14, 15, 16, 17],
+        structures: [
+          {
+            type: "matrix",
+            label: "grid",
+            rows: [
+              [{ value: 0, highlight: "checked" }, { value: 2, highlight: "checked" }],
+              [{ value: 3 }, { value: 1, highlight: "active" }],
+            ],
+          },
+          { type: "stack", label: "min heap", values: ["(t=2, 1,1)", "(t=3, 1,0)"] },
+          { type: "set", label: "visited", values: ["(0,0)", "(0,1)"] },
+        ],
+      },
+      {
+        description:
+          "Pop (2, 1, 1) — cell (1,1) is the destination! Return t=2. The optimal path is (0,0)→(0,1)→(1,1) with max elevation 2. We wait until time 2, then swim through cells 0, 2, 1 — all ≤ 2. The path through (1,0) would require t=3 (elevation 3), so Dijkstra correctly avoided it.",
         codeHighlightLines: [8, 9, 10],
         structures: [
           {
             type: "matrix",
-            label: "grid — optimal path",
+            label: "grid — optimal path found",
             rows: [
               [{ value: 0, highlight: "success" }, { value: 2, highlight: "success" }],
               [{ value: 3 }, { value: 1, highlight: "success" }],
             ],
           },
-          { type: "variables", entries: [{ name: "return", value: 2, highlight: true }, { name: "path", value: "(0,0)→(0,1)→(1,1)" }, { name: "Time", value: "O(n² log n)" }, { name: "Space", value: "O(n²)" }] },
+          { type: "variables", entries: [{ name: "return", value: 2, highlight: true }, { name: "path", value: "(0,0)→(0,1)→(1,1)" }] },
+        ],
+      },
+      {
+        description:
+          "Why Dijkstra? Standard BFS finds shortest distance (sum of edges). Here we need the path that minimizes the maximum edge weight — a 'minimax path' problem. The heap key max(t, grid[nr][nc]) means: to reach neighbor, we need at least the current time OR the neighbor's elevation, whichever is larger. Dijkstra guarantees when we pop the destination, we've found the optimal time. Time: O(n² log n) — each of n² cells pushed/popped from heap. Space: O(n²) for visited set and heap.",
+        codeHighlightLines: [17],
+        structures: [
+          { type: "variables", entries: [{ name: "return", value: 2, highlight: true }, { name: "Time", value: "O(n² log n)" }, { name: "Space", value: "O(n²)" }, { name: "variant", value: "minimax path (not shortest path)" }] },
         ],
       },
     ],
