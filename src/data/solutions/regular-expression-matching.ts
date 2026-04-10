@@ -24,67 +24,76 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "Implement regex matching with '.' (matches any single char) and '*' (zero or more of the PRECEDING element). This is tricky because '*' can match zero characters (effectively deleting its preceding element) or extend the match greedily. dp[i][j] = does s[:i] match p[:j]? When we see '*' at p[j-1], two choices: (1) zero occurrences of the preceding char — check dp[i][j-2] (skip the 'x*' pair entirely). (2) one more occurrence — if the preceding char matches s[i-1], check dp[i-1][j] (consume one char from s, keep the '*' active). s='aab', p='c*a*b'.",
+          "Implement regex matching with '.' (matches any single char) and '*' (zero or more of the PRECEDING element). dp[i][j] = does s[:i] match p[:j]? The tricky part: '*' can match zero characters (skip the 'x*' pair) or extend greedily. s='aab', p='c*a*b'. The pattern means: zero or more c's, then zero or more a's, then exactly one b.",
         codeHighlightLines: [1, 2, 3, 4],
         structures: [
-          {
-            type: "array",
-            label: "s",
-            values: ["a", "a", "b"],
-            highlights: {},
-          },
-          {
-            type: "array",
-            label: "p",
-            values: ["c", "*", "a", "*", "b"],
-            highlights: {},
-          },
-          { type: "variables", entries: [{ name: "* means", value: "zero or more of preceding char" }, { name: ". means", value: "any single char" }] },
+          { type: "array", label: "s", values: ["a", "a", "b"], highlights: {} },
+          { type: "array", label: "p", values: ["c", "*", "a", "*", "b"], highlights: {} },
+          { type: "variables", entries: [{ name: "* means", value: "zero or more of preceding char" }, { name: ". means", value: "any single char" }, { name: "dp[i][j]", value: "does s[:i] match p[:j]?" }] },
         ],
       },
       {
         description:
-          "Base cases: dp[0][0]=True (empty matches empty). For the first row (empty string vs pattern), only '*' patterns can match empty: p[1]='*' means 'c*' can match zero c's, so dp[0][2] = dp[0][0] = True. p[3]='*' means 'a*' can match zero a's, so dp[0][4] = dp[0][2] = True. This means the empty string matches 'c*a*' — both pairs use zero occurrences. The '*' always looks back 2 positions (skip the entire 'char*' pair).",
+          "Base cases: dp[0][0]=True (empty matches empty). For first row (empty string vs pattern), only '*' patterns can match empty. p[1]='*' → 'c*' can match zero c's: dp[0][2] = dp[0][0] = True. p[3]='*' → 'a*' can match zero a's: dp[0][4] = dp[0][2] = True. So the empty string matches 'c*a*' — both pairs use zero occurrences. But dp[0][5] (empty vs 'c*a*b') = False — the bare 'b' needs a character.",
         codeHighlightLines: [5, 6, 7],
         structures: [
           {
             type: "array",
             label: "dp[0] (empty s vs pattern prefixes)",
             values: ["T", "F", "T", "F", "T", "F"],
-            highlights: { 0: "success", 2: "success", 4: "success" },
+            highlights: { 0: "success", 2: "success", 4: "success", 5: "checked" },
           },
-          { type: "variables", entries: [{ name: "c* matches ''", value: "True (zero c's)" }, { name: "c*a* matches ''", value: "True (zero c's, zero a's)" }] },
+          { type: "variables", entries: [{ name: "'c*' matches ''", value: "True (zero c's)" }, { name: "'c*a*' matches ''", value: "True (zero c's, zero a's)" }, { name: "'c*a*b' matches ''", value: "False (b needs a char)" }] },
         ],
       },
       {
         description:
-          "dp[1][4]: does s='a' match p='c*a*'? p[3]='*', so try zero a's: dp[1][2] (does 'a' match 'c*'?). For dp[1][2]: p[1]='*', zero c's → dp[1][0] = False. One+ c's: p[0]='c' ≠ s[0]='a' → False. So dp[1][2]=False. Back to dp[1][4]: try one+ a's: p[2]='a' == s[0]='a', check dp[0][4] = True! So dp[1][4]=True. The match: c* absorbs nothing, a* absorbs 'a'.",
-        codeHighlightLines: [9, 10, 11, 12, 13],
+          "Fill dp[1][j] — does s='a' match each pattern prefix? dp[1][1]: p[0]='c' ≠ s[0]='a' → False. dp[1][2]: p[1]='*', zero c's → dp[1][0]=False. One+ c's: p[0]='c' ≠ 'a' → False. dp[1][2]=False. dp[1][3]: p[2]='a' == s[0]='a', so dp[1][3] = dp[0][2] = True! ('a' matches 'c*a'). dp[1][4]: p[3]='*', zero a's → dp[1][2]=False. One+ a's: p[2]='a'==s[0]='a', dp[0][4]=True → dp[1][4]=True!",
+        codeHighlightLines: [8, 9, 10, 11, 12, 13, 14, 15, 16],
         structures: [
           {
-            type: "variables",
-            entries: [
-              { name: "dp[1][2] ('a' vs 'c*')", value: "False (c ≠ a)" },
-              { name: "dp[1][4] ('a' vs 'c*a*')", value: "True!", highlight: true },
-              { name: "how", value: "c*→'' , a*→'a'" },
-            ],
+            type: "array",
+            label: "dp[1] (s='a' vs pattern prefixes)",
+            values: ["F", "F", "F", "T", "T", "F"],
+            highlights: { 3: "success", 4: "success" },
           },
+          { type: "variables", entries: [{ name: "dp[1][3]", value: "True: 'a' matches 'c*a'", highlight: true }, { name: "dp[1][4]", value: "True: 'a' matches 'c*a*'", highlight: true }, { name: "how", value: "c*→'', a→'a' or c*→'', a*→'a'" }] },
         ],
       },
       {
         description:
-          "dp[3][5]: does s='aab' match p='c*a*b'? p[4]='b' (not '*'), and s[2]='b' matches! So dp[3][5] = dp[2][4] (does 'aa' match 'c*a*'?). We already know dp[2][4]=True (c* matches nothing, a* matches 'aa' — the '*' consumed two a's via repeated dp[i-1][j] transitions). Result: True! The pattern c*a*b matches 'aab' as: c*→'', a*→'aa', b→'b'. Time: O(m×n). Space: O(m×n).",
+          "Fill dp[2][j] — s='aa'. dp[2][3]: p[2]='a'==s[1]='a', dp[2][3]=dp[1][2]=False. dp[2][4]: p[3]='*', zero a's → dp[2][2]=False. One+ a's: p[2]='a'==s[1]='a', check dp[1][4]=True → dp[2][4]=True! This is the key '*' transition: dp[i-1][j] means 'consume one more character from s while keeping the * active'. The * consumed both a's: c*→'', a*→'aa'.",
+        codeHighlightLines: [10, 11, 12, 13],
+        structures: [
+          {
+            type: "array",
+            label: "dp[2] (s='aa' vs pattern prefixes)",
+            values: ["F", "F", "F", "F", "T", "F"],
+            highlights: { 4: "success" },
+          },
+          { type: "variables", entries: [{ name: "dp[2][4]", value: "True: 'aa' matches 'c*a*'", highlight: true }, { name: "* transition", value: "dp[i-1][j]: consume one char, keep * active" }, { name: "a* matched", value: "'a' then 'aa' (greedy)" }] },
+        ],
+      },
+      {
+        description:
+          "Fill dp[3][j] — s='aab'. dp[3][4]: p[3]='*', one+ a's: p[2]='a' vs s[2]='b' → no match. Zero a's: dp[3][2]=False. dp[3][4]=False. dp[3][5]: p[4]='b'==s[2]='b', so dp[3][5]=dp[2][4]=True! The final character 'b' matches literally. The full decomposition: c*→'', a*→'aa', b→'b'.",
         codeHighlightLines: [14, 15, 16],
         structures: [
           {
-            type: "variables",
-            entries: [
-              { name: "dp[2][4] ('aa' vs 'c*a*')", value: "True (a* matches 'aa')" },
-              { name: "return", value: "True", highlight: true },
-              { name: "decomposition", value: "c*→'' , a*→'aa' , b→'b'" },
-              { name: "Time", value: "O(m × n)" },
-            ],
+            type: "array",
+            label: "dp[3] (s='aab' vs pattern prefixes)",
+            values: ["F", "F", "F", "F", "F", "T"],
+            highlights: { 5: "success" },
           },
+          { type: "variables", entries: [{ name: "dp[3][5]", value: "True!", highlight: true }, { name: "decomposition", value: "c*→'' , a*→'aa' , b→'b'" }] },
+        ],
+      },
+      {
+        description:
+          "Return dp[3][5] = True. The two key transitions: (1) When p[j-1]='*': try zero occurrences via dp[i][j-2] (skip 'x*'), or one+ via dp[i-1][j] if the preceding char matches (consume one s char, keep * active). (2) When chars match (or '.'): dp[i][j] = dp[i-1][j-1]. Time: O(m×n). Space: O(m×n). The dp[i-1][j] transition for * is what makes this powerful — it lets * greedily consume an unbounded number of characters.",
+        codeHighlightLines: [17],
+        structures: [
+          { type: "variables", entries: [{ name: "return", value: "True", highlight: true }, { name: "* zero", value: "dp[i][j-2] — skip 'x*' pair" }, { name: "* one+", value: "dp[i-1][j] — consume char, keep *" }, { name: "Time", value: "O(m × n)" }] },
         ],
       },
     ],
