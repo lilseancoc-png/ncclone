@@ -24,49 +24,61 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "We have a 4x5 grid of 1s (land) and 0s (water). We want to find the largest island by area. DFS flood fill counts each island's connected cells.",
+        "Find the largest island (connected group of 1s) in a grid. DFS flood fill from each unvisited land cell, counting area. Mark cells as 0 when visited to avoid double-counting. Grid has two islands: a cross shape and a single cell.",
       codeHighlightLines: [1, 2, 3],
       structures: [
-        { type: "array", label: "Row 0", values: [0, 0, 1, 0, 0], highlights: {} },
-        { type: "array", label: "Row 1", values: [0, 1, 1, 1, 0], highlights: {} },
-        { type: "array", label: "Row 2", values: [0, 0, 1, 0, 0], highlights: {} },
-        { type: "array", label: "Row 3", values: [1, 0, 0, 0, 0], highlights: {} },
+        { type: "array", label: "Row 0", values: [0, 0, 1, 0, 0] },
+        { type: "array", label: "Row 1", values: [0, 1, 1, 1, 0] },
+        { type: "array", label: "Row 2", values: [0, 0, 1, 0, 0] },
+        { type: "array", label: "Row 3", values: [1, 0, 0, 0, 0] },
         { type: "variables", entries: [{ name: "max_area", value: 0 }] },
       ],
     },
     {
       description:
-        "Scan finds grid[0][2] = 1. Start DFS from (0,2). It spreads to all connected 1s: (1,1), (1,2), (1,3), (2,2). Each visited cell returns 1 and is marked 0.",
+        "Scan finds grid[0][2]=1. Start DFS from (0,2). Mark (0,2)=0, area=1. DFS goes down: (1,2)=1 → mark 0, area=2. From (1,2), DFS goes down: (2,2)=1 → mark 0, area=3. From (2,2), all neighbors are 0 or OOB. Backtrack to (1,2).",
       codeHighlightLines: [5, 6, 7, 8, 9, 10, 11],
       structures: [
-        { type: "array", label: "Row 0", values: [0, 0, 0, 0, 0], highlights: { 2: "checked" } },
-        { type: "array", label: "Row 1", values: [0, 0, 0, 0, 0], highlights: { 1: "checked", 2: "checked", 3: "checked" } },
-        { type: "array", label: "Row 2", values: [0, 0, 0, 0, 0], highlights: { 2: "checked" } },
-        { type: "array", label: "Row 3", values: [1, 0, 0, 0, 0], highlights: {} },
-        { type: "variables", entries: [{ name: "dfs returns", value: 5, highlight: true }, { name: "max_area", value: 5 }] },
+        { type: "array", label: "Row 0", values: [0, 0, 0, 0, 0], highlights: { 2: "active" } },
+        { type: "array", label: "Row 1", values: [0, 1, 0, 1, 0], highlights: { 2: "active" } },
+        { type: "array", label: "Row 2", values: [0, 0, 0, 0, 0], highlights: { 2: "active" } },
+        { type: "array", label: "Row 3", values: [1, 0, 0, 0, 0] },
+        { type: "variables", entries: [{ name: "DFS path", value: "(0,2)→(1,2)→(2,2)" }, { name: "area so far", value: 3 }] },
       ],
     },
     {
       description:
-        "Continue scanning. grid[3][0] = 1. DFS from (3,0) finds only 1 cell — no neighbors are land. Area = 1, which is less than max_area = 5.",
+        "Back at (1,2): DFS goes left: (1,1)=1 → mark 0, area=4. From (1,1), all neighbors are 0. Backtrack. DFS goes right from (1,2): (1,3)=1 → mark 0, area=5. From (1,3), all neighbors are 0. DFS from (0,2) complete. Island area = 5 (cross shape). max_area = 5.",
+      codeHighlightLines: [11],
+      structures: [
+        { type: "array", label: "Row 0", values: [0, 0, 0, 0, 0], highlights: { 2: "success" } },
+        { type: "array", label: "Row 1", values: [0, 0, 0, 0, 0], highlights: { 1: "success", 2: "success", 3: "success" } },
+        { type: "array", label: "Row 2", values: [0, 0, 0, 0, 0], highlights: { 2: "success" } },
+        { type: "array", label: "Row 3", values: [1, 0, 0, 0, 0] },
+        { type: "variables", entries: [{ name: "island 1 area", value: 5, highlight: true }, { name: "cells", value: "(0,2),(1,1),(1,2),(1,3),(2,2)" }, { name: "max_area", value: 5 }] },
+      ],
+    },
+    {
+      description:
+        "Continue scanning. Most cells are now 0 (visited or water). grid[3][0]=1 — start DFS. Mark (3,0)=0. All neighbors are 0 or OOB. Area = 1. max(5, 1) = 5. No more unvisited land cells.",
       codeHighlightLines: [13, 14, 15, 16],
       structures: [
-        { type: "array", label: "Row 0", values: [0, 0, 0, 0, 0], highlights: {} },
-        { type: "array", label: "Row 1", values: [0, 0, 0, 0, 0], highlights: {} },
-        { type: "array", label: "Row 2", values: [0, 0, 0, 0, 0], highlights: {} },
+        { type: "array", label: "Row 0", values: [0, 0, 0, 0, 0] },
+        { type: "array", label: "Row 1", values: [0, 0, 0, 0, 0] },
+        { type: "array", label: "Row 2", values: [0, 0, 0, 0, 0] },
         { type: "array", label: "Row 3", values: [0, 0, 0, 0, 0], highlights: { 0: "found" } },
-        { type: "variables", entries: [{ name: "dfs returns", value: 1 }, { name: "max_area", value: 5 }] },
+        { type: "variables", entries: [{ name: "island 2 area", value: 1 }, { name: "max(5, 1)", value: "5 (no change)" }] },
       ],
     },
     {
       description:
-        "Scan complete. The largest island had area 5 (cross shape). The single-cell island had area 1. Return max_area = 5. Time: O(m*n), each cell visited once.",
+        "Return max_area = 5. The cross-shaped island was largest. Each cell visited exactly once (marked 0 on first visit, skipped on subsequent encounters). Time: O(m×n) — every cell checked once by the outer loop and at most once by DFS. Space: O(m×n) worst case for DFS recursion stack (if the entire grid is one island).",
       codeHighlightLines: [17],
       structures: [
         { type: "array", label: "Row 0", values: [0, 0, 0, 0, 0], highlights: { 2: "success" } },
         { type: "array", label: "Row 1", values: [0, 0, 0, 0, 0], highlights: { 1: "success", 2: "success", 3: "success" } },
         { type: "array", label: "Row 2", values: [0, 0, 0, 0, 0], highlights: { 2: "success" } },
-        { type: "variables", entries: [{ name: "return", value: 5, highlight: true }] },
+        { type: "variables", entries: [{ name: "return", value: 5, highlight: true }, { name: "island 1", value: "5 cells (cross)" }, { name: "island 2", value: "1 cell" }, { name: "Time", value: "O(m × n)" }] },
       ],
     },
   ],

@@ -39,38 +39,55 @@ class Trie:
   steps: [
     {
       description:
-        'A Trie (prefix tree) is a tree data structure where each node represents a character, and paths from root to nodes represent prefixes of stored words. Unlike a hash set of words (which needs O(n) to check prefixes), a Trie supports prefix queries in O(k) where k is the prefix length. Each node has: (1) a map of children (char → child node) and (2) an is_end flag marking whether a complete word ends here. We\'ll insert "apple", then demonstrate search vs startsWith.',
+        "A Trie (prefix tree) stores strings character by character. Each node has a children map (char→child) and an is_end flag. Paths from root represent prefixes. Unlike a hash set, a Trie supports prefix queries in O(k). We'll insert \"apple\", then search and check prefixes.",
       codeHighlightLines: [1, 2, 3, 4, 5, 6, 7, 8],
       structures: [
-        { type: "variables", entries: [{ name: "root", value: "{children: {}, is_end: false}" }, { name: "advantage over hash set", value: "efficient prefix queries" }] },
+        { type: "variables", entries: [{ name: "root", value: "{children: {}, is_end: false}" }, { name: "operations", value: "insert, search, startsWith" }] },
       ],
     },
     {
       description:
-        'Insert "apple": starting from root, for each character, check if a child node exists. If not, create one. Walk down: root→a (create), a→p (create), p→p (create), p→l (create), l→e (create). Mark e.is_end = True to indicate "apple" is a complete stored word. If we later insert "app", we\'d walk the existing path root→a→p→p and just mark the second p\'s is_end = True — no new nodes needed. Shared prefixes reuse existing nodes, saving space.',
-      codeHighlightLines: [10, 11, 12, 13, 14, 15],
+        "insert(\"apple\"): Start at root. 'a': not in root.children → create node. Move to 'a' node. 'p': not in children → create. Move to 'p'. Second 'p': not in children → create another 'p' node. 'l': create. 'e': create. Five new nodes created, one per character.",
+      codeHighlightLines: [10, 11, 12, 13, 14],
       structures: [
-        { type: "array", label: "insert path", values: ["a", "p", "p", "l", "e"], highlights: { 0: "active", 1: "active", 2: "active", 3: "active", 4: "success" } },
-        { type: "variables", entries: [{ name: "trie structure", value: "root→a→p→p→l→e*" }, { name: "e.is_end", value: "True (word ends here)", highlight: true }] },
+        { type: "array", label: "insert path: a → p → p → l → e", values: ["root", "a", "p", "p", "l", "e"], highlights: { 1: "active", 2: "active", 3: "active", 4: "active", 5: "active" } },
+        { type: "variables", entries: [{ name: "nodes created", value: "5 (a, p, p, l, e)" }, { name: "each node.children", value: "points to next letter" }] },
       ],
     },
     {
       description:
-        'search("apple"): traverse root→a→p→p→l→e. Each character found in children? Yes. Reached end: check is_end = True. Return True — "apple" exists. search("app"): traverse root→a→p→p. All characters found, but is_end at second p = False. Return False — "app" was never inserted as a complete word, even though it\'s a prefix of "apple". This is the key distinction: search requires is_end = True at the final node.',
+        "Mark e.is_end = True — \"apple\" is a complete word. Now insert \"app\": root→a (exists!)→p (exists!)→p (exists!). No new nodes needed — the path already exists as a prefix of \"apple\". Just mark the second p's is_end = True. Shared prefixes reuse nodes, saving space.",
+      codeHighlightLines: [15],
+      structures: [
+        { type: "array", label: "trie paths", values: ["root", "a", "p", "p*", "l", "e*"], highlights: { 3: "success", 5: "success" } },
+        { type: "variables", entries: [{ name: "e.is_end", value: "True (\"apple\" ends here)", highlight: true }, { name: "p.is_end", value: "True (\"app\" ends here)", highlight: true }, { name: "insert \"app\"", value: "0 new nodes — reuses prefix!" }] },
+      ],
+    },
+    {
+      description:
+        "search(\"apple\"): Traverse root→a→p→p→l→e. Each char found in children? Yes. At node 'e': is_end = True → return True. search(\"app\"): root→a→p→p. is_end = True (we inserted \"app\") → True. search(\"ap\"): root→a→p. is_end = False → return False. \"ap\" was never inserted.",
       codeHighlightLines: [17, 18, 19, 20, 21, 22],
       structures: [
-        { type: "array", label: 'search "apple"', values: ["a", "p", "p", "l", "e"], highlights: { 0: "checked", 1: "checked", 2: "checked", 3: "checked", 4: "success" } },
-        { type: "array", label: 'search "app"', values: ["a", "p", "p"], highlights: { 0: "checked", 1: "checked", 2: "found" } },
-        { type: "variables", entries: [{ name: 'search("apple")', value: "True (is_end ✓)", highlight: true }, { name: 'search("app")', value: "False (is_end ✗)" }] },
+        { type: "array", label: "search \"apple\"", values: ["a", "p", "p", "l", "e"], highlights: { 0: "checked", 1: "checked", 2: "checked", 3: "checked", 4: "success" } },
+        { type: "array", label: "search \"app\"", values: ["a", "p", "p"], highlights: { 0: "checked", 1: "checked", 2: "success" } },
+        { type: "variables", entries: [{ name: "search(\"apple\")", value: "True ✓", highlight: true }, { name: "search(\"app\")", value: "True ✓" }, { name: "search(\"ap\")", value: "False (is_end=false)" }] },
       ],
     },
     {
       description:
-        'startsWith("app"): traverse root→a→p→p — all characters found in the trie. Return True immediately. Unlike search, startsWith doesn\'t check is_end — it only cares that the prefix path exists. This is the Trie\'s killer feature: prefix checking in O(k) time. search("b"): root has no child \'b\', return False in one step. Time: O(n) per operation where n = word/prefix length. Space: O(total characters stored). Tries excel at autocomplete, spell-checking, and IP routing.',
+        "startsWith(\"app\"): root→a→p→p — all found. Return True. Unlike search, startsWith ignores is_end — it only checks if the path exists. startsWith(\"b\"): root has no 'b' child → False in one step. This is the Trie's killer feature: O(k) prefix checking.",
       codeHighlightLines: [24, 25, 26, 27, 28, 29],
       structures: [
-        { type: "array", label: 'startsWith "app"', values: ["a", "p", "p"], highlights: { 0: "checked", 1: "checked", 2: "success" } },
-        { type: "variables", entries: [{ name: 'startsWith("app")', value: "True (prefix exists)", highlight: true }, { name: "Time", value: "O(n) per operation" }, { name: "Space", value: "O(total chars)" }] },
+        { type: "array", label: "startsWith \"app\"", values: ["a", "p", "p"], highlights: { 0: "checked", 1: "checked", 2: "success" } },
+        { type: "variables", entries: [{ name: "startsWith(\"app\")", value: "True (path exists)", highlight: true }, { name: "startsWith(\"b\")", value: "False (no 'b' child)" }, { name: "search vs startsWith", value: "search checks is_end, startsWith doesn't" }] },
+      ],
+    },
+    {
+      description:
+        "Time: O(n) per operation where n = word/prefix length. Space: O(total characters) across all inserted words — shared prefixes save space. Tries excel at autocomplete (find all words starting with prefix), spell checking (suggest corrections), and IP routing (longest prefix match). The children map can also be a fixed array of 26 for lowercase-only inputs.",
+      codeHighlightLines: [29],
+      structures: [
+        { type: "variables", entries: [{ name: "Time", value: "O(n) per operation" }, { name: "Space", value: "O(total chars)" }, { name: "use cases", value: "autocomplete, spell check, IP routing" }, { name: "optimization", value: "array[26] instead of hashmap for lowercase" }] },
       ],
     },
   ],

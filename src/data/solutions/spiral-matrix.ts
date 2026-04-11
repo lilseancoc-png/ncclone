@@ -27,42 +27,99 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Return all matrix elements in spiral order: right along top → down the right side → left along bottom → up the left side → repeat inward. The approach uses four boundary pointers (top, bottom, left, right) that shrink inward after each traversal, like peeling layers off an onion. The boundary checks (top <= bottom and left <= right) prevent revisiting and handle non-square matrices. Input: [[1,2,3],[4,5,6],[7,8,9]].",
+        "Traverse matrix in spiral order: right→down→left→up, shrinking boundaries inward. Four pointers (top, bottom, left, right) define the current rectangle. After traversing each edge, shrink that boundary. Input: [[1,2,3],[4,5,6],[7,8,9]].",
       codeHighlightLines: [1, 2, 3, 4, 5],
       structures: [
-        { type: "array", label: "row 0", values: [1, 2, 3] },
-        { type: "array", label: "row 1", values: [4, 5, 6] },
-        { type: "array", label: "row 2", values: [7, 8, 9] },
+        {
+          type: "matrix",
+          label: "matrix",
+          rows: [
+            [{ value: 1 }, { value: 2 }, { value: 3 }],
+            [{ value: 4 }, { value: 5 }, { value: 6 }],
+            [{ value: 7 }, { value: 8 }, { value: 9 }],
+          ],
+        },
         { type: "variables", entries: [{ name: "top", value: 0 }, { name: "bottom", value: 2 }, { name: "left", value: 0 }, { name: "right", value: 2 }] },
       ],
     },
     {
       description:
-        "Layer 1, step 1 — Top row (left→right): traverse matrix[0][0..2] = [1,2,3]. Move top boundary down: top = 1 (row 0 is done). Step 2 — Right column (top→bottom): traverse matrix[1..2][2] = [6,9]. Move right boundary left: right = 1 (column 2 is done). Each step processes one edge of the current boundary rectangle.",
-      codeHighlightLines: [6, 7, 8, 9, 10, 11],
+        "Direction 1 — RIGHT along top row: matrix[0][0..2] = 1, 2, 3. Shrink: top = 1 (row 0 done). The top boundary moves down, excluding the row we just traversed.",
+      codeHighlightLines: [6, 7, 8],
       structures: [
-        { type: "array", label: "row 0", values: [1, 2, 3], highlights: { 0: "active", 1: "active", 2: "active" } },
-        { type: "array", label: "row 1", values: [4, 5, 6], highlights: { 2: "active" } },
-        { type: "array", label: "row 2", values: [7, 8, 9], highlights: { 2: "active" } },
-        { type: "array", label: "result", values: [1, 2, 3, 6, 9], highlights: { 0: "success", 1: "success", 2: "success", 3: "success", 4: "success" } },
+        {
+          type: "matrix",
+          label: "matrix (top row traversed)",
+          rows: [
+            [{ value: 1, highlight: "success" }, { value: 2, highlight: "success" }, { value: 3, highlight: "success" }],
+            [{ value: 4 }, { value: 5 }, { value: 6 }],
+            [{ value: 7 }, { value: 8 }, { value: 9 }],
+          ],
+        },
+        { type: "array", label: "result", values: [1, 2, 3], highlights: { 0: "success", 1: "success", 2: "success" } },
+        { type: "variables", entries: [{ name: "top", value: "0 → 1" }] },
       ],
     },
     {
       description:
-        "Step 3 — Bottom row (right→left): check top <= bottom (1 <= 2, yes). Traverse matrix[2][1..0] = [8,7]. Move bottom up: bottom = 1. Step 4 — Left column (bottom→top): check left <= right (0 <= 1, yes). Traverse matrix[1][0] = [4]. Move left right: left = 1. The boundary checks are essential for non-square matrices — without them, we'd double-count elements in single-row or single-column remainders.",
+        "Direction 2 — DOWN along right column: matrix[1..2][2] = 6, 9. Shrink: right = 1 (column 2 done). Now the active rectangle is rows 1-2, columns 0-1.",
+      codeHighlightLines: [9, 10, 11],
+      structures: [
+        {
+          type: "matrix",
+          label: "matrix (right column traversed)",
+          rows: [
+            [{ value: 1, highlight: "checked" }, { value: 2, highlight: "checked" }, { value: 3, highlight: "checked" }],
+            [{ value: 4 }, { value: 5 }, { value: 6, highlight: "success" }],
+            [{ value: 7 }, { value: 8 }, { value: 9, highlight: "success" }],
+          ],
+        },
+        { type: "array", label: "result", values: [1, 2, 3, 6, 9], highlights: { 3: "success", 4: "success" } },
+        { type: "variables", entries: [{ name: "right", value: "2 → 1" }] },
+      ],
+    },
+    {
+      description:
+        "Direction 3 — LEFT along bottom row: check top<=bottom (1<=2 ✓). matrix[2][1..0] = 8, 7. Shrink: bottom = 1. Direction 4 — UP along left column: check left<=right (0<=1 ✓). matrix[1][0] = 4. Shrink: left = 1. Outer layer complete!",
       codeHighlightLines: [12, 13, 14, 15, 16, 17, 18, 19],
       structures: [
-        { type: "array", label: "row 2", values: [7, 8, 9], highlights: { 0: "active", 1: "active", 2: "checked" } },
-        { type: "array", label: "result so far", values: [1, 2, 3, 6, 9, 8, 7, 4], highlights: { 5: "success", 6: "success", 7: "success" } },
+        {
+          type: "matrix",
+          label: "matrix (outer layer done)",
+          rows: [
+            [{ value: 1, highlight: "checked" }, { value: 2, highlight: "checked" }, { value: 3, highlight: "checked" }],
+            [{ value: 4, highlight: "success" }, { value: 5 }, { value: 6, highlight: "checked" }],
+            [{ value: 7, highlight: "success" }, { value: 8, highlight: "success" }, { value: 9, highlight: "checked" }],
+          ],
+        },
+        { type: "array", label: "result", values: [1, 2, 3, 6, 9, 8, 7, 4], highlights: { 5: "success", 6: "success", 7: "success" } },
+        { type: "variables", entries: [{ name: "bottom", value: "2 → 1" }, { name: "left", value: "0 → 1" }] },
       ],
     },
     {
       description:
-        "Layer 2: boundaries are top=1, bottom=1, left=1, right=1 — a single cell! Traverse top row: matrix[1][1] = 5. Top moves to 2 > bottom(1), loop ends. Final: [1,2,3,6,9,8,7,4,5]. Every element visited exactly once. Time: O(m×n). Space: O(1) extra (the result array is required output). This boundary-shrinking approach is cleaner than tracking visited cells or using direction arrays.",
+        "Inner layer: top=1, bottom=1, left=1, right=1 — single cell. RIGHT: matrix[1][1] = 5. top becomes 2 > bottom(1), loop exits. All 9 elements collected in spiral order.",
       codeHighlightLines: [6, 7, 8, 20],
       structures: [
-        { type: "array", label: "spiral result", values: [1, 2, 3, 6, 9, 8, 7, 4, 5], highlights: { 0: "success", 1: "success", 2: "success", 3: "success", 4: "success", 5: "success", 6: "success", 7: "success", 8: "success" } },
-        { type: "variables", entries: [{ name: "return", value: "[1,2,3,6,9,8,7,4,5]", highlight: true }, { name: "Time", value: "O(m × n)" }] },
+        {
+          type: "matrix",
+          label: "matrix (center cell)",
+          rows: [
+            [{ value: 1, highlight: "checked" }, { value: 2, highlight: "checked" }, { value: 3, highlight: "checked" }],
+            [{ value: 4, highlight: "checked" }, { value: 5, highlight: "success" }, { value: 6, highlight: "checked" }],
+            [{ value: 7, highlight: "checked" }, { value: 8, highlight: "checked" }, { value: 9, highlight: "checked" }],
+          ],
+        },
+        { type: "array", label: "result (final)", values: [1, 2, 3, 6, 9, 8, 7, 4, 5], highlights: { 8: "success" } },
+      ],
+    },
+    {
+      description:
+        "Return [1,2,3,6,9,8,7,4,5]. The boundary checks (top<=bottom, left<=right) are essential for non-square matrices — without them, a single remaining row or column would be traversed twice. Time: O(m×n) — each cell visited once. Space: O(1) extra (result is required output).",
+      codeHighlightLines: [20],
+      structures: [
+        { type: "array", label: "spiral order", values: [1, 2, 3, 6, 9, 8, 7, 4, 5], highlights: { 0: "success", 1: "success", 2: "success", 3: "success", 4: "success", 5: "success", 6: "success", 7: "success", 8: "success" } },
+        { type: "variables", entries: [{ name: "return", value: "[1,2,3,6,9,8,7,4,5]", highlight: true }, { name: "Time", value: "O(m × n)" }, { name: "Space", value: "O(1) extra" }] },
       ],
     },
   ],
