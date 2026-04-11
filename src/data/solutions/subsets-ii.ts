@@ -21,7 +21,7 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "Generate all subsets of an array that may contain duplicates, without producing duplicate subsets. Sort first, then use backtracking. Skip an element if it equals the previous one at the same decision level (i > start).",
+          "Generate all subsets of an array that may contain duplicates, without producing duplicate subsets. The standard subsets approach generates 2^n subsets, but with duplicates like [1,2,2], naively we'd get [1,2] twice (using the first 2 vs the second 2). The fix: sort the array, then at each decision level, skip an element if it equals the previous one at that same level (i > start and nums[i] == nums[i-1]). This ensures we only use the FIRST occurrence of each duplicate at any given position. nums=[1,2,2].",
         codeHighlightLines: [1, 2, 3],
         structures: [
           {
@@ -32,30 +32,30 @@ const solutions: SolutionData[] = [
           },
           {
             type: "variables",
-            entries: [{ name: "result", value: "[]" }],
+            entries: [{ name: "result", value: "[]" }, { name: "key rule", value: "skip nums[i] if same as nums[i-1] at same level" }],
           },
         ],
       },
       {
         description:
-          "Start backtracking. Add [] to result. Choose 1 → add [1]. From index 1: choose 2 → [1,2]. From index 2: choose 2 → [1,2,2]. Backtrack.",
+          "Backtracking begins. First, add [] (empty subset). Choose index 0 (value 1) → subset=[1], add it. From start=1: choose index 1 (value 2) → [1,2], add it. From start=2: choose index 2 (value 2) → [1,2,2], add it. From start=3: past end, backtrack. This deep path produced [], [1], [1,2], [1,2,2]. The second 2 was allowed because it came AFTER the first 2 — we're building the subset [1,2,2] which is valid.",
         codeHighlightLines: [4, 5, 8, 9, 10],
         structures: [
           {
             type: "array",
-            label: "current subset",
+            label: "current path",
             values: [1, 2, 2],
             highlights: { 0: "active", 1: "active", 2: "active" },
           },
           {
             type: "variables",
-            entries: [{ name: "result so far", value: "[[], [1], [1,2], [1,2,2]]" }],
+            entries: [{ name: "result", value: "[[], [1], [1,2], [1,2,2]]" }],
           },
         ],
       },
       {
         description:
-          "Back to choosing after 1: index 2, nums[2]=2. i=2 > start=1 and nums[2]==nums[1] → SKIP! This prevents duplicate subset [1,2]. Continue to root: choose 2 at index 1 → [2]. Index 2: nums[2]==nums[1] and i>start → skip.",
+          "Backtrack to start=1 after choosing index 1. Now try index 2: nums[2]=2 == nums[1]=2, and i=2 > start=1 → SKIP! Without this skip, we'd generate another [1,2] using the second 2 — a duplicate. Back to start=0: index 0 done. Try index 1: value 2 → subset=[2], add it. From start=2: try index 2, nums[2]=2 == nums[1]=2 but i=2 == start=2, so it's allowed → [2,2], add it. Try index 2 at start=0: nums[2]=2 == nums[1]=2 and i=2 > start=0 → SKIP (prevents duplicate [2]).",
         codeHighlightLines: [6, 7],
         structures: [
           {
@@ -67,22 +67,23 @@ const solutions: SolutionData[] = [
           {
             type: "variables",
             entries: [
-              { name: "skip reason", value: "i > start AND nums[i] == nums[i-1]", highlight: true },
-              { name: "result so far", value: "[[], [1], [1,2], [1,2,2], [2], [2,2]]" },
+              { name: "skip condition", value: "i > start AND nums[i] == nums[i-1]", highlight: true },
+              { name: "result", value: "[[], [1], [1,2], [1,2,2], [2], [2,2]]" },
             ],
           },
         ],
       },
       {
         description:
-          "Final result: [[], [1], [1,2], [1,2,2], [2], [2,2]]. 6 unique subsets. Without the skip condition, we'd get duplicate [1,2] and [2]. Sorting + skip ensures each unique subset appears exactly once.",
+          "Final result: [[], [1], [1,2], [1,2,2], [2], [2,2]] — 6 unique subsets. Without sorting and skipping, we'd get 8 subsets including duplicates. The rule 'i > start' is crucial: it distinguishes between using a duplicate to EXTEND a subset (allowed, like [2]→[2,2]) vs choosing a duplicate as an ALTERNATIVE at the same decision level (forbidden, as it produces the same subset). Time: O(n × 2^n). Space: O(n) for recursion.",
         codeHighlightLines: [12, 13],
         structures: [
           {
             type: "variables",
             entries: [
-              { name: "total subsets", value: 6, highlight: true },
-              { name: "return", value: "[[], [1], [1,2], [1,2,2], [2], [2,2]]" },
+              { name: "return", value: "[[], [1], [1,2], [1,2,2], [2], [2,2]]", highlight: true },
+              { name: "total", value: "6 unique subsets" },
+              { name: "Time", value: "O(n × 2^n)" },
             ],
           },
         ],

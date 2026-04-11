@@ -18,47 +18,40 @@ def last_stone_weight(stones):
   steps: [
     {
       description:
-        "Smash the two heaviest stones together each round. If they're equal, both destroyed. Otherwise, the remainder goes back. Use a max-heap (Python's heapq is min-heap, so negate values). stones = [2, 7, 4, 1, 8, 1].",
-      codeHighlightLines: [1, 3, 4, 5],
+        "Each round, smash the two heaviest stones together. If they're equal weight, both are destroyed. If not, the smaller is destroyed and the larger loses weight equal to the smaller's weight. Find the weight of the last remaining stone (or 0 if all destroyed). A max-heap is perfect: always grab the two largest in O(log n). Python only has a min-heap, so we negate values. stones = [2, 7, 4, 1, 8, 1].",
+      codeHighlightLines: [3, 4, 5],
       structures: [
         { type: "array", label: "stones", values: [2, 7, 4, 1, 8, 1] },
-        { type: "variables", entries: [{ name: "max-heap", value: "[8, 7, 4, 2, 1, 1]" }] },
+        { type: "variables", entries: [{ name: "max-heap (sorted view)", value: "[8, 7, 4, 2, 1, 1]" }] },
       ],
     },
     {
       description:
-        "Pop two heaviest: 8 and 7. 8 ≠ 7, so remainder = 8 - 7 = 1. Push 1 back. Heap: [4, 2, 1, 1, 1].",
+        "Round 1: Pop two heaviest — 8 and 7. They're not equal, so remainder = 8 - 7 = 1. Push 1 back. Heap: [4, 2, 1, 1, 1]. Round 2: Pop 4 and 2. Remainder = 4 - 2 = 2. Push 2. Heap: [2, 1, 1, 1].",
       codeHighlightLines: [6, 7, 8, 9, 10],
       structures: [
-        { type: "array", label: "heap", values: [4, 2, 1, 1, 1], highlights: { 0: "active" } },
-        { type: "variables", entries: [{ name: "smash", value: "8 vs 7 → 1", highlight: true }] },
+        { type: "array", label: "after round 1", values: [4, 2, 1, 1, 1], highlights: { 0: "active" } },
+        { type: "array", label: "after round 2", values: [2, 1, 1, 1], highlights: { 0: "active" } },
+        { type: "variables", entries: [{ name: "round 1", value: "8 vs 7 → 1", highlight: true }, { name: "round 2", value: "4 vs 2 → 2" }] },
       ],
     },
     {
       description:
-        "Pop 4 and 2. 4 - 2 = 2. Push 2. Heap: [2, 1, 1, 1]. Pop 2 and 1. 2 - 1 = 1. Push 1. Heap: [1, 1, 1].",
-      codeHighlightLines: [7, 8, 9, 10],
+        "Round 3: Pop 2 and 1. Remainder = 2 - 1 = 1. Push 1. Heap: [1, 1, 1]. Round 4: Pop 1 and 1. Equal — both destroyed! Nothing pushed. Heap: [1]. Only one stone remains, loop exits.",
+      codeHighlightLines: [6, 7, 8, 9, 10],
       structures: [
-        { type: "array", label: "heap", values: [1, 1, 1], highlights: { 0: "active" } },
-        { type: "variables", entries: [{ name: "smash 1", value: "4 vs 2 → 2" }, { name: "smash 2", value: "2 vs 1 → 1" }] },
+        { type: "array", label: "after round 3", values: [1, 1, 1] },
+        { type: "array", label: "after round 4", values: [1], highlights: { 0: "success" } },
+        { type: "variables", entries: [{ name: "round 3", value: "2 vs 1 → 1" }, { name: "round 4", value: "1 vs 1 → both destroyed", highlight: true }] },
       ],
     },
     {
       description:
-        "Pop 1 and 1. They're equal — both destroyed! Heap: [1]. Only one stone left. Pop 1 and... heap has only 1 element, loop ends.",
-      codeHighlightLines: [6, 7, 8, 9],
-      structures: [
-        { type: "array", label: "heap", values: [1], highlights: { 0: "success" } },
-        { type: "variables", entries: [{ name: "smash", value: "1 vs 1 → destroyed" }] },
-      ],
-    },
-    {
-      description:
-        "Return 1 — the last remaining stone. Time: O(n log n) — each round does two pops and possibly one push (all O(log n)), up to n rounds. Space: O(n) for the heap. A max-heap makes this natural: always grab the two largest efficiently.",
+        "Return heap[0] = 1 — the last remaining stone weighs 1. If the heap were empty (all stones destroyed each other), we'd return 0. Time: O(n log n) — up to n rounds, each with O(log n) heap operations. Space: O(n) for the heap. The max-heap ensures we always pick the optimal pair (heaviest stones) to minimize the final weight.",
       codeHighlightLines: [11],
       structures: [
-        { type: "array", label: "final heap", values: [1], highlights: { 0: "success" } },
-        { type: "variables", entries: [{ name: "return", value: 1, highlight: true }] },
+        { type: "array", label: "final", values: [1], highlights: { 0: "success" } },
+        { type: "variables", entries: [{ name: "return", value: 1, highlight: true }, { name: "Time", value: "O(n log n)" }, { name: "Space", value: "O(n)" }] },
       ],
     },
   ],
