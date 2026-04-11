@@ -18,15 +18,10 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "Find the cheapest flight from src to dst with at most k stops. Standard Dijkstra doesn't work here because it doesn't limit the number of edges. Instead, use Bellman-Ford: relax all edges k+1 times (k stops = k+1 flight segments). Critical detail: we copy prices each round to prevent using values updated in the SAME round — this ensures each round adds exactly one more flight segment. n=4, src=0, dst=3, k=1. Flights: 0→1:$100, 1→2:$100, 2→3:$100, 0→3:$500.",
+          "Find the cheapest flight from src to dst with at most k stops. Dijkstra doesn't work — it doesn't limit edge count. Bellman-Ford with k+1 rounds does: each round relaxes all edges, extending paths by one more flight. Critical: copy prices each round to prevent using values updated in the SAME round (which would chain too many flights). n=4, src=0, dst=3, k=1. Flights: 0→1:$100, 1→2:$100, 2→3:$100, 0→3:$500.",
         codeHighlightLines: [1, 2, 3],
         structures: [
-          {
-            type: "array",
-            label: "prices (cost to reach each city)",
-            values: ["0", "∞", "∞", "∞"],
-            highlights: { 0: "success" },
-          },
+          { type: "array", label: "prices", values: ["0", "∞", "∞", "∞"], highlights: { 0: "success" } },
           {
             type: "graph",
             label: "flight network",
@@ -43,44 +38,48 @@ const solutions: SolutionData[] = [
       },
       {
         description:
-          "Round 1 (i=0): Relax all edges using original prices. This finds all cities reachable with 1 flight (0 stops). Flight 0→1: temp[1] = min(∞, 0+100) = 100. Flight 0→3: temp[3] = min(∞, 0+500) = 500. Flights from cities 1,2: prices[1]=prices[2]=∞, so skip (can't fly from unreached cities). After round 1: cities 1 and 3 are reachable with 1 flight.",
-        codeHighlightLines: [4, 5, 6, 7, 8],
-        structures: [
-          {
-            type: "array",
-            label: "prices after round 1 (1 flight max)",
-            values: [0, 100, "∞", 500],
-            highlights: { 1: "active", 3: "active" },
-          },
-          { type: "variables", entries: [{ name: "round", value: "1 of 2 (k+1=2)" }, { name: "0→1", value: "$100", highlight: true }, { name: "0→3", value: "$500 (direct)", highlight: true }] },
-        ],
-      },
-      {
-        description:
-          "Round 2 (i=1): Relax all edges again. Now we can use 2 flights (1 stop). Flight 1→2: temp[2] = min(∞, 100+100) = 200. Flight 2→3: prices[2] was ∞ (from previous round's snapshot!), so skip. This is why we copy — if we didn't, we'd use round 2's updated price for city 2, which would let us chain 3 flights (0→1→2→3 = $300), violating the k=1 stop limit. Flight 0→3: temp[3] = min(500, 500) = 500, no improvement.",
+          "Round 1 (i=0): Copy prices to temp. Relax all edges using ORIGINAL prices (not temp). This finds cities reachable with exactly 1 flight (0 stops). 0→1: temp[1] = min(∞, 0+100) = 100. 1→2: prices[1]=∞, skip (can't fly from unreached city). 2→3: prices[2]=∞, skip. 0→3: temp[3] = min(∞, 0+500) = 500. After round 1: can reach city 1 ($100) and city 3 ($500).",
         codeHighlightLines: [4, 5, 6, 7, 8, 9],
         structures: [
-          {
-            type: "array",
-            label: "prices after round 2 (2 flights max)",
-            values: [0, 100, 200, 500],
-            highlights: { 2: "active", 3: "success" },
-          },
-          { type: "variables", entries: [{ name: "round", value: "2 of 2 (done)" }, { name: "1→2", value: "$200 (via 0→1→2)" }, { name: "2→3 skipped", value: "prices[2]=∞ in snapshot!" }] },
+          { type: "array", label: "prices after round 1 (0 stops)", values: [0, 100, "∞", 500], highlights: { 1: "active", 3: "active" } },
+          { type: "variables", entries: [{ name: "0→1", value: "$100 (1 flight)", highlight: true }, { name: "0→3", value: "$500 direct", highlight: true }, { name: "1→2, 2→3", value: "skipped (source unreached)" }] },
         ],
       },
       {
         description:
-          "Return prices[dst] = prices[3] = 500. The cheapest way to reach city 3 with at most 1 stop is the direct flight 0→3 for $500. The route 0→1→2→3 costs only $300 but requires 2 stops (exceeds k=1). The copy trick in Bellman-Ford correctly prevented us from chaining too many flights. Time: O(k × E) — k+1 rounds, each processing all edges. Space: O(n) for the price arrays.",
-        codeHighlightLines: [10],
+          "Round 2 (i=1): Copy prices to temp. Relax all edges. Now prices[1]=100, so 1→2 works: temp[2] = min(∞, 100+100) = 200. But 2→3: prices[2] is still ∞ in the ORIGINAL copy! If we hadn't copied, prices[2] would be 200 from this round, and we'd compute temp[3] = min(500, 200+100) = 300. That's 3 flights (0→1→2→3), violating k=1 stop. The copy prevents exactly this.",
+        codeHighlightLines: [5, 6, 7, 8],
+        structures: [
+          { type: "array", label: "prices after round 2 (1 stop max)", values: [0, 100, 200, 500], highlights: { 2: "active", 3: "success" } },
+          { type: "variables", entries: [{ name: "1→2", value: "$200 (0→1→2, 1 stop)", highlight: true }, { name: "2→3 skipped!", value: "prices[2]=∞ in snapshot" }, { name: "why copy?", value: "prevents chaining 3 flights in 1 round" }] },
+        ],
+      },
+      {
+        description:
+          "k+1 = 2 rounds complete. prices[3] = 500. The cheapest way with at most 1 stop is the direct flight 0→3 for $500. The route 0→1→2→3 costs $300 but needs 2 stops — exceeds k=1. Without the copy trick, Bellman-Ford would have found $300 incorrectly. This is the key difference from standard Bellman-Ford.",
+        codeHighlightLines: [9, 10],
         structures: [
           {
-            type: "array",
-            label: "final prices",
-            values: [0, 100, 200, 500],
-            highlights: { 3: "success" },
+            type: "graph",
+            label: "result",
+            nodes: [{ id: 0, highlight: "success" }, { id: 1 }, { id: 2 }, { id: 3, highlight: "success" }],
+            edges: [
+              { from: 0, to: 1, label: "$100" },
+              { from: 1, to: 2, label: "$100" },
+              { from: 2, to: 3, label: "$100" },
+              { from: 0, to: 3, label: "$500" },
+            ],
+            directed: true,
           },
-          { type: "variables", entries: [{ name: "return", value: 500, highlight: true }, { name: "path", value: "0→3 (direct, $500)" }, { name: "0→1→2→3", value: "$300 but 2 stops > k=1" }, { name: "Time", value: "O(k × E)" }] },
+          { type: "variables", entries: [{ name: "best with k=1 stop", value: "$500 (direct 0→3)", highlight: true }, { name: "0→1→2→3 = $300", value: "invalid: 2 stops > k=1" }] },
+        ],
+      },
+      {
+        description:
+          "Return 500. Time: O(k × E) — k+1 rounds, each scanning all edges. Space: O(n) for the price arrays. The copy-per-round technique is specific to the k-stops constraint; standard Bellman-Ford (which finds shortest paths with unlimited edges) modifies prices in-place. If prices[dst] remains ∞ after all rounds, return -1 (destination unreachable within k stops).",
+        codeHighlightLines: [10],
+        structures: [
+          { type: "variables", entries: [{ name: "return", value: 500, highlight: true }, { name: "key insight", value: "copy prices each round → limits flight count" }, { name: "Time", value: "O(k × E)" }, { name: "Space", value: "O(n)" }] },
         ],
       },
     ],

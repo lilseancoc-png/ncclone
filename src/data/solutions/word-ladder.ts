@@ -27,66 +27,49 @@ def ladderLength(beginWord, endWord, wordList):
     steps: [
       {
         description:
-          "Transform beginWord to endWord by changing exactly one letter at a time. Each intermediate word must exist in wordList. Find the SHORTEST transformation sequence (or 0 if impossible). This is a shortest-path problem in disguise — model each word as a graph node, with edges between words that differ by one letter. BFS finds the shortest path. begin='hit', end='cog', wordList=[hot,dot,dog,lot,log,cog].",
+          "Transform beginWord to endWord changing one letter at a time, where each intermediate word must be in wordList. Find the shortest sequence length (or 0 if impossible). This is a shortest-path problem: each word is a graph node, edges connect words differing by one letter. BFS finds the shortest path. begin='hit', end='cog', wordList=[hot,dot,dog,lot,log,cog].",
         codeHighlightLines: [3, 4, 5, 6, 7, 8],
         structures: [
-          {
-            type: "variables",
-            entries: [
-              { name: "begin", value: "hit" },
-              { name: "end", value: "cog" },
-              { name: "wordList", value: "[hot,dot,dog,lot,log,cog]" },
-              { name: "strategy", value: "BFS — try all 1-letter changes" },
-            ],
-          },
+          { type: "variables", entries: [{ name: "begin", value: "'hit'" }, { name: "end", value: "'cog'" }, { name: "wordList", value: "[hot,dot,dog,lot,log,cog]" }, { name: "strategy", value: "BFS — each level = one transformation" }] },
         ],
       },
       {
         description:
-          "BFS Level 1 (steps=1): Start with 'hit'. For each position (h,i,t), try all 26 letters. Position 0: ait, bit, ... hot! 'hot' is in wordSet → add to queue with steps=2. No other valid 1-letter changes from 'hit'. The trick of trying all 26 letters × m positions is O(26m) per word, which is faster than comparing against all n words when n is large.",
+          "Level 1 (steps=1): Process 'hit'. For each position, try all 26 letters. Position 0: ait, bit, ..., hot! 'hot' is in wordSet → add to queue (steps=2). Position 1: hat, hbt, ..., none valid. Position 2: hia, hib, ..., none valid. Only 'hot' found from 'hit'. This O(26×m) neighbor-finding is faster than comparing against all n words when n >> 26×m.",
         codeHighlightLines: [9, 10, 11, 12, 15, 16, 17, 18],
         structures: [
-          {
-            type: "array",
-            label: "BFS queue",
-            values: ["(hot, 2)"],
-            highlights: { 0: "active" },
-          },
+          { type: "array", label: "BFS queue", values: ["(hot, 2)"], highlights: { 0: "active" } },
           { type: "set", label: "visited", values: ["hit", "hot"] },
-          { type: "variables", entries: [{ name: "hit → hot", value: "change h→h: no, h→a..z at pos 0: 'hot' found!", highlight: true }] },
+          { type: "variables", entries: [{ name: "hit → ?", value: "try h→a..z, i→a..z, t→a..z" }, { name: "found", value: "'hot' (h→h already, but 'h'→'h': it's hit→hot: i→o)", highlight: true }] },
         ],
       },
       {
         description:
-          "Level 2 (steps=2): Process 'hot'. Changes: 'dot' ✓ (h→d), 'lot' ✓ (h→l). Both added with steps=3. Level 3 (steps=3): Process 'dot' → 'dog' ✓ (t→g). Process 'lot' → 'log' ✓ (t→g). Both added with steps=4. BFS explores level by level, guaranteeing we find the shortest path first.",
-        codeHighlightLines: [11, 12, 13, 15, 16, 17, 18],
+          "Level 2 (steps=2): Process 'hot'. Position 0: h→d → 'dot' ✓, h→l → 'lot' ✓. Both added with steps=3. Position 1: o→a..z, nothing new. Position 2: t→a..z, nothing new. Queue now has [(dot,3), (lot,3)]. BFS explores level by level — all words reachable in 2 transformations before any words reachable in 3.",
+        codeHighlightLines: [10, 11, 12, 15, 16, 17, 18],
         structures: [
-          {
-            type: "variables",
-            entries: [
-              { name: "level 2", value: "hot → dot, lot" },
-              { name: "level 3", value: "dot → dog, lot → log" },
-              { name: "steps so far", value: 4 },
-            ],
-          },
-          { type: "set", label: "visited", values: ["hit", "hot", "dot", "lot", "dog", "log"] },
+          { type: "array", label: "BFS queue", values: ["(dot, 3)", "(lot, 3)"], highlights: { 0: "active", 1: "active" } },
+          { type: "set", label: "visited", values: ["hit", "hot", "dot", "lot"] },
+          { type: "variables", entries: [{ name: "hot → dot", value: "h→d at pos 0", highlight: true }, { name: "hot → lot", value: "h→l at pos 0", highlight: true }] },
         ],
       },
       {
         description:
-          "Level 4 (steps=4): Process 'dog'. Try changes: d→c at position 0 → 'cog'. That's our endWord! Return steps+1 = 4+1 = 5. The sequence: hit → hot → dot → dog → cog (5 words, 4 transformations). BFS guarantees this is the shortest sequence. Time: O(n × m × 26) where n=words, m=word length. Space: O(n) for visited set and queue.",
+          "Level 3 (steps=3): Process 'dot' → 'dog' ✓ (t→g). Process 'lot' → 'log' ✓ (t→g). Both added with steps=4. Queue: [(dog,4), (log,4)]. Level 4 (steps=4): Process 'dog'. Position 0: d→c → 'cog'. That's endWord! Return steps+1 = 4+1 = 5 immediately. BFS guarantees this is the shortest path.",
         codeHighlightLines: [13, 14],
         structures: [
-          {
-            type: "array",
-            label: "shortest transformation sequence",
-            values: ["hit", "hot", "dot", "dog", "cog"],
-            highlights: { 0: "success", 1: "success", 2: "success", 3: "success", 4: "success" },
-          },
-          {
-            type: "variables",
-            entries: [{ name: "return", value: 5, highlight: true }, { name: "sequence length", value: "5 words" }, { name: "Time", value: "O(n × m × 26)" }],
-          },
+          { type: "array", label: "BFS queue processing", values: ["(dog, 4)", "(log, 4)"], highlights: { 0: "success" } },
+          { type: "set", label: "visited", values: ["hit", "hot", "dot", "lot", "dog", "log"] },
+          { type: "variables", entries: [{ name: "dog → cog", value: "d→c at pos 0 = endWord!", highlight: true }, { name: "return", value: "4 + 1 = 5" }] },
+        ],
+      },
+      {
+        description:
+          "Return 5. The sequence: hit → hot → dot → dog → cog (5 words, 4 letter changes). BFS guarantees shortest path because it explores all k-step transformations before any (k+1)-step ones. Time: O(n × m × 26) — n words in queue, each generating m×26 candidates, set lookup is O(m). Space: O(n) for visited and queue. If endWord isn't in wordList, return 0 immediately.",
+        codeHighlightLines: [14],
+        structures: [
+          { type: "array", label: "shortest path", values: ["hit", "hot", "dot", "dog", "cog"], highlights: { 0: "success", 1: "success", 2: "success", 3: "success", 4: "success" } },
+          { type: "variables", entries: [{ name: "return", value: 5, highlight: true }, { name: "transformations", value: "4 letter changes" }, { name: "Time", value: "O(n × m × 26)" }, { name: "Space", value: "O(n)" }] },
         ],
       },
     ],

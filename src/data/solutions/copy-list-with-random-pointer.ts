@@ -22,12 +22,12 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "Deep copy a linked list where each node has a next pointer AND a random pointer that can point to any node (or null). The challenge: when we clone node A, A's random pointer might reference node C — but we might not have cloned C yet! Solution: two passes. Pass 1: create all clone nodes and store them in a hash map {original → clone}. Pass 2: wire up next and random pointers using the map. List: 7→13→11→10→1.",
-        codeHighlightLines: [1, 2, 3, 4, 5],
+          "Deep copy a linked list where each node has a next pointer AND a random pointer that can point to any node (or null). The challenge: when cloning node A, A's random might point to node C which hasn't been cloned yet. We can't wire pointers during creation. Solution: two passes. Pass 1 creates all clones. Pass 2 wires all pointers. List: 7→13→11→10→1. Random pointers: 7→null, 13→7, 11→1, 10→11, 1→7.",
+        codeHighlightLines: [1, 2, 3, 4],
         structures: [
           {
             type: "linkedlist",
-            label: "original list (with random pointers)",
+            label: "original list",
             nodes: [
               { value: 7, label: "head" },
               { value: 13 },
@@ -36,13 +36,13 @@ const solutions: SolutionData[] = [
               { value: 1 },
             ],
           },
-          { type: "hashmap", label: "old_to_new", entries: [] },
+          { type: "variables", entries: [{ name: "random pointers", value: "7→null, 13→7, 11→1, 10→11, 1→7" }, { name: "problem", value: "can't wire random before all clones exist" }] },
         ],
       },
       {
         description:
-          "Pass 1: Traverse the list and create a clone of each node (just the value, no pointers yet). Store each mapping in the hashmap. After this pass, we have 5 disconnected clone nodes. The hashmap lets us find any clone in O(1) — this is key for wiring random pointers in pass 2.",
-        codeHighlightLines: [6, 7, 8],
+          "Pass 1: Traverse and create a clone of each node (value only, no pointers). Store each mapping in old_to_new. curr=7: create Copy(7), map Node(7)→Copy(7). curr=13: create Copy(13). curr=11: create Copy(11). curr=10: create Copy(10). curr=1: create Copy(1). Now all 5 clones exist as disconnected nodes.",
+        codeHighlightLines: [5, 6, 7, 8],
         structures: [
           {
             type: "linkedlist",
@@ -58,21 +58,34 @@ const solutions: SolutionData[] = [
           {
             type: "hashmap",
             label: "old_to_new",
-            entries: [
-              ["Node(7)", "Copy(7)"],
-              ["Node(13)", "Copy(13)"],
-              ["Node(11)", "Copy(11)"],
-              ["Node(10)", "Copy(10)"],
-              ["Node(1)", "Copy(1)"],
-            ],
+            entries: [["Node(7)", "Copy(7)"], ["Node(13)", "Copy(13)"], ["Node(11)", "Copy(11)"], ["Node(10)", "Copy(10)"], ["Node(1)", "Copy(1)"]],
             highlightKeys: ["Node(7)", "Node(13)", "Node(11)", "Node(10)", "Node(1)"],
           },
         ],
       },
       {
         description:
-          "Pass 2: Traverse again and wire pointers. For each original node, set its clone's next and random using the hashmap. Example: original Node(13).next = Node(11), so Copy(13).next = old_to_new[Node(11)] = Copy(11). Original Node(13).random = Node(7), so Copy(13).random = old_to_new[Node(7)] = Copy(7). The hashmap lookup is O(1), making this entire pass O(n).",
-        codeHighlightLines: [9, 10, 11, 12, 13],
+          "Pass 2, node 7: Copy(7).next = old_to_new[Node(13)] = Copy(13). Copy(7).random = old_to_new.get(null) = null. Node 13: Copy(13).next = Copy(11). Copy(13).random = old_to_new[Node(7)] = Copy(7). The hashmap lookup is O(1) — this is why we built the map first.",
+        codeHighlightLines: [9, 10, 11, 12],
+        structures: [
+          {
+            type: "linkedlist",
+            label: "copy list (wiring in progress)",
+            nodes: [
+              { value: 7, highlight: "success" },
+              { value: 13, highlight: "success" },
+              { value: 11 },
+              { value: 10 },
+              { value: 1 },
+            ],
+          },
+          { type: "variables", entries: [{ name: "Copy(7).next", value: "Copy(13) ✓" }, { name: "Copy(7).random", value: "null ✓" }, { name: "Copy(13).next", value: "Copy(11) ✓" }, { name: "Copy(13).random", value: "Copy(7) ✓", highlight: true }] },
+        ],
+      },
+      {
+        description:
+          "Continue wiring. Node 11: Copy(11).next = Copy(10). Copy(11).random = old_to_new[Node(1)] = Copy(1). Node 10: Copy(10).next = Copy(1). Copy(10).random = Copy(11). Node 1: Copy(1).next = null. Copy(1).random = Copy(7). Every random pointer now references a COPY node, never an original.",
+        codeHighlightLines: [10, 11, 12, 13],
         structures: [
           {
             type: "linkedlist",
@@ -85,24 +98,15 @@ const solutions: SolutionData[] = [
               { value: 1, highlight: "success" },
             ],
           },
-          {
-            type: "variables",
-            entries: [
-              { name: "Copy(13).next", value: "Copy(11)" },
-              { name: "Copy(13).random", value: "Copy(7)", highlight: true },
-            ],
-          },
+          { type: "variables", entries: [{ name: "Copy(11).random", value: "Copy(1) ✓" }, { name: "Copy(10).random", value: "Copy(11) ✓" }, { name: "Copy(1).random", value: "Copy(7) ✓", highlight: true }] },
         ],
       },
       {
         description:
-          "Return old_to_new[head] — the clone of the head node, which is the entry point to our fully copied list. Every next and random pointer in the copy references other copy nodes (never the originals). Time: O(n) — two linear passes. Space: O(n) for the hashmap storing n node mappings. This same two-pass-with-hashmap pattern works for any 'deep copy a graph structure' problem (see also: Clone Graph).",
+          "Return old_to_new[head] = Copy(7). The deep copy is complete — every next and random pointer in the copy references other copy nodes. The original list is untouched. Time: O(n) — two linear passes. Space: O(n) for the hashmap. This two-pass pattern (create nodes, then wire pointers) generalizes to any graph cloning problem (Clone Graph uses the same idea with a DFS/BFS pass).",
         codeHighlightLines: [14],
         structures: [
-          {
-            type: "variables",
-            entries: [{ name: "return", value: "Copy(7) — head of deep copy", highlight: true }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(n)" }],
-          },
+          { type: "variables", entries: [{ name: "return", value: "Copy(7) — head of deep copy", highlight: true }, { name: "all randoms wired", value: "copy nodes only, never originals" }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(n)" }] },
         ],
       },
     ],

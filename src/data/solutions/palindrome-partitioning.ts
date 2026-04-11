@@ -22,70 +22,46 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "Partition a string into substrings such that every substring is a palindrome, and return all possible partitions. This is a backtracking problem: at each position, we try every possible cut. If the substring from the current position to the cut point is a palindrome, we include it and recurse on the remainder. The decision tree branches at each position with up to n choices (all possible end points). s='aab'.",
+          "Partition a string so every substring is a palindrome. Return ALL valid partitions. At each position, try every possible cut point. If the substring from current position to cut point is a palindrome, include it and recurse on the remainder. This is a decision tree: at position i, branch into cuts of length 1, 2, ..., n-i. s='aab'.",
         codeHighlightLines: [1, 2, 3],
         structures: [
-          {
-            type: "array",
-            label: "string",
-            values: ["a", "a", "b"],
-            highlights: {},
-          },
-          { type: "variables", entries: [{ name: "goal", value: "every piece must be a palindrome" }] },
+          { type: "array", label: "string", values: ["a", "a", "b"], highlights: {} },
+          { type: "variables", entries: [{ name: "goal", value: "every piece must be a palindrome" }, { name: "approach", value: "try all cuts, prune non-palindromes" }] },
         ],
       },
       {
         description:
-          "start=0: Try cutting after index 0 → substring 'a'. Is 'a' a palindrome? Yes (single char always is). Add to path, recurse with start=1. At start=1: try 'a' (palindrome ✓), recurse start=2. At start=2: try 'b' (palindrome ✓), recurse start=3. start=3 == len(s) — we've partitioned the entire string! Add ['a','a','b'] to result. This is the finest possible partition: every character is its own palindrome.",
+          "start=0: Try cut of length 1 → 'a'. Palindrome? Yes (single char). path=['a'], recurse with start=1. At start=1: try cut of length 1 → 'a'. Palindrome? Yes. path=['a','a'], recurse with start=2. At start=2: try 'b'. Palindrome? Yes. path=['a','a','b'], recurse start=3. start=3 == len(s) → add ['a','a','b'] to result! First partition found.",
         codeHighlightLines: [4, 5, 6, 7, 8, 9, 10, 11],
         structures: [
-          {
-            type: "array",
-            label: "string",
-            values: ["a", "a", "b"],
-            highlights: { 0: "active", 1: "active", 2: "active" },
-          },
-          {
-            type: "variables",
-            entries: [{ name: "path", value: "['a', 'a', 'b']", highlight: true }, { name: "partition 1", value: "a | a | b" }],
-          },
+          { type: "array", label: "string", values: ["a", "a", "b"], highlights: { 0: "active", 1: "active", 2: "active" } },
+          { type: "variables", entries: [{ name: "path", value: "['a', 'a', 'b']", highlight: true }, { name: "cuts", value: "a | a | b (finest partition)" }] },
         ],
       },
       {
         description:
-          "Backtrack to start=1 and try a longer cut: 'ab'. Is 'ab' a palindrome? No ('ab' ≠ 'ba'), skip. Backtrack all the way to start=0 and try a longer cut: 'aa'. Is 'aa' a palindrome? Yes! Add 'aa' to path, recurse with start=2. Try 'b' ✓. start=3 — done! Add ['aa','b'] to result. The palindrome check prunes many branches: 'aab' is not a palindrome, so the partition ['aab'] is never attempted.",
-        codeHighlightLines: [7, 8, 9, 10, 11],
+          "Backtrack to start=1, try longer cut: 'ab'. Is 'ab' a palindrome? 'ab' ≠ 'ba' → No! Skip this branch entirely. This pruning is powerful — we never recurse into paths with non-palindrome segments. Backtrack further to start=0, try cut of length 2 → 'aa'. Is 'aa' a palindrome? 'aa' == 'aa' → Yes! path=['aa'], recurse with start=2.",
+        codeHighlightLines: [8, 9, 10, 11],
         structures: [
-          {
-            type: "array",
-            label: "string",
-            values: ["a", "a", "b"],
-            highlights: { 0: "success", 1: "success" },
-          },
-          {
-            type: "variables",
-            entries: [
-              { name: "path", value: "['aa', 'b']", highlight: true },
-              { name: "'ab' palindrome?", value: "No → pruned" },
-              { name: "'aab' palindrome?", value: "No → pruned" },
-            ],
-          },
+          { type: "array", label: "string", values: ["a", "a", "b"], highlights: { 0: "success", 1: "success" } },
+          { type: "variables", entries: [{ name: "'ab' palindrome?", value: "No → pruned" }, { name: "'aa' palindrome?", value: "Yes → explore!", highlight: true }, { name: "path so far", value: "['aa']" }] },
         ],
       },
       {
         description:
-          "Final result: [['a','a','b'], ['aa','b']]. Both are valid palindrome partitions. The backtracking explores all 2^(n-1) possible cut positions (between each pair of characters, we either cut or don't). Palindrome checking prunes invalid branches early. Time: O(n × 2^n) — up to 2^n partitions, each taking O(n) to validate and copy. Space: O(n) for recursion depth. Can be optimized with DP precomputation of palindrome checks.",
+          "At start=2 with path=['aa']: try 'b'. Palindrome? Yes. path=['aa','b']. start=3 == len(s) → add ['aa','b'] to result! Second partition found. Backtrack to start=0, try cut of length 3 → 'aab'. Is 'aab' a palindrome? 'aab' ≠ 'baa' → No! Skip. No more cuts to try from start=0. Backtracking complete.",
+        codeHighlightLines: [4, 5, 6, 8, 9],
+        structures: [
+          { type: "array", label: "string", values: ["a", "a", "b"], highlights: { 0: "success", 1: "success", 2: "success" } },
+          { type: "variables", entries: [{ name: "path", value: "['aa', 'b']", highlight: true }, { name: "'aab' palindrome?", value: "No → pruned" }, { name: "all from start=0", value: "lengths 1,2,3 tried" }] },
+        ],
+      },
+      {
+        description:
+          "Result: [['a','a','b'], ['aa','b']]. The decision tree explored 3 branches from start=0 (lengths 1, 2, 3), pruned 'ab' and 'aab' as non-palindromes, and found 2 valid partitions. Time: O(n × 2^n) — up to 2^(n-1) partitions (each gap between characters is either cut or not), each taking O(n) to copy. Space: O(n) recursion depth. Can optimize palindrome checks with DP precomputation.",
         codeHighlightLines: [13, 14],
         structures: [
-          {
-            type: "variables",
-            entries: [
-              { name: "return", value: "[['a','a','b'], ['aa','b']]", highlight: true },
-              { name: "partitions found", value: 2 },
-              { name: "Time", value: "O(n × 2^n)" },
-              { name: "Space", value: "O(n)" },
-            ],
-          },
+          { type: "variables", entries: [{ name: "return", value: "[['a','a','b'], ['aa','b']]", highlight: true }, { name: "partitions found", value: 2 }, { name: "branches pruned", value: "'ab', 'aab' (not palindromes)" }, { name: "Time", value: "O(n × 2^n)" }] },
         ],
       },
     ],
