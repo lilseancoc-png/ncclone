@@ -26,38 +26,47 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Insert a new interval into a sorted, non-overlapping list of intervals and merge any overlaps. The elegant approach: three linear passes in one sweep. Phase 1: add all intervals that end BEFORE the new one starts (no overlap possible). Phase 2: merge all intervals that overlap with the new one. Phase 3: add all intervals that start AFTER the new one ends. intervals=[[1,3],[6,9]], newInterval=[2,5].",
+        "Insert a new interval into a sorted, non-overlapping list and merge overlaps. Three-phase sweep: (1) add intervals entirely before the new one, (2) merge overlapping ones, (3) add intervals entirely after. intervals=[[1,2],[3,5],[6,7],[8,10],[12,16]], newInterval=[4,8].",
       codeHighlightLines: [1, 2, 3, 4],
       structures: [
-        { type: "array", label: "intervals", values: ["[1,3]", "[6,9]"] },
-        { type: "variables", entries: [{ name: "newInterval", value: "[2,5]", highlight: true }, { name: "result", value: "[]" }] },
+        { type: "array", label: "intervals", values: ["[1,2]", "[3,5]", "[6,7]", "[8,10]", "[12,16]"] },
+        { type: "variables", entries: [{ name: "newInterval", value: "[4,8]", highlight: true }, { name: "result", value: "[]" }] },
       ],
     },
     {
       description:
-        "Phase 1 — Add before: Check if intervals[0]=[1,3] ends before newInterval starts. Does 3 < 2? No! So [1,3] is NOT entirely before [2,5] — they might overlap. Skip to Phase 2. (If intervals were [[0,1],[6,9]], then [0,1] ends at 1 < 2, so it would be added to result.)",
+        "Phase 1 — Add before: [1,2] ends at 2 < newInterval start 4? YES → no overlap, add [1,2] to result. [3,5] ends at 5 < 4? NO → might overlap, stop Phase 1. One interval safely added before any merging starts.",
       codeHighlightLines: [5, 6, 7, 8],
       structures: [
-        { type: "array", label: "intervals", values: ["[1,3]", "[6,9]"], highlights: { 0: "active" } },
-        { type: "variables", entries: [{ name: "3 < 2?", value: "No → not before, check overlap" }, { name: "result", value: "[]" }, { name: "i", value: 0 }] },
+        { type: "array", label: "intervals", values: ["[1,2]", "[3,5]", "[6,7]", "[8,10]", "[12,16]"], highlights: { 0: "success", 1: "active" } },
+        { type: "variables", entries: [{ name: "[1,2] end=2 < 4?", value: "YES → add to result" }, { name: "[3,5] end=5 < 4?", value: "NO → check overlap" }, { name: "result", value: "[[1,2]]", highlight: true }] },
       ],
     },
     {
       description:
-        "Phase 2 — Merge overlaps: Does [1,3] overlap [2,5]? Check: intervals[0][0]=1 <= newInterval[1]=5? Yes → overlap! Merge: new start = min(2,1) = 1, new end = max(5,3) = 5. newInterval becomes [1,5]. Next: does [6,9] overlap [1,5]? Check: 6 <= 5? No → stop merging. Append merged [1,5] to result.",
+        "Phase 2 — Merge overlaps: [3,5] start=3 <= newInterval end=8? YES → overlap! Merge: new = [min(4,3), max(8,5)] = [3,8]. Next: [6,7] start=6 <= 8? YES → merge: [min(3,6), max(8,7)] = [3,8]. Next: [8,10] start=8 <= 8? YES → merge: [min(3,8), max(8,10)] = [3,10]. Three intervals absorbed into one merged interval.",
       codeHighlightLines: [9, 10, 11, 12, 13, 14],
       structures: [
-        { type: "array", label: "result so far", values: ["[1,5]"], highlights: { 0: "success" } },
-        { type: "variables", entries: [{ name: "merge [1,3] + [2,5]", value: "[1,5]", highlight: true }, { name: "[6,9] overlap [1,5]?", value: "6 <= 5? No → stop" }] },
+        { type: "array", label: "intervals", values: ["[1,2]", "[3,5]", "[6,7]", "[8,10]", "[12,16]"], highlights: { 1: "active", 2: "active", 3: "active" } },
+        { type: "variables", entries: [{ name: "merge [3,5]+[4,8]", value: "[3,8]" }, { name: "merge +[6,7]", value: "[3,8]" }, { name: "merge +[8,10]", value: "[3,10]", highlight: true }] },
       ],
     },
     {
       description:
-        "Phase 3 — Add remaining: [6,9] starts after the merged interval ends, so add it as-is. Result: [[1,5],[6,9]]. The three-phase approach handles all edge cases cleanly: new interval before all, after all, overlapping multiple intervals, or no overlaps. Time: O(n) — single pass, each interval examined once. Space: O(n) for the result array.",
-      codeHighlightLines: [15, 16, 17, 18, 19],
+        "Next: [12,16] start=12 <= 10? NO → stop merging. Append merged [3,10] to result. Phase 3 — Add remaining: [12,16] starts after merged interval, add as-is. result = [[1,2],[3,10],[12,16]].",
+      codeHighlightLines: [14, 15, 16, 17, 18, 19],
       structures: [
-        { type: "array", label: "final result", values: ["[1,5]", "[6,9]"], highlights: { 0: "success", 1: "success" } },
-        { type: "variables", entries: [{ name: "return", value: "[[1,5],[6,9]]", highlight: true }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(n)" }] },
+        { type: "array", label: "result building", values: ["[1,2]", "[3,10]", "[12,16]"], highlights: { 0: "success", 1: "success", 2: "success" } },
+        { type: "variables", entries: [{ name: "merged interval", value: "[3,10] (absorbed 3 intervals)", highlight: true }, { name: "[12,16]", value: "added as-is (no overlap)" }] },
+      ],
+    },
+    {
+      description:
+        "Return [[1,2],[3,10],[12,16]]. Original 5 intervals → 3 (three merged into one). The three-phase approach handles all edge cases: new interval before all, after all, overlapping everything, or no overlaps. Each interval examined exactly once. Time: O(n). Space: O(n) for result.",
+      codeHighlightLines: [19],
+      structures: [
+        { type: "array", label: "final result", values: ["[1,2]", "[3,10]", "[12,16]"], highlights: { 0: "success", 1: "success", 2: "success" } },
+        { type: "variables", entries: [{ name: "return", value: "[[1,2],[3,10],[12,16]]", highlight: true }, { name: "5 intervals → 3", value: "[3,5],[6,7],[8,10] merged" }, { name: "Time", value: "O(n)" }] },
       ],
     },
   ],

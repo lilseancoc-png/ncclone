@@ -22,35 +22,43 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Given a string of digits (2-9), return all possible letter combinations that the digits could represent on a phone keypad. This is a classic backtracking problem that generates a combinatorial tree: each digit branches into 3-4 letters, and we explore every path. The total combinations = product of letter counts per digit. For '23': digit 2 has 3 letters (abc) and digit 3 has 3 letters (def), so 3×3 = 9 combinations. Input: digits='23'.",
+        "Given digits '23', return all letter combinations from a phone keypad. Each digit maps to 3-4 letters. This is backtracking: build combinations character by character, exploring every branch. Total = product of letter counts: 3 × 3 = 9 combinations for '23'.",
       codeHighlightLines: [1, 2, 3, 4, 5, 6],
       structures: [
         { type: "array", label: "digits", values: ["2", "3"] },
-        { type: "variables", entries: [{ name: "2", value: "abc" }, { name: "3", value: "def" }, { name: "total combos", value: "3 × 3 = 9" }] },
+        { type: "variables", entries: [{ name: "2", value: "'abc' (3 letters)" }, { name: "3", value: "'def' (3 letters)" }, { name: "total combos", value: "3 × 3 = 9" }] },
       ],
     },
     {
       description:
-        "Backtrack starting at digit index 0 with empty string. Digit '2' → 'abc'. Pick 'a', recurse to digit index 1. Digit '3' → 'def'. Pick 'd' → reached end (i == len(digits)), add 'ad' to result. Backtrack, pick 'e' → add 'ae'. Pick 'f' → add 'af'. All combinations starting with 'a' are done. This is depth-first: we go deep (complete one combination) before exploring alternatives.",
+        "Start backtrack(0, ''). Digit '2' → letters 'abc'. Pick 'a', recurse to backtrack(1, 'a'). Digit '3' → 'def'. Pick 'd' → i==len(digits), add 'ad'. Pick 'e' → add 'ae'. Pick 'f' → add 'af'. All 3 branches of digit '3' explored with prefix 'a'.",
       codeHighlightLines: [8, 9, 10, 11, 12, 13],
       structures: [
-        { type: "array", label: "digits", values: ["2", "3"], highlights: { 0: "active" } },
         { type: "array", label: "result so far", values: ["ad", "ae", "af"], highlights: { 0: "success", 1: "success", 2: "success" } },
-        { type: "variables", entries: [{ name: "curr", value: "'a' + {d,e,f}", highlight: true }, { name: "recursion depth", value: "2 (one per digit)" }] },
+        { type: "variables", entries: [{ name: "prefix", value: "'a'", highlight: true }, { name: "digit '3' branches", value: "d, e, f → ad, ae, af" }] },
       ],
     },
     {
       description:
-        "Backtrack all the way to digit '2'. Now try 'b': recurse into digit '3' → 'bd', 'be', 'bf'. Then try 'c': recurse → 'cd', 'ce', 'cf'. The recursion tree has 3 branches at level 0 (a/b/c) and 3 at level 1 (d/e/f), producing 9 leaf nodes = 9 combinations. Each leaf is a complete path from root to bottom.",
+        "Backtrack to digit '2'. Pick 'b', recurse. Digit '3' → 'bd', 'be', 'bf'. 6 total combinations so far. Each prefix ('a', 'b') generates 3 combinations from digit '3'.",
       codeHighlightLines: [12, 13],
       structures: [
-        { type: "array", label: "result", values: ["ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf"], highlights: { 3: "active", 4: "active", 5: "active", 6: "active", 7: "active", 8: "active" } },
-        { type: "variables", entries: [{ name: "tree structure", value: "3 × 3 = 9 leaves" }, { name: "total", value: 9, highlight: true }] },
+        { type: "array", label: "result so far", values: ["ad", "ae", "af", "bd", "be", "bf"], highlights: { 3: "success", 4: "success", 5: "success" } },
+        { type: "variables", entries: [{ name: "prefix", value: "'b'", highlight: true }, { name: "digit '3' branches", value: "d, e, f → bd, be, bf" }] },
       ],
     },
     {
       description:
-        "Return all 9 combinations. Time: O(4^n × n) worst case — digits 7 ('pqrs') and 9 ('wxyz') have 4 letters each, and building each string takes O(n). Space: O(n) for the recursion stack (one frame per digit). This pattern generalizes: any problem that combines choices from independent sets is a backtracking tree where each level picks from one set.",
+        "Backtrack to digit '2'. Pick 'c', recurse. Digit '3' → 'cd', 'ce', 'cf'. All branches of digit '2' exhausted. The recursion tree: 3 branches at level 0 (a/b/c) × 3 at level 1 (d/e/f) = 9 leaf nodes, each a complete combination.",
+      codeHighlightLines: [12, 13],
+      structures: [
+        { type: "array", label: "result", values: ["ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf"], highlights: { 6: "success", 7: "success", 8: "success" } },
+        { type: "variables", entries: [{ name: "prefix", value: "'c'", highlight: true }, { name: "all 9 combos", value: "3 × 3 tree fully explored" }] },
+      ],
+    },
+    {
+      description:
+        "Return all 9 combinations. Time: O(4^n × n) worst case — digits 7 and 9 have 4 letters each, and each string is length n. Space: O(n) for recursion stack depth (one frame per digit). This pattern generalizes: any problem combining independent choice sets is a backtracking tree where each level picks from one set.",
       codeHighlightLines: [14, 15],
       structures: [
         { type: "array", label: "result", values: ["ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf"], highlights: { 0: "success", 1: "success", 2: "success", 3: "success", 4: "success", 5: "success", 6: "success", 7: "success", 8: "success" } },
