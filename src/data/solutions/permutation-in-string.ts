@@ -30,38 +30,48 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        'Check if any permutation of s1 exists as a contiguous substring of s2. A permutation has the same characters in any order, so we need a substring of s2 with identical character frequencies to s1. The brute-force approach generates all permutations — O(n!). Instead, use a fixed-size sliding window of length len(s1) and track character frequencies. The clever optimization: maintain a "matches" counter (how many of 26 letters have equal counts), so each window slide is O(1). s1="ab", s2="eidbaooo".',
+        "Check if any permutation of s1 exists as a substring of s2. A permutation has identical character frequencies. Use a fixed-size sliding window of len(s1) and track a 'matches' counter — how many of 26 letters have equal counts in both. When matches==26, we found a permutation. s1='ab', s2='eidbaooo'.",
       codeHighlightLines: [1, 2, 3, 4, 5, 6, 7, 8, 9],
       structures: [
         { type: "array", label: "s1", values: ["a", "b"] },
         { type: "array", label: "s2", values: ["e", "i", "d", "b", "a", "o", "o", "o"] },
-        { type: "variables", entries: [{ name: "window size", value: 2 }, { name: "s1_count", value: "{a:1, b:1}" }, { name: "matches goal", value: "all 26 letters have equal counts" }] },
+        { type: "variables", entries: [{ name: "window size", value: 2 }, { name: "s1_count", value: "{a:1, b:1}" }, { name: "goal", value: "matches == 26" }] },
       ],
     },
     {
       description:
-        'Initialize: count frequencies of first window "ei" in s2. s2_count = {e:1, i:1}. Compare all 26 letters: for most letters both counts are 0 (match!), but for a, b, e, i the counts differ. matches < 26. Slide the window: add right char, remove left char, update matches in O(1). Window "id" → no match. Window "db" → no match. Each slide adds one char and removes one, adjusting at most 2 of the 26 letter counts.',
-      codeHighlightLines: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+        "Initialize first window 'ei': s2_count={e:1, i:1}. Compare all 26 letters: most are 0==0 (match), but a,b,e,i differ. matches=22 (not 26). Check matches==26? No. Slide: add 'd', remove 'e'. Window becomes 'id'. s2_count={i:1, d:1}. e-count goes to 0 (matches s1's 0 → matches++), d-count goes to 1 (was matching at 0, now differs → matches--). Net: still 22.",
+      codeHighlightLines: [10, 11, 13, 14, 15, 16, 18, 19, 20, 21],
       structures: [
-        { type: "array", label: "s2", values: ["e", "i", "d", "b", "a", "o", "o", "o"], highlights: { 0: "checked", 1: "checked", 2: "checked", 3: "checked" } },
-        { type: "variables", entries: [{ name: "window 'ei'", value: "no match" }, { name: "window 'id'", value: "no match" }, { name: "window 'db'", value: "no match" }] },
+        { type: "array", label: "s2", values: ["e", "i", "d", "b", "a", "o", "o", "o"], highlights: { 0: "checked", 1: "checked", 2: "active" } },
+        { type: "variables", entries: [{ name: "window 'ei'", value: "matches=22" }, { name: "slide: +d, -e", value: "window 'id'" }, { name: "matches", value: "22 (no change)" }] },
       ],
     },
     {
       description:
-        'Window slides to "ba" (indices 3-4): add \'a\' (s2_count[a] goes to 1, now matches s1_count[a]=1 → matches++). Remove \'d\' (s2_count[d] goes to 0, matches s1_count[d]=0 → matches++). s2_count = {b:1, a:1} = s1_count. All 26 character counts now match → matches == 26! A permutation of "ab" is found: "ba". We don\'t need to check the remaining windows.',
-      codeHighlightLines: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+        "Slide: add 'b', remove 'i'. Window='db'. s2_count={d:1, b:1}. Adding b: b-count 0→1, matches s1's b:1 → matches++ (23). Removing i: i-count 1→0, matches s1's 0 → matches++ (24). Two letters closer! But still not 26 — d and a still differ (d:1≠0 and a:0≠1).",
+      codeHighlightLines: [13, 14, 15, 16, 18, 19, 20, 21],
+      structures: [
+        { type: "array", label: "s2", values: ["e", "i", "d", "b", "a", "o", "o", "o"], highlights: { 2: "checked", 3: "active" } },
+        { type: "variables", entries: [{ name: "window 'db'", value: "s2_count={d:1, b:1}" }, { name: "+b: b matches", value: "matches 23" }, { name: "-i: i matches", value: "matches 24", highlight: true }] },
+      ],
+    },
+    {
+      description:
+        "Slide: add 'a', remove 'd'. Window='ba'. Adding a: a-count 0→1, now equals s1's a:1 → matches++ (25). Removing d: d-count 1→0, now equals s1's d:0 → matches++ (26). matches==26! All 26 character frequencies are identical between s1 and current window.",
+      codeHighlightLines: [13, 14, 15, 16, 18, 19, 20, 21],
       structures: [
         { type: "array", label: "s2", values: ["e", "i", "d", "b", "a", "o", "o", "o"], highlights: { 3: "success", 4: "success" } },
-        { type: "variables", entries: [{ name: "window 'ba'", value: "{b:1, a:1}" }, { name: "matches", value: "26 — all equal!", highlight: true }] },
+        { type: "variables", entries: [{ name: "window 'ba'", value: "{b:1, a:1} = s1_count!", highlight: true }, { name: "+a: a matches", value: "matches 25" }, { name: "-d: d matches", value: "matches 26!", highlight: true }] },
       ],
     },
     {
       description:
-        'Return True — "ba" at index 3 is a permutation of "ab". The matches counter is the key optimization: instead of comparing all 26 counts each time (O(26) per slide), we maintain the count incrementally. When adding/removing a char, only that letter\'s match status changes. This gives true O(1) per slide and O(n) overall. Space: O(1) — two fixed 26-element arrays regardless of input size.',
+        "Return True — 'ba' at indices 3-4 is a permutation of 'ab'. The matches counter makes each slide O(1): only 2 characters change per slide (one added, one removed), each affecting at most 1 match. No need to compare all 26 counts each time. Time: O(n) — one pass through s2. Space: O(1) — two fixed 26-element arrays.",
       codeHighlightLines: [22],
       structures: [
-        { type: "variables", entries: [{ name: "return", value: true, highlight: true }, { name: "found", value: '"ba" at index 3' }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(1)" }] },
+        { type: "array", label: "s2", values: ["e", "i", "d", "b", "a", "o", "o", "o"], highlights: { 3: "success", 4: "success" } },
+        { type: "variables", entries: [{ name: "return", value: true, highlight: true }, { name: "found", value: "'ba' at index 3-4" }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(1)" }] },
       ],
     },
   ],

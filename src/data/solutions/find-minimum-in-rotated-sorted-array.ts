@@ -16,38 +16,47 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Find the minimum in a sorted array that has been rotated (e.g., [1,2,3,4,5] → [3,4,5,1,2]). A linear scan takes O(n), but we can do O(log n) using binary search. The key insight: compare nums[mid] with nums[right]. In a rotated array, the minimum is at the 'rotation point' where a large number is followed by a small one. nums=[3,4,5,1,2].",
+        "Find the minimum in a rotated sorted array (e.g., [1,2,3,4,5] rotated → [3,4,5,1,2]). Key insight: compare nums[mid] with nums[right]. If mid > right, the rotation point (minimum) is in the right half. Otherwise, mid itself could be the min. nums=[4,5,6,7,0,1,2].",
       codeHighlightLines: [1, 2, 3],
       structures: [
-        { type: "array", label: "nums", values: [3, 4, 5, 1, 2], highlights: {}, pointers: [{ index: 0, label: "L" }, { index: 4, label: "R" }] },
-        { type: "variables", entries: [{ name: "target", value: "find the minimum" }, { name: "rotation point", value: "between 5 and 1" }] },
+        { type: "array", label: "nums", values: [4, 5, 6, 7, 0, 1, 2], highlights: { 0: "pointer-i", 6: "pointer-j" } },
+        { type: "variables", entries: [{ name: "left", value: 0 }, { name: "right", value: 6 }, { name: "rotation point", value: "between index 3 and 4" }] },
       ],
     },
     {
       description:
-        "left=0, right=4, mid=(0+4)//2=2. nums[mid]=5, nums[right]=2. Since 5 > 2, the right half is NOT fully sorted — meaning the rotation point (and minimum) must be in the right half. Set left = mid+1 = 3. Why mid+1? Because nums[mid] is bigger than nums[right], so mid itself can't be the minimum.",
+        "Iteration 1: mid = (0+6)//2 = 3. nums[3]=7, nums[right]=nums[6]=2. Is 7 > 2? YES → the min must be to the right of mid (the array drops somewhere after index 3). Set left = mid+1 = 4. We can safely exclude mid because nums[mid] > nums[right] means mid itself isn't the minimum.",
       codeHighlightLines: [4, 5, 6],
       structures: [
-        { type: "array", label: "nums", values: [3, 4, 5, 1, 2], highlights: { 0: "checked", 1: "checked", 2: "active" }, pointers: [{ index: 0, label: "L" }, { index: 2, label: "mid" }, { index: 4, label: "R" }] },
-        { type: "variables", entries: [{ name: "nums[mid]", value: "5" }, { name: "nums[right]", value: "2" }, { name: "5 > 2?", value: "YES → min is right of mid", highlight: true }] },
+        { type: "array", label: "nums", values: [4, 5, 6, 7, 0, 1, 2], highlights: { 0: "checked", 1: "checked", 2: "checked", 3: "active", 6: "pointer-j" } },
+        { type: "variables", entries: [{ name: "mid=3, nums[3]=7", value: "7 > nums[right]=2", highlight: true }, { name: "action", value: "left = mid+1 = 4" }, { name: "eliminated", value: "indices 0-3" }] },
       ],
     },
     {
       description:
-        "Now left=3, right=4, mid=(3+4)//2=3. nums[mid]=1, nums[right]=2. Since 1 <= 2, the right half IS sorted — meaning the minimum is at mid or to its left. Set right = mid = 3. Why not mid-1? Because nums[mid] could BE the minimum (it's <= everything to its right).",
+        "Iteration 2: left=4, right=6. mid = (4+6)//2 = 5. nums[5]=1, nums[right]=nums[6]=2. Is 1 > 2? NO → the min is at mid or to its left (this subarray [0,1,2] is sorted, so minimum is at the leftmost). Set right = mid = 5. We keep mid in range because it might BE the minimum.",
       codeHighlightLines: [4, 7, 8],
       structures: [
-        { type: "array", label: "nums", values: [3, 4, 5, 1, 2], highlights: { 3: "active", 4: "checked" }, pointers: [{ index: 3, label: "L/mid" }, { index: 4, label: "R" }] },
-        { type: "variables", entries: [{ name: "nums[mid]", value: "1" }, { name: "nums[right]", value: "2" }, { name: "1 <= 2?", value: "YES → min at mid or left", highlight: true }] },
+        { type: "array", label: "nums", values: [4, 5, 6, 7, 0, 1, 2], highlights: { 4: "pointer-i", 5: "active", 6: "checked" } },
+        { type: "variables", entries: [{ name: "mid=5, nums[5]=1", value: "1 <= nums[right]=2", highlight: true }, { name: "action", value: "right = mid = 5" }, { name: "eliminated", value: "index 6" }] },
       ],
     },
     {
       description:
-        "Now left=3, right=3. left == right, so the loop exits. The minimum is at nums[left] = nums[3] = 1. We found it in just 2 iterations instead of scanning all 5 elements! Time: O(log n) — we halve the search space each step, just like standard binary search. Space: O(1) — only three variables. This works because one half of a rotated sorted array is always fully sorted, letting us eliminate it.",
+        "Iteration 3: left=4, right=5. mid = (4+5)//2 = 4. nums[4]=0, nums[right]=nums[5]=1. Is 0 > 1? NO → set right = mid = 4. Now left=4, right=4 → loop exits (left < right is false).",
+      codeHighlightLines: [4, 7, 8],
+      structures: [
+        { type: "array", label: "nums", values: [4, 5, 6, 7, 0, 1, 2], highlights: { 4: "active", 5: "pointer-j" } },
+        { type: "variables", entries: [{ name: "mid=4, nums[4]=0", value: "0 <= nums[right]=1", highlight: true }, { name: "action", value: "right = mid = 4" }, { name: "left==right", value: "4 → loop exits" }] },
+      ],
+    },
+    {
+      description:
+        "Return nums[left] = nums[4] = 0. Found the minimum in 3 iterations (log₂(7) ≈ 3) instead of scanning all 7 elements. The algorithm works because: if nums[mid] > nums[right], the drop (rotation point) must be between mid and right. Otherwise, the subarray [left..mid] contains the drop or is already sorted. Time: O(log n). Space: O(1).",
       codeHighlightLines: [9],
       structures: [
-        { type: "array", label: "nums", values: [3, 4, 5, 1, 2], highlights: { 3: "success" }, pointers: [{ index: 3, label: "L=R" }] },
-        { type: "variables", entries: [{ name: "return", value: 1, highlight: true }, { name: "iterations", value: "2 (vs 5 for linear)" }, { name: "Time", value: "O(log n)" }] },
+        { type: "array", label: "nums", values: [4, 5, 6, 7, 0, 1, 2], highlights: { 4: "success" } },
+        { type: "variables", entries: [{ name: "return", value: 0, highlight: true }, { name: "iterations", value: 3 }, { name: "Time", value: "O(log n)" }] },
       ],
     },
   ],
