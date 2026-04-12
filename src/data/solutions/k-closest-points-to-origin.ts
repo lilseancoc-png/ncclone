@@ -18,40 +18,49 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Find the k closest points to the origin (0,0). We could sort all points by distance (O(n log n)), but a max-heap of size k is more efficient at O(n log k). The trick: maintain a max-heap of the k closest points seen so far. When a closer point arrives, it evicts the farthest point in the heap. We use squared distance (x²+y²) to avoid expensive sqrt. points=[[1,3],[-2,2]], k=1.",
+        "Find k closest points to origin (0,0). Max-heap of size k: maintain the k closest seen so far. When a closer point arrives, it evicts the farthest in the heap. Use squared distance (x²+y²) to avoid sqrt. points=[[3,3],[5,-1],[-2,4]], k=2.",
       codeHighlightLines: [1, 2, 3, 4],
       structures: [
-        { type: "array", label: "points", values: ["[1,3]", "[-2,2]"] },
-        { type: "variables", entries: [{ name: "k", value: 1 }, { name: "heap", value: "[] (max-heap, size ≤ k)" }, { name: "note", value: "negate dist for max-heap in Python" }] },
+        { type: "array", label: "points", values: ["[3,3]", "[5,-1]", "[-2,4]"] },
+        { type: "variables", entries: [{ name: "k", value: 2 }, { name: "heap", value: "[] (max-heap by distance)" }, { name: "dist formula", value: "x² + y² (no sqrt needed)" }] },
       ],
     },
     {
       description:
-        "Point [1,3]: dist² = 1² + 3² = 1 + 9 = 10. Heap has fewer than k=1 elements, so push it. We store (-10, [1,3]) — negated so Python's min-heap acts as a max-heap. The root of the heap is always the FARTHEST point among our k candidates, making it easy to check if a new point should replace it.",
+        "Point [3,3]: dist² = 9+9 = 18. Heap size (0) < k (2), so push directly. Heap: [(-18, [3,3])]. Point [5,-1]: dist² = 25+1 = 26. Heap size (1) < k (2), push. Heap: [(-26, [5,-1]), (-18, [3,3])]. Root -26 = farthest point in our k candidates.",
       codeHighlightLines: [5, 6, 7, 8],
       structures: [
-        { type: "array", label: "points", values: ["[1,3]", "[-2,2]"], highlights: { 0: "active" } },
-        { type: "array", label: "heap", values: ["(-10, [1,3])"], highlights: { 0: "active" } },
-        { type: "variables", entries: [{ name: "dist²", value: "1+9 = 10" }, { name: "heap size", value: "1 = k" }] },
+        { type: "array", label: "points", values: ["[3,3]", "[5,-1]", "[-2,4]"], highlights: { 0: "active", 1: "active" } },
+        { type: "array", label: "heap (max by dist)", values: ["(-26,[5,-1])", "(-18,[3,3])"], highlights: { 0: "active", 1: "active" } },
+        { type: "variables", entries: [{ name: "[3,3] dist²", value: "18" }, { name: "[5,-1] dist²", value: "26 (farthest = root)" }] },
       ],
     },
     {
       description:
-        "Point [-2,2]: dist² = (-2)² + 2² = 4 + 4 = 8. Heap is full (size = k = 1). Is this point closer than the farthest in the heap? Check: -8 > -10 (i.e., 8 < 10). Yes — [-2,2] is closer! Use heapreplace to atomically pop the farthest and push the closer point. Heap now holds (-8, [-2,2]).",
+        "Point [-2,4]: dist² = 4+16 = 20. Heap is full (size=k=2). Is this closer than the farthest? Check: -20 > heap[0][0]=-26? Yes! (20 < 26). Use heapreplace: pop [5,-1] (dist 26), push [-2,4] (dist 20). The farther point is evicted for a closer one.",
       codeHighlightLines: [5, 6, 9, 10],
       structures: [
-        { type: "array", label: "points", values: ["[1,3]", "[-2,2]"], highlights: { 0: "checked", 1: "active" } },
-        { type: "array", label: "heap", values: ["(-8, [-2,2])"], highlights: { 0: "success" } },
-        { type: "variables", entries: [{ name: "dist²", value: "4+4 = 8" }, { name: "8 < 10?", value: "Yes — closer! Replace.", highlight: true }] },
+        { type: "array", label: "points", values: ["[3,3]", "[5,-1]", "[-2,4]"], highlights: { 1: "checked", 2: "active" } },
+        { type: "array", label: "heap", values: ["(-20,[-2,4])", "(-18,[3,3])"], highlights: { 0: "success" } },
+        { type: "variables", entries: [{ name: "[-2,4] dist²=20", value: "20 < 26 → closer!", highlight: true }, { name: "evicted", value: "[5,-1] (dist² 26)" }] },
       ],
     },
     {
       description:
-        "All points processed. Extract the points from the heap: [[-2,2]]. This is the closest point to the origin with distance √8 ≈ 2.83, vs [1,3] with distance √10 ≈ 3.16. Time: O(n log k) — each of n points does at most one O(log k) heap operation. Space: O(k) for the heap. For k << n, this is much better than sorting all n points.",
+        "All points processed. If another point had dist² > 20 (the current max in heap), it would be skipped — not closer than our worst candidate. Only points beating the heap's root get in. This keeps the heap at exactly k elements with the k smallest distances.",
+      codeHighlightLines: [9],
+      structures: [
+        { type: "array", label: "heap (final)", values: ["(-20,[-2,4])", "(-18,[3,3])"], highlights: { 0: "success", 1: "success" } },
+        { type: "variables", entries: [{ name: "heap root", value: "dist²=20 (gatekeeper)" }, { name: "any dist² > 20", value: "rejected (not closer)" }] },
+      ],
+    },
+    {
+      description:
+        "Extract points from heap: [[3,3], [-2,4]]. These are the 2 closest to origin (distances √18≈4.24 and √20≈4.47 vs √26≈5.10 for the rejected [5,-1]). Time: O(n log k) — n points, each with at most one O(log k) heap op. Space: O(k). For k << n, this beats O(n log n) sorting.",
       codeHighlightLines: [11],
       structures: [
-        { type: "array", label: "result", values: ["[-2,2]"], highlights: { 0: "success" } },
-        { type: "variables", entries: [{ name: "return", value: "[[-2, 2]]", highlight: true }, { name: "Time", value: "O(n log k)" }, { name: "Space", value: "O(k)" }] },
+        { type: "array", label: "result", values: ["[3,3]", "[-2,4]"], highlights: { 0: "success", 1: "success" } },
+        { type: "variables", entries: [{ name: "return", value: "[[3,3], [-2,4]]", highlight: true }, { name: "Time", value: "O(n log k)" }, { name: "Space", value: "O(k)" }] },
       ],
     },
   ],

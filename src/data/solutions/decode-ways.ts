@@ -21,42 +21,50 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Count the number of ways to decode a string of digits where A=1, B=2, ..., Z=26. For example, \"226\" could be decoded as \"BBF\" (2,2,6), \"VF\" (22,6), or \"BZ\" (2,26). The DP idea: at each position i, we can either decode the single digit s[i-1] (if it's not '0') or the two-digit number s[i-2:i] (if it's between 10-26). dp[i] = ways to decode s[0:i]. s=\"226\".",
+        "Count ways to decode a digit string where A=1, B=2, ..., Z=26. At each position, we can decode one digit (1-9) or two digits (10-26). dp[i] = ways to decode s[0:i]. Base cases: dp[0]=1 (empty prefix), dp[1]=1 (first char, given non-zero). s='226'.",
       codeHighlightLines: [1, 2, 3, 4, 5, 6, 7],
       structures: [
         { type: "array", label: "s", values: ["2", "2", "6"] },
-        { type: "array", label: "dp", values: [1, 1, 0, 0] },
-        { type: "variables", entries: [{ name: "dp[0]=1", value: "empty string: 1 way (base case)" }, { name: "dp[1]=1", value: "'2' → 'B' (1 way)" }] },
+        { type: "array", label: "dp", values: [1, 1, "?", "?"] },
+        { type: "variables", entries: [{ name: "dp[0]=1", value: "base case (empty)" }, { name: "dp[1]=1", value: "'2' → B (1 way)" }] },
       ],
     },
     {
       description:
-        "i=2: Consider s[0:2] = \"22\". Option 1 — decode last digit alone: s[1]='2' is not '0', so it's a valid single digit. The number of ways = dp[i-1] = dp[1] = 1 (decode '2' as 'B', plus however we decoded the prefix). dp[2] += 1. Option 2 — decode last two digits together: \"22\" is between 10-26, so it maps to 'V'. Ways = dp[i-2] = dp[0] = 1. dp[2] += 1. Total: dp[2] = 2. The two decodings: \"BB\" (2,2) and \"V\" (22).",
-      codeHighlightLines: [8, 9, 10, 11, 12],
+        "i=2, consider s[0:2]='22'. Single digit: s[1]='2' ≠ '0' → valid. dp[2] += dp[1] = 1 (decode '2' alone as 'B', with 1 way to handle prefix). Two digits: '22' → 10<=22<=26 → valid, maps to 'V'. dp[2] += dp[0] = 1. dp[2] = 1+1 = 2. Decodings of '22': 'BB' (2,2) or 'V' (22).",
+      codeHighlightLines: [8, 9, 10, 11, 12, 13],
       structures: [
-        { type: "array", label: "s", values: ["2", "2", "6"], highlights: { 0: "checked", 1: "active" } },
-        { type: "array", label: "dp", values: [1, 1, 2, 0], highlights: { 2: "success" } },
-        { type: "variables", entries: [{ name: "single digit '2'", value: "valid → +dp[1] = +1" }, { name: "two digits '22'", value: "valid (10≤22≤26) → +dp[0] = +1", highlight: true }, { name: "dp[2]", value: "1 + 1 = 2", highlight: true }] },
+        { type: "array", label: "s", values: ["2", "2", "6"], highlights: { 1: "active" } },
+        { type: "array", label: "dp", values: [1, 1, 2, "?"], highlights: { 2: "success" } },
+        { type: "variables", entries: [{ name: "single '2'", value: "+dp[1] = +1" }, { name: "two '22' (=V)", value: "+dp[0] = +1", highlight: true }, { name: "dp[2]", value: "2 ways: BB, V" }] },
       ],
     },
     {
       description:
-        "i=3: Consider s[0:3] = \"226\". Option 1 — single digit: s[2]='6' is valid. dp[3] += dp[2] = 2 (each of the 2 ways to decode \"22\" can be extended with 'F'). Option 2 — two digits: s[1:3]=\"26\" is between 10-26, maps to 'Z'. dp[3] += dp[1] = 1 (the 1 way to decode \"2\" plus 'Z'). Total: dp[3] = 2 + 1 = 3.",
-      codeHighlightLines: [8, 9, 10, 11, 12],
+        "i=3, consider s[0:3]='226'. Single digit: s[2]='6' ≠ '0' → valid. dp[3] += dp[2] = 2 (each of the 2 ways to decode '22' can append 'F'). Two digits: s[1:3]='26' → 10<=26<=26 → valid, maps to 'Z'. dp[3] += dp[1] = 1 (the 1 way to decode '2' followed by 'Z').",
+      codeHighlightLines: [8, 9, 10, 11, 12, 13],
       structures: [
-        { type: "array", label: "s", values: ["2", "2", "6"], highlights: { 1: "checked", 2: "active" } },
+        { type: "array", label: "s", values: ["2", "2", "6"], highlights: { 2: "active" } },
         { type: "array", label: "dp", values: [1, 1, 2, 3], highlights: { 3: "success" } },
-        { type: "variables", entries: [{ name: "single digit '6'", value: "valid → +dp[2] = +2" }, { name: "two digits '26'", value: "valid (10≤26≤26) → +dp[1] = +1", highlight: true }, { name: "dp[3]", value: "2 + 1 = 3", highlight: true }] },
+        { type: "variables", entries: [{ name: "single '6' (=F)", value: "+dp[2] = +2" }, { name: "two '26' (=Z)", value: "+dp[1] = +1", highlight: true }, { name: "dp[3]", value: "2+1 = 3" }] },
       ],
     },
     {
       description:
-        "Return dp[3] = 3. The three decodings of \"226\": \"BBF\" (2→B, 2→B, 6→F), \"VF\" (22→V, 6→F), \"BZ\" (2→B, 26→Z). Note: digits '0' can only be decoded as part of a two-digit number (10 or 20). A leading '0' or standalone '0' makes that branch invalid (dp stays 0). Time: O(n) — single pass. Space: O(n) for the dp array (can be optimized to O(1) since we only need dp[i-1] and dp[i-2]).",
-      codeHighlightLines: [13],
+        "What about invalid cases? If s[i-1]='0': can't decode alone (no letter for '0'), so dp[i] += dp[i-1] is skipped. If two_digit > 26 (like '27'): can't decode as pair, skip dp[i-2]. If s='30': dp[2] gets nothing (s[1]='0' invalid alone, '30'>26 invalid pair) → dp[2]=0 → no valid decoding.",
+      codeHighlightLines: [9, 12],
       structures: [
-        { type: "array", label: "s", values: ["2", "2", "6"], highlights: { 0: "success", 1: "success", 2: "success" } },
+        { type: "array", label: "example '206'", values: ["2", "0", "6"] },
+        { type: "variables", entries: [{ name: "'0' alone", value: "NEVER valid (skip)" }, { name: "'20'", value: "valid (10<=20<=26) = T" }, { name: "'06'", value: "invalid (06 < 10)" }, { name: "'206' ways", value: "1: (20)(6) = TF" }] },
+      ],
+    },
+    {
+      description:
+        "Return dp[3] = 3 for '226'. The three decodings: 'BBF' (2,2,6), 'VF' (22,6), 'BZ' (2,26). The recurrence dp[i] = dp[i-1] (if single valid) + dp[i-2] (if pair valid) is similar to Fibonacci — can be optimized to O(1) space since we only need the previous two values. Time: O(n). Space: O(n), or O(1) optimized.",
+      codeHighlightLines: [14],
+      structures: [
         { type: "array", label: "dp (final)", values: [1, 1, 2, 3], highlights: { 3: "success" } },
-        { type: "variables", entries: [{ name: "return", value: 3, highlight: true }, { name: "decodings", value: "BBF, VF, BZ" }, { name: "Time", value: "O(n)" }] },
+        { type: "variables", entries: [{ name: "return", value: 3, highlight: true }, { name: "decodings", value: "BBF, VF, BZ" }, { name: "Time", value: "O(n)" }, { name: "similar to", value: "Fibonacci with conditions" }] },
       ],
     },
   ],
