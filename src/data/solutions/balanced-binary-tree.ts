@@ -19,38 +19,47 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "A binary tree is balanced if for EVERY node, the heights of its left and right subtrees differ by at most 1. The naive approach computes height separately for each node — O(n²). The optimal approach: bottom-up DFS that computes height AND checks balance in one pass. We return -1 as a sentinel for 'unbalanced' — once detected, it propagates up immediately. Tree: [3, 9, 20, null, null, 15, 7].",
+        "A tree is balanced if for EVERY node, left and right subtree heights differ by at most 1. Bottom-up DFS computes height and checks balance in one pass. Return -1 as sentinel for 'unbalanced' — propagates up immediately. Tree: [3, 9, 20, null, null, 15, 7].",
       codeHighlightLines: [1, 2, 3, 4],
       structures: [
         { type: "tree", label: "tree", nodes: [{ value: 3 }, { value: 9 }, { value: 20 }, null, null, { value: 15 }, { value: 7 }] },
-        { type: "variables", entries: [{ name: "balanced?", value: "check every node" }, { name: "-1 means", value: "unbalanced subtree" }] },
+        { type: "variables", entries: [{ name: "balanced?", value: "check every node bottom-up" }, { name: "-1", value: "sentinel for unbalanced" }] },
       ],
     },
     {
       description:
-        "check(9): Node 9 is a leaf — both children are null, returning height 0. left=0, right=0. |0-0|=0 ≤ 1 → balanced. Return height = 1+max(0,0) = 1. A single node has height 1 and is always balanced.",
+        "Start DFS at leaves. check(9): both children null → left=0, right=0. |0-0|=0 ≤ 1 ✓ balanced. Return height 1+max(0,0) = 1. Single nodes are always balanced.",
       codeHighlightLines: [3, 4, 5, 6, 9, 10, 11],
       structures: [
         { type: "tree", label: "tree", nodes: [{ value: 3 }, { value: 9, highlight: "active" }, { value: 20 }, null, null, { value: 15 }, { value: 7 }] },
-        { type: "variables", entries: [{ name: "node 9", value: "leaf" }, { name: "left", value: 0 }, { name: "right", value: 0 }, { name: "|0-0| ≤ 1?", value: "yes ✓" }, { name: "return height", value: 1, highlight: true }] },
+        { type: "variables", entries: [{ name: "check(9)", value: "leaf" }, { name: "left=0, right=0", value: "|0-0| ≤ 1 ✓" }, { name: "returns", value: "height 1", highlight: true }] },
       ],
     },
     {
       description:
-        "check(15): leaf, returns 1. check(7): leaf, returns 1. check(20): left=1 (from 15), right=1 (from 7). |1-1|=0 ≤ 1 → balanced. Return height = 1+max(1,1) = 2. The subtree rooted at 20 is perfectly balanced with equal-height children.",
+        "check(15): leaf, returns height 1. check(7): leaf, returns height 1. check(20): left=1 (from 15), right=1 (from 7). |1-1|=0 ≤ 1 ✓ balanced. Return height 1+max(1,1) = 2. Subtree at 20 is perfectly balanced.",
       codeHighlightLines: [5, 6, 9, 10, 11],
       structures: [
         { type: "tree", label: "tree", nodes: [{ value: 3 }, { value: 9, highlight: "checked" }, { value: 20, highlight: "active" }, null, null, { value: 15, highlight: "checked" }, { value: 7, highlight: "checked" }] },
-        { type: "variables", entries: [{ name: "node 20", value: "left=1, right=1" }, { name: "|1-1| ≤ 1?", value: "yes ✓" }, { name: "return height", value: 2, highlight: true }] },
+        { type: "variables", entries: [{ name: "check(20)", value: "left=1, right=1" }, { name: "|1-1| ≤ 1?", value: "yes ✓" }, { name: "returns", value: "height 2", highlight: true }] },
       ],
     },
     {
       description:
-        "check(3) (root): left=1 (from 9), right=2 (from 20). |1-2|=1 ≤ 1 → balanced! Return height = 1+max(1,2) = 3. Since check(root) ≠ -1, the tree IS balanced. If any subtree had returned -1, it would propagate all the way up without further checks — an early exit optimization. Time: O(n) — each node visited exactly once. Space: O(h) for the recursion stack.",
+        "check(3) (root): left=1 (from node 9), right=2 (from node 20). |1-2|=1 ≤ 1 ✓ balanced! Return height 3. Since check(root) ≠ -1, tree IS balanced. If any node had returned -1, it would skip all further checks and propagate up instantly.",
       codeHighlightLines: [5, 6, 9, 10, 11, 12],
       structures: [
-        { type: "tree", label: "balanced tree ✓", nodes: [{ value: 3, highlight: "success" }, { value: 9, highlight: "success" }, { value: 20, highlight: "success" }, null, null, { value: 15, highlight: "success" }, { value: 7, highlight: "success" }] },
-        { type: "variables", entries: [{ name: "root: |1-2|", value: "1 ≤ 1 ✓" }, { name: "return", value: true, highlight: true }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(h)" }] },
+        { type: "tree", label: "tree", nodes: [{ value: 3, highlight: "active" }, { value: 9, highlight: "success" }, { value: 20, highlight: "success" }, null, null, { value: 15, highlight: "success" }, { value: 7, highlight: "success" }] },
+        { type: "variables", entries: [{ name: "check(3)", value: "left=1, right=2" }, { name: "|1-2| ≤ 1?", value: "yes ✓", highlight: true }, { name: "returns", value: "height 3" }] },
+      ],
+    },
+    {
+      description:
+        "Return True. Each node visited exactly once, computing height from bottom up. The -1 sentinel avoids O(n²) re-computation: once a subtree is unbalanced, we skip all remaining work. For an unbalanced tree like [1,2,null,3]: check(3)=1, check(2): left=1, right=0 → height 2, check(1): left=2, right=0 → |2-0|=2 > 1 → return -1. Time: O(n). Space: O(h).",
+      codeHighlightLines: [12],
+      structures: [
+        { type: "tree", label: "balanced ✓", nodes: [{ value: 3, highlight: "success" }, { value: 9, highlight: "success" }, { value: 20, highlight: "success" }, null, null, { value: 15, highlight: "success" }, { value: 7, highlight: "success" }] },
+        { type: "variables", entries: [{ name: "return", value: true, highlight: true }, { name: "Time", value: "O(n)" }, { name: "Space", value: "O(h)" }] },
       ],
     },
   ],
