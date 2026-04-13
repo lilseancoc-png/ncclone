@@ -27,7 +27,7 @@ def min_cost_connect_points(points):
   steps: [
     {
       description:
-        "Find the minimum cost to connect all points using Manhattan distance (|x₁-x₂| + |y₁-y₂|). This is the Minimum Spanning Tree (MST) problem on a complete graph. Prim's algorithm builds the MST greedily: start from any point, then repeatedly add the cheapest edge connecting a visited point to an unvisited one. A min-heap efficiently selects the cheapest edge. Since every pair of points has an edge, the graph has n(n-1)/2 edges. Points: [[0,0],[2,2],[3,10],[5,2],[7,0]].",
+        "Find minimum cost to connect all points using Manhattan distance (|x₁-x₂| + |y₁-y₂|). This is the Minimum Spanning Tree problem. Prim's algorithm: start from any point, repeatedly add the cheapest edge to an unvisited point. A min-heap selects the cheapest edge. Points: [[0,0],[2,2],[3,10],[5,2],[7,0]].",
       codeHighlightLines: [3, 4, 5, 6, 7, 8],
       structures: [
         { type: "array", label: "points", values: ["(0,0)", "(2,2)", "(3,10)", "(5,2)", "(7,0)"] },
@@ -36,16 +36,25 @@ def min_cost_connect_points(points):
     },
     {
       description:
-        "Pop (cost=0, point 0). Mark point 0 as visited. Push distances from point 0 to all unvisited points: to point 1 = |0-2|+|0-2| = 4, to point 2 = 13, to point 3 = 7, to point 4 = 7. Heap now has these 4 candidate edges. Pop the cheapest: (4, point 1). Visit point 1, add cost 4. The edge 0→1 is our first MST edge. Now push distances from point 1 to unvisited points, which might offer cheaper connections than what's already in the heap.",
+        "Pop (cost=0, point 0). Visit point 0, total_cost += 0. Push distances from point 0 to all others: to 1 = |0-2|+|0-2| = 4, to 2 = 13, to 3 = 7, to 4 = 7. Heap: [(4,1), (7,3), (7,4), (13,2)]. The cheapest candidate edge is cost 4 to point 1.",
       codeHighlightLines: [10, 11, 12, 13, 14, 15, 16, 17, 18],
       structures: [
-        { type: "array", label: "points", values: ["(0,0)", "(2,2)", "(3,10)", "(5,2)", "(7,0)"], highlights: { 0: "success", 1: "success" } },
-        { type: "variables", entries: [{ name: "visited", value: "{0, 1}" }, { name: "total_cost", value: 4, highlight: true }, { name: "MST edge", value: "0 → 1 (cost 4)" }] },
+        { type: "array", label: "points", values: ["(0,0)", "(2,2)", "(3,10)", "(5,2)", "(7,0)"], highlights: { 0: "success" } },
+        { type: "variables", entries: [{ name: "visited", value: "{0}" }, { name: "total_cost", value: 0 }, { name: "heap top", value: "(4, point 1)", highlight: true }] },
       ],
     },
     {
       description:
-        "From point 1 (2,2): distance to point 3 (5,2) = 3, which is cheaper than the 7 already in the heap from point 0! The heap sorts it out automatically. Pop (3, point 3) — visit it. Cost 4+3=7. From point 3 (5,2): distance to point 4 (7,0) = 4. Pop next cheapest unvisited: (4, point 4) via point 3. Cost 7+4=11. The heap may contain stale entries (already-visited points) — we just skip them with the `if i in visited: continue` check.",
+        "Pop (4, point 1). Visit it, total_cost = 4. MST edge: 0→1. Push from point 1 (2,2): to 2 = 9, to 3 = 3, to 4 = 7. Point 1 offers a cheaper path to point 3 (cost 3 vs 7 from point 0). The heap automatically sorts — (3, point 3) rises to the top.",
+      codeHighlightLines: [10, 11, 12, 13, 14, 15, 16, 17, 18],
+      structures: [
+        { type: "array", label: "points", values: ["(0,0)", "(2,2)", "(3,10)", "(5,2)", "(7,0)"], highlights: { 0: "success", 1: "success" } },
+        { type: "variables", entries: [{ name: "visited", value: "{0, 1}" }, { name: "total_cost", value: 4, highlight: true }, { name: "MST edge", value: "0→1 (cost 4)" }, { name: "heap top", value: "(3, point 3)" }] },
+      ],
+    },
+    {
+      description:
+        "Pop (3, point 3). Visit it, total_cost = 7. MST edge: 1→3. Push from point 3 (5,2): to 2 = 10, to 4 = 4. Pop next: (4, point 4). Visit it, total_cost = 11. MST edge: 3→4. Stale entries in heap (like (7, point 3) from earlier) are skipped via 'if i in visited: continue'.",
       codeHighlightLines: [11, 12, 13, 14, 15, 16, 17, 18],
       structures: [
         { type: "array", label: "points", values: ["(0,0)", "(2,2)", "(3,10)", "(5,2)", "(7,0)"], highlights: { 0: "success", 1: "success", 3: "success", 4: "success" } },
@@ -54,11 +63,11 @@ def min_cost_connect_points(points):
     },
     {
       description:
-        "Only point 2 (3,10) remains. Pop cheapest edge reaching it: distance from point 3 (5,2) = |5-3|+|2-10| = 10. Visit point 2, total cost = 11+10 = 21. All 5 points connected with 4 edges — MST complete! Prim's guarantees this is the minimum possible cost. Time: O(n² log n) — for each of n points, we push up to n edges into the heap. Space: O(n²) for the heap in worst case.",
+        "Only point 2 remains. Pop cheapest edge to it: (9, point 2) from point 1, but also (10, point 2) from point 3. Heap gives (9, point 2). Visit it, total_cost = 11+9 = 20. All 5 points connected with 4 edges — MST complete! Time: O(n² log n) — push up to n edges per point. Space: O(n²).",
       codeHighlightLines: [20],
       structures: [
         { type: "array", label: "points", values: ["(0,0)", "(2,2)", "(3,10)", "(5,2)", "(7,0)"], highlights: { 0: "success", 1: "success", 2: "success", 3: "success", 4: "success" } },
-        { type: "variables", entries: [{ name: "total_cost", value: 21, highlight: true }, { name: "MST edges", value: "0→1(4), 1→3(3), 3→4(4), 3→2(10)" }, { name: "Time", value: "O(n² log n)" }] },
+        { type: "variables", entries: [{ name: "total_cost", value: 20, highlight: true }, { name: "MST edges", value: "0→1(4), 1→3(3), 3→4(4), 1→2(9)" }, { name: "Time", value: "O(n² log n)" }] },
       ],
     },
   ],

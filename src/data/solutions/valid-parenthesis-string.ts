@@ -23,38 +23,47 @@ const solution: SolutionData = {
   steps: [
     {
       description:
-        "Check if a string with '(', ')', and '*' (wildcard: can be '(', ')', or empty) has valid parentheses. Instead of trying all 3^n wildcard assignments, use a clever greedy trick: track the RANGE [lo, hi] of possible open parenthesis counts. lo = minimum possible unmatched '(' (treat * as ')'). hi = maximum possible unmatched '(' (treat * as '('). If 0 is within this range at the end, some assignment works. s = \"(*)\".",
+        "Check if a string with '(', ')', and '*' (wildcard: can be '(', ')', or empty) has valid parentheses. Instead of brute-forcing 3^n assignments, track the RANGE [lo, hi] of possible open paren counts. lo = min (treat * as ')'), hi = max (treat * as '('). If 0 is in the range at the end, some valid assignment exists. s = \"(*))\".",
       codeHighlightLines: [1, 2, 3],
       structures: [
-        { type: "array", label: "s", values: ["(", "*", ")"] },
-        { type: "variables", entries: [{ name: "lo (min open parens)", value: 0 }, { name: "hi (max open parens)", value: 0 }, { name: "insight", value: "track range of possibilities" }] },
+        { type: "array", label: "s", values: ["(", "*", ")", ")"] },
+        { type: "variables", entries: [{ name: "lo (min open)", value: 0 }, { name: "hi (max open)", value: 0 }] },
       ],
     },
     {
       description:
-        "char '(': Both lo and hi increase by 1 — a '(' always adds one unmatched open paren. lo=1, hi=1. Range [1,1] means we definitely have exactly 1 unmatched '(' right now, no matter how the wildcards resolve.",
+        "char '(': Both lo and hi increase by 1. lo=1, hi=1. Range [1,1] — exactly 1 unmatched '(' no matter what. A real '(' always adds to the open count.",
       codeHighlightLines: [4, 5, 6, 7],
       structures: [
-        { type: "array", label: "s", values: ["(", "*", ")"], highlights: { 0: "active" }, pointers: [{ index: 0, label: "(" }] },
-        { type: "variables", entries: [{ name: "lo", value: 1 }, { name: "hi", value: 1 }, { name: "range", value: "[1, 1] — exactly 1 open", highlight: true }] },
+        { type: "array", label: "s", values: ["(", "*", ")", ")"], highlights: { 0: "active" } },
+        { type: "variables", entries: [{ name: "lo", value: 1 }, { name: "hi", value: 1 }, { name: "range", value: "[1, 1]", highlight: true }] },
       ],
     },
     {
       description:
-        "char '*': The wildcard branches into three scenarios. As ')': lo = 1-1 = 0 (closes the open paren). As empty: stays 1. As '(': hi = 1+1 = 2 (adds another open). So lo=0, hi=2. Range [0,2] means the unmatched count could be 0, 1, or 2 depending on how we resolve '*'. Since hi >= 0, it's still potentially valid.",
+        "char '*': Three scenarios branch the range. As ')': lo=1-1=0. As empty: stays 1. As '(': hi=1+1=2. lo=0, hi=2. Range [0,2] means 0, 1, or 2 unmatched opens are all possible depending on how * resolves.",
       codeHighlightLines: [4, 11, 12, 13],
       structures: [
-        { type: "array", label: "s", values: ["(", "*", ")"], highlights: { 0: "checked", 1: "active" }, pointers: [{ index: 1, label: "*" }] },
+        { type: "array", label: "s", values: ["(", "*", ")", ")"], highlights: { 0: "checked", 1: "active" } },
         { type: "variables", entries: [{ name: "* as ')'", value: "lo → 0" }, { name: "* as '('", value: "hi → 2" }, { name: "range", value: "[0, 2]", highlight: true }] },
       ],
     },
     {
       description:
-        "char ')': lo = 0-1 = -1 → clamp to 0 (can't have negative open count). hi = 2-1 = 1. Range [0,1]. Since lo == 0 at the end, there exists an assignment where all parens are matched! In this case: treat '*' as empty → \"()\" which is valid. If hi had gone below 0 at any point, there'd be too many ')' for any assignment — instant False. Time: O(n) single pass. Space: O(1).",
-      codeHighlightLines: [4, 8, 9, 10, 14, 15, 16, 17],
+        "char ')': lo=0-1=-1 → clamp to 0 (can't have negative opens). hi=2-1=1. Range [0,1]. Second ')': lo=0-1=-1 → clamp to 0. hi=1-1=0. Range [0,0]. hi ≥ 0 so we haven't hit impossible territory — there IS an assignment that works.",
+      codeHighlightLines: [4, 8, 9, 10, 14, 15],
       structures: [
-        { type: "array", label: "s", values: ["(", "*", ")"], highlights: { 0: "success", 1: "success", 2: "success" } },
-        { type: "variables", entries: [{ name: "lo (clamped)", value: "max(-1, 0) = 0" }, { name: "hi", value: 1 }, { name: "lo == 0?", value: "Yes → valid!", highlight: true }, { name: "return", value: "True", highlight: true }] },
+        { type: "array", label: "s", values: ["(", "*", ")", ")"], highlights: { 2: "active", 3: "active" } },
+        { type: "variables", entries: [{ name: "first ')'", value: "range [0,1]" }, { name: "second ')'", value: "range [0,0]", highlight: true }, { name: "hi ≥ 0?", value: "Yes — still possible" }] },
+      ],
+    },
+    {
+      description:
+        "lo == 0 → True! The valid assignment: treat * as '(' → \"(())\" which is valid. If s were \"(*)))\" instead, after the third ')' hi would go to -1 → False (too many closes for any assignment). The lo clamp prevents false negatives, and the hi < 0 check prevents false positives. Time: O(n). Space: O(1).",
+      codeHighlightLines: [16],
+      structures: [
+        { type: "array", label: "s", values: ["(", "*", ")", ")"], highlights: { 0: "success", 1: "success", 2: "success", 3: "success" } },
+        { type: "variables", entries: [{ name: "lo == 0?", value: "Yes → valid!", highlight: true }, { name: "return", value: "True", highlight: true }, { name: "valid assignment", value: "* = '(' → \"(())\"" }, { name: "Time", value: "O(n)" }] },
       ],
     },
   ],
