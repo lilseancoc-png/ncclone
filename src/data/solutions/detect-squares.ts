@@ -23,7 +23,7 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "Design a data structure to add points and count axis-aligned squares. The key geometric insight: an axis-aligned square is uniquely determined by two diagonal corners. Given query point Q and any stored point D, if |Q.x - D.x| == |Q.y - D.y| (and they don't share an x or y coordinate), they could be diagonal corners of a square. The other two corners are deterministic: (Q.x, D.y) and (D.x, Q.y). Store points in a hash map with counts to handle duplicates. Points added: (1,1), (1,3), (3,1), (3,3).",
+          "Design a data structure to add points and count axis-aligned squares. Key insight: an axis-aligned square is defined by two diagonal corners. Given query Q and stored point D, if |Q.x - D.x| == |Q.y - D.y| (and they don't share x or y), they're diagonal corners. The other two corners are deterministic: (Q.x, D.y) and (D.x, Q.y). Store points with counts for duplicates. add points: (1,1), (1,3), (3,1), (3,3), (3,3).",
         codeHighlightLines: [1, 2, 3, 5, 6],
         structures: [
           {
@@ -33,67 +33,61 @@ const solutions: SolutionData[] = [
               ["(1,1)", 1],
               ["(1,3)", 1],
               ["(3,1)", 1],
-              ["(3,3)", 1],
+              ["(3,3)", 2],
             ],
           },
+          { type: "variables", entries: [{ name: "note", value: "(3,3) added twice → count=2" }] },
         ],
       },
       {
         description:
-          "count([1,1]): Iterate through all stored points to find potential diagonal partners. Point (3,3): Check |1-3| == |1-3|? Yes, both differences are 2. And px ≠ x (1≠3) and py ≠ y (1≠3). This pair could be diagonally opposite corners of a 2×2 square! What about (1,3)? |1-1|=0, but px==x, so they share the same x — skip (they'd form a line, not a square). Similarly (3,1) has py==y — skip.",
+          "count([1,1]): Scan all stored points for diagonal partners. Point (1,3): |1-1|=0, px==x → same column, skip (a line, not a square). Point (3,1): |1-3|=2 but py==y → same row, skip. These fail the 'no shared x or y' filter — two points on the same row or column can't be diagonals of a square.",
         codeHighlightLines: [8, 9, 10, 11, 12],
         structures: [
           {
             type: "hashmap",
-            label: "points",
+            label: "checking diagonals for Q=(1,1)",
             entries: [
-              ["(1,1)", "query"],
-              ["(1,3)", "same x, skip"],
-              ["(3,1)", "same y, skip"],
-              ["(3,3)", "diagonal ✓"],
-            ],
-            highlightKeys: ["(3,3)"],
-          },
-          {
-            type: "variables",
-            entries: [
-              { name: "query Q", value: "(1,1)" },
-              { name: "diagonal D", value: "(3,3)", highlight: true },
+              ["(1,3)", "same x → skip ✗"],
+              ["(3,1)", "same y → skip ✗"],
             ],
           },
+          { type: "variables", entries: [{ name: "query Q", value: "(1,1)" }, { name: "filter", value: "|dx|==|dy|, no shared x or y" }] },
         ],
       },
       {
         description:
-          "With Q=(1,1) and D=(3,3), the other two corners must be: (Q.x, D.y) = (1,3) and (D.x, Q.y) = (3,1). Look up both: points[(1,3)] = 1, points[(3,1)] = 1. Both exist! Number of squares from this diagonal pair = count(D) × count(corner1) × count(corner2) = 1 × 1 × 1 = 1. If there were duplicate points (e.g., two copies of (3,3)), we'd count 2 squares — the multiplication handles combinatorics automatically.",
+          "Point (3,3): |1-3|=2 == |1-3|=2 ✓, and px≠x, py≠y ✓. Valid diagonal! The other two corners must be (Q.x, D.y) = (1,3) and (D.x, Q.y) = (3,1). Look up both: points[(1,3)]=1 ✓, points[(3,1)]=1 ✓. Squares from this pair = cnt(D) × cnt(corner1) × cnt(corner2) = 2 × 1 × 1 = 2. Because (3,3) has count 2, there are TWO distinct squares sharing the same shape!",
         codeHighlightLines: [13, 14],
         structures: [
           {
             type: "hashmap",
-            label: "four corners of the square",
+            label: "square corners",
             entries: [
               ["(1,1)", "query"],
-              ["(3,3)", "diagonal (count=1)"],
+              ["(3,3)", "diagonal (count=2)"],
               ["(1,3)", "corner (count=1)"],
               ["(3,1)", "corner (count=1)"],
             ],
-            highlightKeys: ["(1,3)", "(3,1)"],
+            highlightKeys: ["(3,3)", "(1,3)", "(3,1)"],
           },
-          {
-            type: "variables",
-            entries: [{ name: "squares", value: "1 × 1 × 1 = 1", highlight: true }],
-          },
+          { type: "variables", entries: [{ name: "squares", value: "2 × 1 × 1 = 2", highlight: true }] },
         ],
       },
       {
         description:
-          "Return 1. No other stored points form valid diagonals with (1,1), so total = 1 square. Time per count query: O(n) — scan all points, with O(1) lookups for the other two corners. Add is O(1). Space: O(n) for the point counts. The algorithm works for any number of squares of different sizes, and handles duplicates via multiplication of counts.",
+          "No other stored points form valid diagonals with (1,1). Total = 2. The duplicate (3,3) point means two distinct squares can be formed with the same corners — the multiplication of counts handles this combinatorics automatically. If we later add another (1,3), count([1,1]) would return 2×2×1 = 4.",
         codeHighlightLines: [15],
         structures: [
-          {
-            type: "variables",
-            entries: [{ name: "return", value: 1, highlight: true }, { name: "add()", value: "O(1)" }, { name: "count()", value: "O(n)" }],
-          },
+          { type: "variables", entries: [{ name: "return", value: 2, highlight: true }, { name: "why 2?", value: "two copies of (3,3) = two squares" }] },
+        ],
+      },
+      {
+        description:
+          "Time per count: O(n) — scan all points, O(1) lookups for corners. add() is O(1). Space: O(n). The algorithm naturally handles multiple squares of different sizes from the same query point — each valid diagonal partner contributes independently. For a query with many nearby points, the same query could find multiple diagonal partners forming squares of different sizes.",
+        codeHighlightLines: [15],
+        structures: [
+          { type: "variables", entries: [{ name: "add()", value: "O(1)" }, { name: "count()", value: "O(n) per query" }, { name: "Space", value: "O(n)" }, { name: "key insight", value: "duplicates handled by multiplication", highlight: true }] },
         ],
       },
     ],

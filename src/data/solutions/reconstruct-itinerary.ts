@@ -19,7 +19,7 @@ const solutions: SolutionData[] = [
     steps: [
       {
         description:
-          "Reconstruct an itinerary using ALL tickets exactly once, starting from 'JFK'. If multiple valid itineraries exist, return the lexicographically smallest one. This is finding an Eulerian path (visits every edge exactly once). Hierholzer's algorithm: build adjacency lists sorted in reverse alphabetical order (so pop() gives the smallest destination). DFS greedily takes the smallest edge; when stuck, backtrack and append to route (post-order). Tickets: JFK→SFO, JFK→ATL, SFO→ATL, ATL→JFK, ATL→SFO.",
+          "Reconstruct an itinerary using ALL tickets exactly once, starting from 'JFK'. If multiple valid itineraries exist, return the lexicographically smallest. This is finding an Eulerian path (visits every edge once). Hierholzer's: build adjacency lists sorted in reverse so pop() gives smallest destination. DFS greedily takes smallest edge; when stuck, append to route (post-order). Tickets: JFK→SFO, JFK→ATL, SFO→ATL, ATL→JFK, ATL→SFO.",
         codeHighlightLines: [1, 2, 3, 4, 5],
         structures: [
           {
@@ -31,19 +31,34 @@ const solutions: SolutionData[] = [
               ["ATL", "[SFO, JFK]"],
             ],
           },
-          { type: "variables", entries: [{ name: "pop() gives", value: "lexicographically smallest" }, { name: "route", value: "[] (built in reverse)" }] },
+          { type: "variables", entries: [{ name: "pop() gives", value: "lex smallest" }, { name: "route", value: "[]" }] },
         ],
       },
       {
         description:
-          "DFS from JFK: pop 'ATL' (smallest). DFS(ATL): pop 'JFK' (smallest). DFS(JFK): pop 'SFO' (only option left). DFS(SFO): pop 'ATL'. DFS(ATL): pop 'SFO'. DFS(SFO): no more edges — stuck! Append 'SFO' to route. This is the key: when a node has no more outgoing edges, it becomes the END of a sub-path, so we record it.",
-        codeHighlightLines: [6, 7, 8, 9],
+          "DFS from JFK: pop 'ATL' (smallest). DFS(ATL): pop 'JFK' (smallest of [SFO,JFK]). DFS(JFK): pop 'SFO' (only option left). We're following the greedy path: JFK→ATL→JFK→SFO, always choosing the alphabetically smallest next airport.",
+        codeHighlightLines: [6, 7, 8],
         structures: [
           {
             type: "variables",
             entries: [
-              { name: "DFS path", value: "JFK→ATL→JFK→SFO→ATL→SFO" },
-              { name: "SFO stuck!", value: "no more edges → append to route", highlight: true },
+              { name: "DFS path so far", value: "JFK→ATL→JFK→SFO", highlight: true },
+              { name: "JFK edges left", value: "[] (exhausted)" },
+              { name: "ATL edges left", value: "[SFO]" },
+            ],
+          },
+        ],
+      },
+      {
+        description:
+          "DFS(SFO): pop 'ATL'. DFS(ATL): pop 'SFO'. DFS(SFO): no more edges — STUCK! Append 'SFO' to route. This is the key: when a node has no outgoing edges, it's the END of a sub-path. Post-order recording captures dead-ends first.",
+        codeHighlightLines: [7, 8, 9],
+        structures: [
+          {
+            type: "variables",
+            entries: [
+              { name: "full DFS path", value: "JFK→ATL→JFK→SFO→ATL→SFO" },
+              { name: "SFO stuck!", value: "no edges → append", highlight: true },
               { name: "route", value: "[SFO]" },
             ],
           },
@@ -51,32 +66,20 @@ const solutions: SolutionData[] = [
       },
       {
         description:
-          "Backtracking: unwind the recursion. ATL: no more edges → append 'ATL'. SFO: no more edges → append 'SFO'. JFK: no more edges → append 'JFK'. ATL: no more edges → append 'ATL'. JFK: no more edges → append 'JFK'. route = [SFO, ATL, SFO, JFK, ATL, JFK]. Post-order recording means the route is built in reverse — dead-ends go first.",
+          "Backtrack: ATL has no more edges → append 'ATL'. SFO: none → append 'SFO'. JFK: none → append 'JFK'. ATL: none → append 'ATL'. JFK: none → append 'JFK'. route = [SFO, ATL, SFO, JFK, ATL, JFK]. Post-order means dead-ends recorded first, start recorded last.",
         codeHighlightLines: [8, 9],
         structures: [
-          {
-            type: "array",
-            label: "route (built in reverse)",
-            values: ["SFO", "ATL", "SFO", "JFK", "ATL", "JFK"],
-          },
-          { type: "variables", entries: [{ name: "need to reverse", value: "route is backwards" }] },
+          { type: "array", label: "route (reverse order)", values: ["SFO", "ATL", "SFO", "JFK", "ATL", "JFK"] },
+          { type: "variables", entries: [{ name: "built backwards", value: "dead-ends first, start last" }] },
         ],
       },
       {
         description:
-          "Reverse the route: [JFK, ATL, JFK, SFO, ATL, SFO]. This is the lexicographically smallest valid itinerary using all 5 tickets. Why Hierholzer's works: by greedily choosing the smallest edge and recording nodes in post-order, dead-end detours are naturally placed in the middle of the path. Time: O(E log E) for sorting edges. Space: O(E) for the graph and recursion stack.",
+          "Reverse: [JFK, ATL, JFK, SFO, ATL, SFO]. This is the lexicographically smallest valid itinerary using all 5 tickets. Why post-order works: by recording dead-end detours first, they naturally end up in the middle of the final path after reversal. Time: O(E log E) for sorting. Space: O(E).",
         codeHighlightLines: [10, 11],
         structures: [
-          {
-            type: "array",
-            label: "final itinerary",
-            values: ["JFK", "ATL", "JFK", "SFO", "ATL", "SFO"],
-            highlights: { 0: "success", 1: "success", 2: "success", 3: "success", 4: "success", 5: "success" },
-          },
-          {
-            type: "variables",
-            entries: [{ name: "return", value: "[JFK,ATL,JFK,SFO,ATL,SFO]", highlight: true }, { name: "Time", value: "O(E log E)" }, { name: "Space", value: "O(E)" }],
-          },
+          { type: "array", label: "final itinerary", values: ["JFK", "ATL", "JFK", "SFO", "ATL", "SFO"], highlights: { 0: "success", 1: "success", 2: "success", 3: "success", 4: "success", 5: "success" } },
+          { type: "variables", entries: [{ name: "return", value: "[JFK,ATL,JFK,SFO,ATL,SFO]", highlight: true }, { name: "Time", value: "O(E log E)" }] },
         ],
       },
     ],
