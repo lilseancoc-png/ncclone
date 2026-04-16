@@ -38,7 +38,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const { user, mounted: authMounted } = useAuth();
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [mounted, setMounted] = useState(false);
-  const syncingRef = useRef(false);
+  const syncQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   // -----------------------------------------------------------------------
   // Load progress
@@ -147,10 +147,9 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           next[slug] = true;
         }
 
-        // Sync to Supabase in background
-        if (user && isSupabaseConfigured() && !syncingRef.current) {
-          syncingRef.current = true;
-          (async () => {
+        // Sync to Supabase in background via sequential queue
+        if (user && isSupabaseConfigured()) {
+          syncQueueRef.current = syncQueueRef.current.then(async () => {
             try {
               if (wasCompleted) {
                 await supabase
@@ -166,10 +165,8 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
               }
             } catch {
               // Silently fail — localStorage is the source of truth
-            } finally {
-              syncingRef.current = false;
             }
-          })();
+          });
         }
 
         return next;

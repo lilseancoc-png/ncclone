@@ -13,6 +13,7 @@ import EditorToolbar from "@/components/editor/EditorToolbar";
 import OutputPanel from "@/components/editor/OutputPanel";
 import { useCodeDrafts } from "@/hooks/useCodeDrafts";
 import { useCodeRunner } from "@/hooks/useCodeRunner";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function ProblemPageClient({
   params,
@@ -21,7 +22,6 @@ export default function ProblemPageClient({
 }) {
   const { slug } = use(params);
   const result = findProblemBySlug(categories, slug);
-  const { isCompleted, toggleCompleted, mounted } = useProgress();
 
   if (!result) {
     return (
@@ -47,8 +47,19 @@ export default function ProblemPageClient({
     );
   }
 
-  // Fallback: simple layout for problems without IDE data
+  return <SimpleProblemLayout problem={problem} category={category} />;
+}
+
+function SimpleProblemLayout({
+  problem,
+  category,
+}: {
+  problem: ReturnType<typeof findProblemBySlug> extends { problem: infer P } | null ? P : never;
+  category: ReturnType<typeof findProblemBySlug> extends { category: infer C } | null ? C : never;
+}) {
+  const { isCompleted, toggleCompleted, mounted } = useProgress();
   const done = mounted && isCompleted(problem.slug);
+
   return (
     <main className="max-w-3xl mx-auto px-4 py-8">
       <Link
@@ -147,7 +158,7 @@ function IDELayout({
   slug: string;
 }) {
   const [language, setLanguage] = useState<Language>("python");
-  const starterCode = problem.starterCode![language] || "";
+  const starterCode = problem.starterCode?.[language] || "";
   const { code, setCode, reset } = useCodeDrafts(slug, language, starterCode);
   const { run, results, consoleOutput, isRunning, error, clear } = useCodeRunner();
 
@@ -207,12 +218,14 @@ function IDELayout({
 
           {/* Editor */}
           <div className="flex-1 min-h-0">
-            <CodeEditor
-              language={language}
-              value={code}
-              onChange={setCode}
-              onRun={handleRun}
-            />
+            <ErrorBoundary>
+              <CodeEditor
+                language={language}
+                value={code}
+                onChange={setCode}
+                onRun={handleRun}
+              />
+            </ErrorBoundary>
           </div>
 
           {/* Output panel */}

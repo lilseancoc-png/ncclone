@@ -63,7 +63,15 @@ interface StoredUser extends User {
   passwordHash: string;
 }
 
-function simpleHash(str: string): string {
+async function hashPassword(str: string): Promise<string> {
+  const data = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Legacy hash kept only for migrating existing localStorage accounts
+function legacyHash(str: string): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
@@ -98,8 +106,18 @@ function useLocalAuth() {
     const users = getStoredUsers();
     const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
     if (!found) return { success: false, error: "No account found with that email" };
-    if (found.passwordHash !== simpleHash(password))
+
+    const sha256Hash = await hashPassword(password);
+    if (found.passwordHash === sha256Hash) {
+      // Already using the new hash — proceed
+    } else if (found.passwordHash === legacyHash(password)) {
+      // Migrate from legacy hash to SHA-256 on successful login
+      found.passwordHash = sha256Hash;
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    } else {
       return { success: false, error: "Incorrect password" };
+    }
+
     const sessionUser: User = { id: found.id, email: found.email, displayName: found.displayName };
     setUser(sessionUser);
     localStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));
@@ -117,7 +135,7 @@ function useLocalAuth() {
         id: crypto.randomUUID(),
         email: email.toLowerCase(),
         displayName: displayName || email.split("@")[0],
-        passwordHash: simpleHash(password),
+        passwordHash: await hashPassword(password),
       };
       users.push(newUser);
       localStorage.setItem(USERS_KEY, JSON.stringify(users));
@@ -204,19 +222,25 @@ function useSupabaseAuth() {
 }
 
 // ---------------------------------------------------------------------------
-// Provider — picks Supabase or localStorage automatically
+// Provider — picks Supabase or localStorage automatically.
+// Each inner provider only instantiates one auth hook to avoid
+// running unnecessary side effects.
 // ---------------------------------------------------------------------------
+function SupabaseAuthProvider({ children }: { children: ReactNode }) {
+  const auth = useSupabaseAuth();
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+}
+
+function LocalAuthProvider({ children }: { children: ReactNode }) {
+  const auth = useLocalAuth();
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const supabaseAuth = useSupabaseAuth();
-  const localAuth = useLocalAuth();
-
-  const active = isSupabaseConfigured() ? supabaseAuth : localAuth;
-
-  return (
-    <AuthContext.Provider value={active}>
-      {children}
-    </AuthContext.Provider>
-  );
+  if (isSupabaseConfigured()) {
+    return <SupabaseAuthProvider>{children}</SupabaseAuthProvider>;
+  }
+  return <LocalAuthProvider>{children}</LocalAuthProvider>;
 }
 
 export function useAuth() {

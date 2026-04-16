@@ -20,7 +20,6 @@ const solutionLoaders: Record<string, () => Promise<SolutionModule>> = {
   "container-with-most-water": () => import("./container-with-most-water"),
   "trapping-rain-water": () => import("./trapping-rain-water"),
   // Sliding Window
-  // Sliding Window
   "best-time-to-buy-and-sell-stock": () => import("./best-time-to-buy-and-sell-stock"),
   "longest-substring-without-repeating-characters": () => import("./longest-substring-without-repeating-characters"),
   "longest-repeating-character-replacement": () => import("./longest-repeating-character-replacement"),

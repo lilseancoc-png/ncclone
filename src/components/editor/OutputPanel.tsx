@@ -28,13 +28,8 @@ export default function OutputPanel({
 
   return (
     <div className="flex flex-col h-full bg-[#151525]">
-      {/* Drag handle visual */}
-      <div className="flex items-center justify-center py-1 border-t border-border cursor-row-resize">
-        <div className="w-8 h-1 rounded-full bg-gray-600" />
-      </div>
-
       {/* Tabs */}
-      <div className="flex items-center gap-1 px-4 py-1.5 border-b border-border/50">
+      <div className="flex items-center gap-1 px-4 py-1.5 border-t border-border border-b border-b-border/50">
         <button
           onClick={() => setTab("results")}
           className={`px-3 py-1 text-xs font-medium rounded transition-colors ${

@@ -6,6 +6,7 @@ import DifficultyBadge from "@/components/DifficultyBadge";
 import { useProgress } from "@/hooks/useProgress";
 import { hasSolution } from "@/data/solutions";
 import SolutionTab from "./SolutionTab";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 interface ProblemDescriptionProps {
   problem: Problem;
@@ -195,7 +196,9 @@ export default function ProblemDescription({
         )}
 
         {tab === "solution" && (
-          <SolutionTab slug={problem.slug} />
+          <ErrorBoundary>
+            <SolutionTab slug={problem.slug} />
+          </ErrorBoundary>
         )}
       </div>
     </div>
