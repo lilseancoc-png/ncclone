@@ -214,6 +214,7 @@ export const graphs: Category = {
       title: "Pacific Atlantic Water Flow",
       slug: "pacific-atlantic-water-flow",
       difficulty: "Medium",
+      compareMode: "unordered",
       leetcodeUrl:
         "https://leetcode.com/problems/pacific-atlantic-water-flow/",
       description:

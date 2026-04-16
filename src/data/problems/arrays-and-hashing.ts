@@ -123,6 +123,7 @@ export const arraysAndHashing: Category = {
       title: "Group Anagrams",
       slug: "group-anagrams",
       difficulty: "Medium",
+      compareMode: "unordered-nested",
       leetcodeUrl: "https://leetcode.com/problems/group-anagrams/",
       description:
         "Given an array of strings strs, group the anagrams together. You can return the answer in any order. An anagram is a word formed by rearranging the letters of another word.",
@@ -151,6 +152,7 @@ export const arraysAndHashing: Category = {
       title: "Top K Frequent Elements",
       slug: "top-k-frequent-elements",
       difficulty: "Medium",
+      compareMode: "unordered",
       leetcodeUrl: "https://leetcode.com/problems/top-k-frequent-elements/",
       description:
         "Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order. It is guaranteed the answer is unique.",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Language, TestCase, TestResult } from "@/data/types";
+import { CompareMode, Language, TestCase, TestResult } from "@/data/types";
 import { executeCode, ExecutionResult } from "@/lib/piston";
 
 export function useCodeRunner() {
@@ -15,7 +15,8 @@ export function useCodeRunner() {
       code: string,
       functionName: string,
       testCases: TestCase[],
-      language: Language
+      language: Language,
+      compareMode: CompareMode = "exact"
     ) => {
       setIsRunning(true);
       setError(null);
@@ -27,7 +28,8 @@ export function useCodeRunner() {
           code,
           functionName,
           testCases,
-          language
+          language,
+          compareMode
         );
         setResults(result.results);
         setConsoleOutput(result.consoleOutput);

@@ -78,6 +78,7 @@ export const heapPriorityQueue: Category = {
       title: "K Closest Points to Origin",
       slug: "k-closest-points-to-origin",
       difficulty: "Medium",
+      compareMode: "unordered",
       leetcodeUrl:
         "https://leetcode.com/problems/k-closest-points-to-origin/",
       description:

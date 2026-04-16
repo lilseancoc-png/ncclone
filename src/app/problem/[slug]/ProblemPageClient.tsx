@@ -168,9 +168,15 @@ function IDELayout({
   const { run, results, consoleOutput, isRunning, error, clear } = useCodeRunner();
 
   const handleRun = useCallback(() => {
-    run(code, problem.functionName!, problem.testCases!, language);
+    run(
+      code,
+      problem.functionName!,
+      problem.testCases!,
+      language,
+      problem.compareMode
+    );
     setMobileTab("output");
-  }, [code, problem.functionName, problem.testCases, language, run]);
+  }, [code, problem.functionName, problem.testCases, problem.compareMode, language, run]);
 
   const handleReset = useCallback(() => {
     reset();

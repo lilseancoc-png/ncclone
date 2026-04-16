@@ -78,6 +78,7 @@ export const twoPointers: Category = {
       title: "3Sum",
       slug: "3sum",
       difficulty: "Medium",
+      compareMode: "unordered-nested",
       leetcodeUrl: "https://leetcode.com/problems/3sum/",
       description:
         "Given an integer array nums, return all triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, and j != k, and nums[i] + nums[j] + nums[k] == 0. The solution set must not contain duplicate triplets.",

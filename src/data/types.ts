@@ -9,6 +9,19 @@ export interface TestCase {
   expected: unknown;
 }
 
+// How to compare a solution's output against the expected answer.
+// - "exact": deep equality (default).
+// - "unordered": top-level array elements may be in any order.
+// - "unordered-nested": top-level AND nested arrays may be in any order
+//   (e.g. 3Sum: [[−1,0,1],[−1,−1,2]] should match in any order, and
+//   each inner triplet also has no fixed order).
+// - "set-of-strings": top-level array of strings compared as a multiset.
+export type CompareMode =
+  | "exact"
+  | "unordered"
+  | "unordered-nested"
+  | "set-of-strings";
+
 export interface Problem {
   id: number;
   title: string;
@@ -22,6 +35,7 @@ export interface Problem {
   starterCode?: Record<Language, string>;
   testCases?: TestCase[];
   functionName?: string;
+  compareMode?: CompareMode;
 }
 
 export interface Category {

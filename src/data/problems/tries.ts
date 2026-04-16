@@ -88,6 +88,7 @@ export const tries: Category = {
       title: "Word Search II",
       slug: "word-search-ii",
       difficulty: "Hard",
+      compareMode: "unordered",
       leetcodeUrl: "https://leetcode.com/problems/word-search-ii/",
       description:
         "Given an m x n board of characters and a list of words, return all words that can be formed by sequentially adjacent cells (horizontally or vertically neighboring). The same cell may not be used more than once per word.",

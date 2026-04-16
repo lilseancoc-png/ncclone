@@ -9,6 +9,7 @@ export const backtracking: Category = {
       title: "Subsets",
       slug: "subsets",
       difficulty: "Medium",
+      compareMode: "unordered-nested",
       leetcodeUrl: "https://leetcode.com/problems/subsets/",
       description:
         "Given an integer array nums of unique elements, return all possible subsets (the power set). The solution must not contain duplicate subsets, and may be returned in any order.",
@@ -43,6 +44,7 @@ export const backtracking: Category = {
       title: "Combination Sum",
       slug: "combination-sum",
       difficulty: "Medium",
+      compareMode: "unordered-nested",
       leetcodeUrl: "https://leetcode.com/problems/combination-sum/",
       description:
         "Given an array of distinct integers candidates and a target integer, return all unique combinations of candidates where the chosen numbers sum to the target. The same number may be used an unlimited number of times. Combinations may be returned in any order.",
@@ -77,6 +79,7 @@ export const backtracking: Category = {
       title: "Permutations",
       slug: "permutations",
       difficulty: "Medium",
+      compareMode: "unordered",
       leetcodeUrl: "https://leetcode.com/problems/permutations/",
       description:
         "Given an array nums of distinct integers, return all possible permutations in any order.",
@@ -121,6 +124,7 @@ export const backtracking: Category = {
       title: "Subsets II",
       slug: "subsets-ii",
       difficulty: "Medium",
+      compareMode: "unordered-nested",
       leetcodeUrl: "https://leetcode.com/problems/subsets-ii/",
       description:
         "Given an integer array nums that may contain duplicates, return all possible subsets (the power set). The solution must not contain duplicate subsets, and may be returned in any order.",
@@ -155,6 +159,7 @@ export const backtracking: Category = {
       title: "Combination Sum II",
       slug: "combination-sum-ii",
       difficulty: "Medium",
+      compareMode: "unordered-nested",
       leetcodeUrl: "https://leetcode.com/problems/combination-sum-ii/",
       description:
         "Given an array of candidates (which may contain duplicates) and a target number, find all unique combinations where the candidate numbers sum to the target. Each number may only be used once per combination.",
@@ -245,6 +250,7 @@ export const backtracking: Category = {
       title: "Palindrome Partitioning",
       slug: "palindrome-partitioning",
       difficulty: "Medium",
+      compareMode: "unordered",
       leetcodeUrl: "https://leetcode.com/problems/palindrome-partitioning/",
       description:
         "Given a string s, partition it such that every substring in the partition is a palindrome. Return all possible palindrome partitionings of s.",
@@ -282,6 +288,7 @@ export const backtracking: Category = {
       title: "Letter Combinations of a Phone Number",
       slug: "letter-combinations-of-a-phone-number",
       difficulty: "Medium",
+      compareMode: "unordered",
       leetcodeUrl:
         "https://leetcode.com/problems/letter-combinations-of-a-phone-number/",
       description:
@@ -317,6 +324,7 @@ export const backtracking: Category = {
       title: "N-Queens",
       slug: "n-queens",
       difficulty: "Hard",
+      compareMode: "unordered",
       leetcodeUrl: "https://leetcode.com/problems/n-queens/",
       description:
         "Place n queens on an n x n chessboard such that no two queens threaten each other (no two queens share the same row, column, or diagonal). Return all distinct solutions, where each solution is a board configuration represented as an array of strings.",
