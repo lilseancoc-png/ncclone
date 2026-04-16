@@ -46,6 +46,12 @@ export default function AnimationControls({
         />
       </div>
 
+      {/* Keyboard shortcut hint */}
+      <div className="flex items-center gap-3 text-[10px] text-gray-600">
+        <span><kbd className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-gray-500 font-mono">Space</kbd> play/pause</span>
+        <span><kbd className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-gray-500 font-mono">&larr;</kbd> <kbd className="px-1 py-0.5 rounded bg-white/5 border border-white/10 text-gray-500 font-mono">&rarr;</kbd> step</span>
+      </div>
+
       {/* Controls row */}
       <div className="flex items-center gap-1.5">
         <button

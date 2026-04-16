@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Language } from "@/data/types";
 import LanguageSelector from "./LanguageSelector";
 
@@ -18,13 +19,18 @@ export default function EditorToolbar({
   onReset,
   isRunning,
 }: EditorToolbarProps) {
+  const [isMac, setIsMac] = useState(false);
+  useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().includes("MAC"));
+  }, []);
+
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e2e] border-b border-border/50">
       <LanguageSelector language={language} onChange={onLanguageChange} />
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 mr-1 hidden sm:inline">
-          Ctrl+Enter
-        </span>
+        <kbd className="text-[10px] text-gray-600 mr-1 hidden sm:inline px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono">
+          {isMac ? "\u2318" : "Ctrl"}+Enter
+        </kbd>
         <button
           onClick={onReset}
           className="px-3 py-1.5 text-xs text-gray-400 hover:text-foreground border border-border/50 rounded-md hover:bg-card-hover transition-colors"

@@ -41,9 +41,13 @@ export default function Header() {
           <div className="flex items-center gap-4">
             {/* Progress */}
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-400">
-                {mounted ? completedCount : 0} / {total}
-              </span>
+              {mounted ? (
+                <span className="text-sm text-gray-400">
+                  {completedCount} / {total}
+                </span>
+              ) : (
+                <span className="inline-block w-12 h-4 bg-gray-700 rounded animate-pulse" />
+              )}
               <div className="w-32 hidden sm:block">
                 <ProgressBar
                   completed={mounted ? completedCount : 0}

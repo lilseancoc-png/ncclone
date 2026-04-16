@@ -14,6 +14,7 @@ import OutputPanel from "@/components/editor/OutputPanel";
 import { useCodeDrafts } from "@/hooks/useCodeDrafts";
 import { useCodeRunner } from "@/hooks/useCodeRunner";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import ResizeHandle from "@/components/editor/ResizeHandle";
 
 export default function ProblemPageClient({
   params,
@@ -148,6 +149,8 @@ function ProblemNav({ slug }: { slug: string }) {
   );
 }
 
+type MobileTab = "description" | "code" | "output";
+
 function IDELayout({
   problem,
   category,
@@ -158,12 +161,15 @@ function IDELayout({
   slug: string;
 }) {
   const [language, setLanguage] = useState<Language>("python");
+  const [mobileTab, setMobileTab] = useState<MobileTab>("description");
+  const [outputHeight, setOutputHeight] = useState(200);
   const starterCode = problem.starterCode?.[language] || "";
   const { code, setCode, reset } = useCodeDrafts(slug, language, starterCode);
   const { run, results, consoleOutput, isRunning, error, clear } = useCodeRunner();
 
   const handleRun = useCallback(() => {
     run(code, problem.functionName!, problem.testCases!, language);
+    setMobileTab("output");
   }, [code, problem.functionName, problem.testCases, language, run]);
 
   const handleReset = useCallback(() => {
@@ -192,21 +198,50 @@ function IDELayout({
           </svg>
         </Link>
         <ProblemNav slug={slug} />
-        <span className="text-sm font-medium flex-1">
+        <span className="text-sm font-medium flex-1 truncate">
           {problem.id}. {problem.title}
         </span>
         <DifficultyBadge difficulty={problem.difficulty} />
       </div>
 
-      {/* Split pane */}
+      {/* Mobile tab bar */}
+      <div className="flex md:hidden border-b border-border bg-card flex-shrink-0">
+        {([
+          { key: "description", label: "Problem" },
+          { key: "code", label: "Code" },
+          { key: "output", label: "Output", badge: results ? `${results.filter(r => r.passed).length}/${results.length}` : undefined },
+        ] as { key: MobileTab; label: string; badge?: string }[]).map(({ key, label, badge }) => (
+          <button
+            key={key}
+            onClick={() => setMobileTab(key)}
+            className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors relative ${
+              mobileTab === key
+                ? "text-foreground"
+                : "text-gray-500"
+            }`}
+          >
+            {label}
+            {badge && (
+              <span className={`ml-1.5 ${results?.every(r => r.passed) ? "text-easy" : "text-hard"}`}>
+                {badge}
+              </span>
+            )}
+            {mobileTab === key && (
+              <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-easy rounded-full" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Desktop: split pane / Mobile: tabbed content */}
       <div className="flex flex-1 min-h-0">
         {/* Left pane - Problem description */}
-        <div className="w-[40%] min-w-[300px] border-r border-border overflow-hidden">
+        <div className={`${mobileTab === "description" ? "flex" : "hidden"} md:flex w-full md:w-[40%] md:min-w-[300px] border-r border-border overflow-hidden flex-col`}>
           <ProblemDescription problem={problem} category={category} />
         </div>
 
         {/* Right pane - Editor + Output */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className={`${mobileTab === "description" ? "hidden" : "flex"} md:flex flex-1 flex-col min-w-0`}>
           {/* Editor toolbar */}
           <EditorToolbar
             language={language}
@@ -217,7 +252,7 @@ function IDELayout({
           />
 
           {/* Editor */}
-          <div className="flex-1 min-h-0">
+          <div className={`${mobileTab === "output" ? "hidden" : "flex"} md:flex flex-1 min-h-0`}>
             <ErrorBoundary>
               <CodeEditor
                 language={language}
@@ -228,8 +263,16 @@ function IDELayout({
             </ErrorBoundary>
           </div>
 
+          {/* Resize handle (desktop only) */}
+          <div className="hidden md:block">
+            <ResizeHandle onResize={(delta) => setOutputHeight(h => Math.max(80, Math.min(500, h + delta)))} />
+          </div>
+
           {/* Output panel */}
-          <div className="h-[200px] flex-shrink-0">
+          <div
+            className={`${mobileTab === "output" ? "flex-1" : ""} flex-shrink-0`}
+            style={mobileTab !== "output" ? { height: outputHeight } : undefined}
+          >
             <OutputPanel
               results={results}
               testCases={problem.testCases || []}

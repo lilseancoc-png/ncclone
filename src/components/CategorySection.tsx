@@ -41,9 +41,13 @@ export default function CategorySection({
           />
         </svg>
         <span className="font-medium flex-1">{category.name}</span>
-        <span className="text-sm text-gray-400">
-          {mounted ? `${done} / ${total}` : `0 / ${total}`}
-        </span>
+        {mounted ? (
+          <span className="text-sm text-gray-400">
+            {done} / {total}
+          </span>
+        ) : (
+          <span className="inline-block w-10 h-4 bg-gray-700 rounded animate-pulse" />
+        )}
       </button>
 
       <div className="px-4 pb-1">
