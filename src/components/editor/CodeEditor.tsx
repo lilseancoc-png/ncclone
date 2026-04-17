@@ -3,6 +3,7 @@
 import { useRef, useCallback } from "react";
 import Editor, { OnMount, BeforeMount } from "@monaco-editor/react";
 import { Language } from "@/data/types";
+import { registerEditorCompletions } from "@/lib/editorCompletions";
 
 const MONACO_LANGUAGE_MAP: Record<Language, string> = {
   javascript: "javascript",
@@ -27,6 +28,7 @@ export default function CodeEditor({
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
 
   const handleBeforeMount: BeforeMount = (monaco) => {
+    registerEditorCompletions(monaco);
     monaco.editor.defineTheme("neetcode-dark", {
       base: "vs-dark",
       inherit: true,
@@ -138,8 +140,33 @@ export default function CodeEditor({
           formatOnPaste: true,
           formatOnType: true,
           suggestOnTriggerCharacters: true,
-          quickSuggestions: true,
-          snippetSuggestions: "inline",
+          quickSuggestions: {
+            other: "on",
+            comments: "off",
+            strings: "off",
+          },
+          quickSuggestionsDelay: 50,
+          snippetSuggestions: "top",
+          tabCompletion: "on",
+          acceptSuggestionOnEnter: "on",
+          acceptSuggestionOnCommitCharacter: true,
+          wordBasedSuggestions: "allDocuments",
+          inlineSuggest: { enabled: true, mode: "prefix" },
+          suggest: {
+            showSnippets: true,
+            showKeywords: true,
+            showWords: true,
+            showMethods: true,
+            showFunctions: true,
+            showVariables: true,
+            showClasses: true,
+            showProperties: true,
+            preview: true,
+            previewMode: "prefix",
+            insertMode: "insert",
+            snippetsPreventQuickSuggestions: false,
+            localityBonus: true,
+          },
           renderWhitespace: "selection",
           guides: {
             indentation: true,
