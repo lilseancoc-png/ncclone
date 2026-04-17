@@ -1,20 +1,23 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
+import { use, useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { categories } from "@/data/problems";
 import { findProblemBySlug, getAdjacentProblems } from "@/lib/utils";
 import { Language } from "@/data/types";
 import DifficultyBadge from "@/components/DifficultyBadge";
 import { useProgress } from "@/hooks/useProgress";
+import { useToast } from "@/components/Toast";
 import ProblemDescription from "@/components/editor/ProblemDescription";
 import CodeEditor from "@/components/editor/CodeEditor";
 import EditorToolbar from "@/components/editor/EditorToolbar";
 import OutputPanel from "@/components/editor/OutputPanel";
+import ShortcutsModal from "@/components/editor/ShortcutsModal";
 import { useCodeDrafts } from "@/hooks/useCodeDrafts";
 import { useCodeRunner } from "@/hooks/useCodeRunner";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ResizeHandle from "@/components/editor/ResizeHandle";
+import { fireConfetti } from "@/lib/confetti";
 
 export default function ProblemPageClient({
   params,
@@ -163,9 +166,38 @@ function IDELayout({
   const [language, setLanguage] = useState<Language>("python");
   const [mobileTab, setMobileTab] = useState<MobileTab>("description");
   const [outputHeight, setOutputHeight] = useState(200);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const starterCode = problem.starterCode?.[language] || "";
   const { code, setCode, reset } = useCodeDrafts(slug, language, starterCode);
   const { run, results, consoleOutput, isRunning, error, clear } = useCodeRunner();
+  const { isCompleted, toggleCompleted, mounted } = useProgress();
+  const { toast } = useToast();
+  const prevAllPassedRef = useRef(false);
+
+  const done = mounted && isCompleted(slug);
+  const allPassed = (results?.length ?? 0) > 0 && results!.every((r) => r.passed);
+
+  useEffect(() => {
+    if (allPassed && !prevAllPassedRef.current) {
+      fireConfetti();
+      toast("All test cases passed!", "success");
+    }
+    prevAllPassedRef.current = allPassed;
+  }, [allPassed, toast]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if ((e.target as HTMLElement)?.closest(".monaco-editor")) return;
+      if (e.key === "?") {
+        e.preventDefault();
+        setShortcutsOpen((o) => !o);
+      }
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
 
   const handleRun = useCallback(() => {
     run(
@@ -181,7 +213,13 @@ function IDELayout({
   const handleReset = useCallback(() => {
     reset();
     clear();
-  }, [reset, clear]);
+    toast("Code reset to starter template", "info");
+  }, [reset, clear, toast]);
+
+  const handleToggleComplete = useCallback(() => {
+    toggleCompleted(slug);
+    toast(done ? "Marked as incomplete" : "Marked as complete!", done ? "info" : "success");
+  }, [toggleCompleted, slug, done, toast]);
 
   const handleLanguageChange = useCallback(
     (lang: Language) => {
@@ -207,8 +245,39 @@ function IDELayout({
         <span className="text-sm font-medium flex-1 truncate">
           {problem.id}. {problem.title}
         </span>
+        {mounted && (
+          <button
+            onClick={handleToggleComplete}
+            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors border ${
+              done
+                ? "bg-easy/15 text-easy border-easy/30 hover:bg-easy/25"
+                : "bg-white/5 text-gray-400 border-white/10 hover:text-foreground hover:bg-white/10"
+            }`}
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill={done ? "currentColor" : "none"}
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {done ? "Completed" : "Complete"}
+          </button>
+        )}
+        <button
+          onClick={() => setShortcutsOpen(true)}
+          className="p-1.5 text-gray-500 hover:text-foreground transition-colors rounded hover:bg-white/5"
+          title="Keyboard shortcuts (?)"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
         <DifficultyBadge difficulty={problem.difficulty} />
       </div>
+      <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
       {/* Mobile tab bar */}
       <div className="flex md:hidden border-b border-border bg-card flex-shrink-0">

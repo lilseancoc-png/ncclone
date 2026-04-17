@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProgressProvider } from "@/hooks/useProgress";
+import { ToastProvider } from "@/components/Toast";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -25,7 +26,9 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
         <AuthProvider>
-          <ProgressProvider>{children}</ProgressProvider>
+          <ProgressProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </ProgressProvider>
         </AuthProvider>
       </body>
     </html>
