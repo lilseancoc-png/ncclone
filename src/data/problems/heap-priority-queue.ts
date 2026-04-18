@@ -34,6 +34,14 @@ export const heapPriorityQueue: Category = {
           expected: [null, 4, 5, 5, 8, 8],
         },
       ],
+      patterns: ["Heap", "Design"],
+      hints: [
+        "You only need to track the top k elements. Anything smaller doesn't matter.",
+        "Use a MIN heap of size k. The MIN-heap root is the kth largest among those top k (everything below it is smaller).",
+        "On add: push; if size > k, pop. Return the root.",
+      ],
+      keyIntuition:
+        "Counterintuitive but crucial: to find the kth LARGEST, use a MIN heap. The min heap's root is the smallest of the k-best, which is exactly the kth largest overall. This inversion ('largest k' ↔ 'min heap') is fundamental — any 'top k' streaming problem uses it. A max heap would give you the largest, not the kth; size-bounded min heap is the right tool.",
       approach:
         "Maintain a min heap of size k. The root of the heap is always the kth largest element. When adding a new element, push it to the heap and pop if the size exceeds k.",
       timeComplexity: "O(log k)",
@@ -68,6 +76,14 @@ export const heapPriorityQueue: Category = {
           expected: 1,
         },
       ],
+      patterns: ["Heap", "Array"],
+      hints: [
+        "Every step you need the two heaviest stones, and the outcome produces a new stone that needs re-ranking.",
+        "A max heap supports both 'pop the largest' and 'push a new value' in O(log n).",
+        "Loop: pop two, push difference if nonzero, stop when heap has < 2 stones.",
+      ],
+      keyIntuition:
+        "Whenever a simulation repeatedly asks 'what's the current max/min?' after mutations, heap is your tool. Sorting once and scanning doesn't work here because every step produces a NEW value that must be re-inserted into the ordering — exactly what a priority queue handles efficiently.",
       approach:
         "Use a max heap to always access the two heaviest stones. Remove the two largest, and if they differ, push the difference back. Repeat until at most one stone remains.",
       timeComplexity: "O(n log n)",
@@ -104,6 +120,14 @@ export const heapPriorityQueue: Category = {
           expected: [[3, 3], [-2, 4]],
         },
       ],
+      patterns: ["Heap", "Array", "Quickselect"],
+      hints: [
+        "You want the k SMALLEST distances. By the same inversion trick as kth-largest, use a MAX heap of size k.",
+        "Push each point; if heap size > k, pop. The heap always holds the k nearest seen so far.",
+        "Skip the sqrt — compare squared distances x*x + y*y. Saves work and avoids float precision issues.",
+      ],
+      keyIntuition:
+        "This is the dual of Kth Largest: to find the k SMALLEST, use a MAX heap (so the root is the largest of the k-best — pop it when something smaller arrives). Quickselect offers O(n) average time if you need better than O(n log k). The squared-distance trick is a tiny but important habit: avoid unnecessary sqrt whenever you only need relative ordering.",
       approach:
         "Use a max heap of size k based on distance from origin. For each point, push it to the heap. If the heap size exceeds k, pop the farthest point. The remaining k points are the closest.",
       timeComplexity: "O(n log k)",
@@ -139,6 +163,14 @@ export const heapPriorityQueue: Category = {
           expected: 4,
         },
       ],
+      patterns: ["Heap", "Quickselect", "Sorting", "Array"],
+      hints: [
+        "Easy option: sort and return nums[n-k]. O(n log n) — accepted but slow.",
+        "Better: min heap of size k. O(n log k).",
+        "Best: Quickselect. Average O(n), worst O(n²). Pick a pivot, partition, recurse on the side containing index n-k.",
+      ],
+      keyIntuition:
+        "This problem is a benchmark for understanding selection algorithms. Quickselect teaches an important idea: 'partial' sorting. You only need to pivot until the kth position is correctly placed — no need to sort the rest. Randomized pivot selection makes worst case unlikely in practice. Heap variants trade simplicity for guaranteed asymptotic.",
       approach:
         "Use Quickselect (a partial Quicksort) to find the kth largest element in average O(n) time. Alternatively, use a min heap of size k for guaranteed O(n log k) time.",
       timeComplexity: "O(n) avg",
@@ -173,6 +205,14 @@ export const heapPriorityQueue: Category = {
           expected: 6,
         },
       ],
+      patterns: ["Heap", "Greedy", "Hash Map", "Math"],
+      hints: [
+        "The most-frequent task is the bottleneck — it determines the minimum span. Think about the 'frame' it creates.",
+        "If max frequency is maxF, there are (maxF-1) required gaps of size (n+1) between max-task executions. Plus a final cluster.",
+        "Formula: answer = max(len(tasks), (maxF-1)*(n+1) + count_of_tasks_with_max_freq).",
+      ],
+      keyIntuition:
+        "Beautiful math trick that avoids simulation. Visualize it: the most-frequent task creates a skeleton of size (maxF-1)*(n+1). The skeleton's 'gap' slots can be filled with other tasks, and any leftover tasks expand naturally. The max() handles the case where tasks outnumber the skeleton. Heap-based simulation also works (pop max-remaining task per slot), but the closed-form formula is slicker.",
       approach:
         "Count task frequencies and use a greedy approach. The most frequent task determines the frame structure. Calculate idle slots needed based on the max frequency, then fill them with other tasks. The answer is max(total tasks, (maxFreq-1)*(n+1) + countOfMaxFreq).",
       timeComplexity: "O(n)",
@@ -216,6 +256,14 @@ export const heapPriorityQueue: Category = {
           expected: [null, null, [5], null, null, [6, 5], null, [5]],
         },
       ],
+      patterns: ["Heap", "Hash Map", "Linked List", "Design"],
+      hints: [
+        "Store follows as Map<userId, Set<followeeId>>. Store each user's tweets as a list of (timestamp, tweetId).",
+        "Use a global timestamp counter to order tweets across users.",
+        "For getNewsFeed, merge the 10 most recent tweets from user + followees. Pointers-per-list merge (k-way merge via heap) is the textbook approach.",
+      ],
+      keyIntuition:
+        "Design problems teach composition — pick the right data structure for each operation. Follows are a set problem (O(1) follow/unfollow/membership). Timelines are a sequence problem (append + reverse-iterate). Getting the news feed is a k-way merge problem (heap of iterators). Every individual piece is straightforward; the skill is recognizing which piece fits each requirement.",
       approach:
         "Use a HashMap for user follows and a list for tweets with timestamps. getNewsFeed merges the 10 most recent tweets from the user and their followees using a min heap of size 10.",
       timeComplexity: "O(k log k)",
@@ -251,6 +299,14 @@ export const heapPriorityQueue: Category = {
           expected: [null, null, null, 1.5, null, 2.0],
         },
       ],
+      patterns: ["Heap", "Design"],
+      hints: [
+        "Median splits the data into two halves — that's literally what two heaps give you.",
+        "Max heap for the lower half (top = biggest-of-small), min heap for the upper half (top = smallest-of-big).",
+        "Keep them balanced (sizes differ by at most 1). Median = top of larger heap (odd count) or average of both tops (even count).",
+      ],
+      keyIntuition:
+        "The two-heap pattern is a classic: any time you need to maintain a 'midpoint' under streaming inserts, two heaps around the midpoint work. Each insert rebalances in O(log n). This pattern also handles 'sliding window median' and related problems. The invariant ('smaller half ≤ larger half, sizes within 1') is what makes it work — enforce it after every insert.",
       approach:
         "Maintain two heaps: a max heap for the lower half and a min heap for the upper half. Balance them so the max heap has equal or one more element. The median is the max heap's root (odd total) or the average of both roots (even total).",
       timeComplexity: "O(log n)",

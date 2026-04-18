@@ -33,6 +33,14 @@ export const bitManipulation: Category = {
           expected: 4,
         },
       ],
+      patterns: ["Bit Manipulation", "Array", "XOR"],
+      hints: [
+        "The constant-space requirement rules out hash sets. Think about an operation that pairs cancel under.",
+        "XOR has two magical properties: a ^ a = 0 (self-inverse) and a ^ 0 = a (identity). Order doesn't matter.",
+        "XOR every element together. Duplicates cancel to 0, and the lone element XORs with 0 to itself.",
+      ],
+      keyIntuition:
+        "XOR is the 'toggle' operator — applying it twice cancels itself. That self-inverse property is the secret behind many bit tricks: missing number, swapping variables without a temp, finding pair differences. Once you recognize 'things appearing in pairs cancel,' you can solve a whole family of problems in O(1) space.",
       approach:
         "XOR all numbers together. Since XOR is self-inverse (a ^ a = 0) and commutative, all paired numbers cancel out, leaving only the single unpaired number.",
       timeComplexity: "O(n)",
@@ -73,6 +81,14 @@ export const bitManipulation: Category = {
           expected: 30,
         },
       ],
+      patterns: ["Bit Manipulation", "Brian Kernighan's Algorithm"],
+      hints: [
+        "The naive way is to check each of the 32 bits with n & 1 then shift. Works but always 32 iterations.",
+        "Brian Kernighan's insight: n & (n-1) flips the lowest 1-bit to 0. So you only loop as many times as there are set bits.",
+        "Initialize count = 0. While n != 0: n = n & (n-1); count++. Return count.",
+      ],
+      keyIntuition:
+        "n-1 flips the lowest 1-bit and every 0 below it. ANDing with n keeps everything above that bit unchanged but clears the low region — effectively erasing exactly one 1-bit per step. This 'lowest set bit' manipulation underlies many advanced data structures (Fenwick trees, bitmask DP). Understanding why n & (n-1) works is the gateway to thinking in bits.",
       approach:
         "Use Brian Kernighan's trick: n & (n-1) clears the lowest set bit. Count how many times this operation can be applied until n becomes 0. Each iteration removes exactly one 1-bit.",
       timeComplexity: "O(log n)",
@@ -107,6 +123,14 @@ export const bitManipulation: Category = {
           expected: [0, 1, 1, 2, 1, 2],
         },
       ],
+      patterns: ["Bit Manipulation", "Dynamic Programming"],
+      hints: [
+        "Naive: call popcount on each i. Works in O(n log n), but we can do better by reusing prior answers.",
+        "Any number i has the same bits as i/2 (right-shifted) plus its last bit (i & 1).",
+        "Build dp[0..n] bottom-up: dp[i] = dp[i >> 1] + (i & 1). One pass, O(n).",
+      ],
+      keyIntuition:
+        "This is DP over bit structure: a number's popcount decomposes into (everything except last bit) + (last bit). The key pattern — 'a number = smaller number shifted + extra info' — appears everywhere in number theory, tree indexing (heap parent = i/2), and Fenwick trees. Spotting that a bit operation creates a recurrence unlocks a whole family of linear-time algorithms.",
       approach:
         "Use DP: dp[i] = dp[i >> 1] + (i & 1). The number of 1-bits in i equals the number of 1-bits in i/2 (right shift) plus whether the last bit is 1. This builds on previously computed results.",
       timeComplexity: "O(n)",
@@ -141,6 +165,14 @@ export const bitManipulation: Category = {
           expected: 3221225471,
         },
       ],
+      patterns: ["Bit Manipulation", "Divide and Conquer"],
+      hints: [
+        "You need to swap the i-th bit with the (31-i)-th bit. Think of it as building the reversed number one bit at a time.",
+        "Loop 32 times. Each iteration: shift result left by 1, OR in the LSB of n (n & 1), then shift n right by 1.",
+        "For a fun optimization: swap groups of bits using masks — halves, then quarters, then bytes, then nibbles — in O(log 32) = 5 ops total.",
+      ],
+      keyIntuition:
+        "Reversing bits is a 'build it as you destroy it' pattern: each bit popped off n is pushed onto result, mirroring a stack. The divide-and-conquer mask trick (swap 16/16, then 8/8, then 4/4...) shows how bit operations can parallelize at the word level — the same idea that powers population count, endianness swapping, and SIMD-style tricks.",
       approach:
         "Process the input bit by bit, shifting the result left and adding the least significant bit of n. Shift n right each iteration. After 32 iterations, all bits are reversed.",
       timeComplexity: "O(1)",
@@ -181,6 +213,14 @@ export const bitManipulation: Category = {
           expected: 8,
         },
       ],
+      patterns: ["Bit Manipulation", "Array", "Math", "XOR"],
+      hints: [
+        "Sorting gives O(n log n). A hash set gives O(n) time but O(n) space. Both work but can be beaten.",
+        "Sum approach: expected sum = n*(n+1)/2. Missing = expected - actual sum.",
+        "XOR approach: XOR all indices 0..n and all array values together. Every pair cancels, the missing number survives. Immune to overflow.",
+      ],
+      keyIntuition:
+        "Two elegant paths lead to O(n)/O(1): Gauss's sum formula and XOR pairing. Both exploit a symmetry — the missing number is the unique element that fails to cancel against its partner. The XOR version is stronger because it survives integer overflow. Recognizing when a problem reduces to 'find the asymmetry in a supposedly symmetric pairing' is a repeating theme in competitive programming.",
       approach:
         "XOR all numbers from 0 to n with all numbers in the array. All paired numbers cancel out, leaving only the missing number. Alternatively, use the sum formula n*(n+1)/2 minus the array sum.",
       timeComplexity: "O(n)",
@@ -215,6 +255,14 @@ export const bitManipulation: Category = {
           expected: 5,
         },
       ],
+      patterns: ["Bit Manipulation", "Math"],
+      hints: [
+        "Addition in hardware uses two pieces: the partial sum and the carry. You need to simulate both with bitwise ops.",
+        "XOR = addition without carry. AND << 1 = the carry that should propagate left.",
+        "Loop: while b != 0, (a, b) = (a ^ b, (a & b) << 1). When carry is 0, a holds the sum.",
+      ],
+      keyIntuition:
+        "This problem shows you how addition works under the hood: XOR handles bits where exactly one operand is 1, AND-shift handles the carry from both being 1. Iterating until the carry is zero is exactly what a ripple-carry adder does in a CPU. Thinking at this level — arithmetic from Boolean gates — connects algorithms to digital logic and is fundamental to systems programming.",
       approach:
         "Use bit manipulation: XOR gives the sum without carry, AND shifted left gives the carry. Repeat until there's no carry. Handle negative numbers carefully with 32-bit masking.",
       timeComplexity: "O(1)",
@@ -255,6 +303,14 @@ export const bitManipulation: Category = {
           expected: 21,
         },
       ],
+      patterns: ["Math", "Bit Manipulation"],
+      hints: [
+        "Extract digits from the right using x % 10 and shed them with x = x / 10. Build the result by result = result * 10 + digit.",
+        "The trap: 32-bit overflow. INT_MAX = 2^31 - 1 = 2147483647. Once result exceeds INT_MAX/10, the next multiplication will overflow.",
+        "Before result = result * 10 + digit: check if result > INT_MAX/10 (overflow) or result == INT_MAX/10 and digit > 7 (boundary). Mirror for negative.",
+      ],
+      keyIntuition:
+        "The algorithm (pop last digit, push onto result) is trivial — the real lesson is overflow-safe arithmetic. Instead of detecting overflow after it happens (too late in languages without big-int), predict it by comparing against INT_MAX/10 before multiplying. This 'check before you multiply' pattern is essential for parsing integers, implementing atoi, and any bounded-precision numeric code.",
       approach:
         "Build the reversed number digit by digit using modulo 10 to extract the last digit and integer division to remove it. Check for 32-bit integer overflow before each multiplication by 10. Return 0 if overflow would occur.",
       timeComplexity: "O(log n)",

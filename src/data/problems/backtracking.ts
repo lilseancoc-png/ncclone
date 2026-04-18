@@ -34,6 +34,14 @@ export const backtracking: Category = {
           expected: [[], [0]],
         },
       ],
+      patterns: ["Backtracking", "Bit Manipulation", "Array"],
+      hints: [
+        "For each element you face a binary decision: include it in the current subset or skip it.",
+        "A recursion tree with 'include' and 'exclude' branches at each level generates all 2^n subsets.",
+        "Record a copy of the current subset when you reach the end of the array.",
+      ],
+      keyIntuition:
+        "Subsets is the purest backtracking template: at each step, make a choice, recurse, undo. The 'include/exclude' framing maps 1:1 to binary counting — the 2^n subsets correspond to all n-bit numbers. This gives you two solving views: recursive backtracking (general) vs bitmask enumeration (when n ≤ 30ish). Recognizing this duality unlocks efficient subset iteration in interview problems.",
       approach:
         "Use backtracking with an include/exclude decision at each index. At each step, either include the current element or skip it, building all possible combinations. The base case is reaching the end of the array.",
       timeComplexity: "O(n*2^n)",
@@ -69,6 +77,14 @@ export const backtracking: Category = {
           expected: [[2, 2, 2, 2], [2, 3, 3], [3, 5]],
         },
       ],
+      patterns: ["Backtracking", "Array"],
+      hints: [
+        "Backtracking: at each step, choose a candidate to add and recurse with the reduced target.",
+        "To allow unlimited reuse, stay at the same index after picking — don't advance.",
+        "To avoid duplicate COMBINATIONS (e.g., [2,3] and [3,2]), each recursion only considers candidates at index >= current start index.",
+      ],
+      keyIntuition:
+        "Combination Sum teaches the art of pruning duplicate combinations by enforcing an order. Without 'start index', you'd generate permutations, not combinations. The 'start index' trick is ubiquitous in backtracking — it's how you distinguish subsets/combinations (order doesn't matter) from permutations (order matters). Unlimited reuse just means you don't advance after picking.",
       approach:
         "Backtrack by trying each candidate, subtracting it from the target. Allow reuse of the same candidate by not advancing the index. Skip candidates that exceed the remaining target. Collect results when target reaches zero.",
       timeComplexity: "O(2^target)",
@@ -114,6 +130,14 @@ export const backtracking: Category = {
           ],
         },
       ],
+      patterns: ["Backtracking", "Array"],
+      hints: [
+        "Order matters here (unlike subsets/combinations). Every position can be any unused element.",
+        "Backtrack with a used set (or a bitmask). At each recursion depth, try every unused element.",
+        "Space-efficient alternative: swap-in-place. Swap the current index with each later index, recurse, then swap back.",
+      ],
+      keyIntuition:
+        "Permutations is the counterpart of Subsets: Subsets enforces order via start index; Permutations allows any order via 'used' tracking. Swap-in-place is elegant (O(1) extra state per call), but the 'used set' approach generalizes more cleanly to permutations with duplicates. Mastering both teaches the trade-off between clever tricks and reusable templates.",
       approach:
         "Use backtracking by swapping each element to the current position. At each depth, swap the current index with every subsequent index, recurse, then swap back to restore the original order (backtrack).",
       timeComplexity: "O(n!*n)",
@@ -149,6 +173,14 @@ export const backtracking: Category = {
           expected: [[], [0]],
         },
       ],
+      patterns: ["Backtracking", "Array", "Sorting"],
+      hints: [
+        "Without care, [1,2,2] would produce duplicate subsets like [1,2] twice (one per '2').",
+        "Sort first. Then at each recursion level, if the current element equals the previous one AND the previous was skipped at this level, skip this one too.",
+        "Rule of thumb: 'if nums[i] == nums[i-1] && i > start: skip' prevents duplicate branches at the same level.",
+      ],
+      keyIntuition:
+        "Deduplicating backtracking output requires a specific 'level-skip' rule. The subtlety: you can USE a duplicate value, but not start a new branch with it at the SAME recursion depth as a prior identical value. Sorting is what makes this detectable (duplicates become adjacent). This 'skip equal on same level' pattern recurs in many 'unique X' problems (Combination Sum II, Permutations II, etc.).",
       approach:
         "Sort the array first to group duplicates together. Use backtracking and skip duplicate elements at the same recursion level by checking if the current element equals the previous one.",
       timeComplexity: "O(n*2^n)",
@@ -190,6 +222,14 @@ export const backtracking: Category = {
           expected: [[1, 2, 2], [5]],
         },
       ],
+      patterns: ["Backtracking", "Array", "Sorting"],
+      hints: [
+        "Same as Combination Sum, but each number used at most once AND the array may contain duplicates.",
+        "Sort + advance index after picking (uses each position once).",
+        "To avoid duplicate combinations from duplicate values: if nums[i] == nums[i-1] && i > start, skip.",
+      ],
+      keyIntuition:
+        "Combination Sum II combines two concerns: 'use each once' (advance index) and 'don't output duplicates' (skip-equal-on-level). These two orthogonal requirements compose cleanly: sort the array once, then enforce both rules in a single line of recursion. Once you internalize the 'skip-equal-on-level' rule and the 'advance-or-stay' distinction, you can tackle dozens of combinatorial variations.",
       approach:
         "Sort the candidates and backtrack. Each candidate can only be used once (advance the index after picking). Skip duplicates at the same level by checking if the current candidate equals the previous one.",
       timeComplexity: "O(2^n)",
@@ -240,6 +280,14 @@ export const backtracking: Category = {
           expected: true,
         },
       ],
+      patterns: ["Backtracking", "DFS", "Matrix"],
+      hints: [
+        "Try every cell as the potential starting position for the word. From each start, DFS to 4 neighbors matching the next character.",
+        "Mark cells visited before recursing, UNMARK them before returning (that's the 'backtracking' part).",
+        "Prune aggressively: as soon as the current cell doesn't match the current character, return false.",
+      ],
+      keyIntuition:
+        "Word Search blends DFS, backtracking, and grid traversal. The key backtracking move: mutate the board in-place (e.g., set cell to '#') to mark visited, then restore before returning. This avoids a separate visited grid. The pattern 'explore, mark, recurse, unmark' is the rhythm of backtracking — every grid/path-search problem echoes it.",
       approach:
         "Perform DFS backtracking from each cell on the board. At each step, check if the current cell matches the current character. Mark visited cells to avoid reuse, and unmark them when backtracking.",
       timeComplexity: "O(m*n*4^L)",
@@ -278,6 +326,14 @@ export const backtracking: Category = {
           expected: [["a"]],
         },
       ],
+      patterns: ["Backtracking", "Dynamic Programming", "String"],
+      hints: [
+        "At each position, decide where the next palindrome ends. Try every possible end, check if prefix is a palindrome, recurse on the rest.",
+        "Include a palindrome check helper. Precomputing palindrome-pair info with DP can speed this up.",
+        "When the 'rest' is empty, you've produced a valid partition — record it.",
+      ],
+      keyIntuition:
+        "This is Word Break's sibling: instead of 'is a valid segmentation possible?' (single answer), you output ALL valid segmentations. Classic pattern: for each possible 'cut' position, check if the prefix satisfies the property and recurse on the suffix. Any problem that asks 'enumerate all ways to cut up a sequence satisfying condition X' follows this template.",
       approach:
         "Backtrack by trying every possible prefix as a partition. If the prefix is a palindrome, add it to the current partition and recurse on the remaining string. Collect complete partitions when the end of the string is reached.",
       timeComplexity: "O(n*2^n)",
@@ -314,6 +370,14 @@ export const backtracking: Category = {
           expected: [],
         },
       ],
+      patterns: ["Backtracking", "Hash Map", "String"],
+      hints: [
+        "Build a digit->letters map. The answer is the Cartesian product of letter sets.",
+        "Backtrack: at depth i, iterate over the letters for digits[i], append to current, recurse, pop.",
+        "Edge case: empty digits should return an empty array, NOT [''].",
+      ],
+      keyIntuition:
+        "The cleanest illustration of backtracking for a Cartesian product. Each digit is a 'decision layer'; at each layer you branch across its letter options. The recursion tree has branching factor 3 or 4 and depth n — hence O(4^n). Iterative BFS-style construction also works, but backtracking is natural here and generalizes to any 'combine one choice per category' problem.",
       approach:
         "Map each digit to its corresponding letters (2->abc, 3->def, etc.). Backtrack by appending each possible letter for the current digit and recursing on the remaining digits. Return empty array for empty input.",
       timeComplexity: "O(4^n)",
@@ -352,6 +416,14 @@ export const backtracking: Category = {
           expected: [["Q"]],
         },
       ],
+      patterns: ["Backtracking"],
+      hints: [
+        "Place one queen per row. For each row, try every column and check if the position is safe.",
+        "Safety check: no queen shares column, no queen shares diagonal. Track THREE sets: used columns, used (r-c) diagonals, used (r+c) anti-diagonals.",
+        "When all n rows are placed, you've found a valid configuration — record it and backtrack.",
+      ],
+      keyIntuition:
+        "N-Queens is the canonical constraint-satisfaction backtracking problem. The genius of the (row-col) and (row+col) diagonal encoding: every cell on a diagonal shares the same difference; every cell on an anti-diagonal shares the same sum. So checking diagonal attacks becomes O(1) set lookup. This 'encode constraint into a hashable key' trick is broadly useful in search / pruning problems.",
       approach:
         "Place queens row by row using backtracking. Track attacked columns, diagonals (row-col), and anti-diagonals (row+col) using sets. A position is safe if its column and both diagonals are not attacked.",
       timeComplexity: "O(n!)",

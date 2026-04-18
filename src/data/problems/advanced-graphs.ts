@@ -35,6 +35,14 @@ export const advancedGraphs: Category = {
           expected: ["JFK", "MUC", "LHR", "SFO", "SJC"],
         },
       ],
+      patterns: ["Graph", "DFS", "Eulerian Path", "Hash Map"],
+      hints: [
+        "You must use every ticket exactly once — that's an Eulerian path in the edge-graph.",
+        "Hierholzer's algorithm: DFS, removing an edge each time you traverse it, and APPEND to result in post-order.",
+        "For lexicographic smallest: sort each node's destination list and always pick the smallest available next.",
+      ],
+      keyIntuition:
+        "Ordinary DFS doesn't work naively — you can get stuck at a dead-end before using all edges. Hierholzer's post-order trick ensures dead-ends appear at the END of the path and the reconstructed traversal ultimately uses every edge. Reverse the post-order list to get the valid Eulerian path. This is the gold-standard pattern for any 'use every edge exactly once' problem.",
       approach:
         "Use Hierholzer's algorithm for finding an Eulerian path. Build an adjacency list sorted in reverse lexical order (so we can pop from the end). Perform DFS, post-order appending airports to the result, then reverse the result.",
       timeComplexity: "O(E log E)",
@@ -85,6 +93,14 @@ export const advancedGraphs: Category = {
           expected: 18,
         },
       ],
+      patterns: ["Graph", "Minimum Spanning Tree", "Heap", "Union-Find"],
+      hints: [
+        "Connecting all n points with minimum total cost = Minimum Spanning Tree. Any MST algorithm works.",
+        "Prim's: start from any node. Repeatedly add the cheapest edge from the tree to a non-tree node (min heap).",
+        "Kruskal's: sort all n² edges, add cheapest non-cycle-forming edges via Union-Find.",
+      ],
+      keyIntuition:
+        "Recognizing this as an MST problem is the whole game. Any graph question asking 'connect everything with minimum total weight' is MST. Prim is heap-based (good when graph is dense); Kruskal is sort+Union-Find (good when sparse or edges pre-sorted). Knowing both algorithms lets you pick based on graph density and problem specifics.",
       approach:
         "Use Prim's algorithm for minimum spanning tree. Start from any point and greedily add the nearest unvisited point. Use a min heap to efficiently select the next closest point based on Manhattan distance.",
       timeComplexity: "O(n^2 log n)",
@@ -128,6 +144,14 @@ export const advancedGraphs: Category = {
           expected: -1,
         },
       ],
+      patterns: ["Graph", "Dijkstra", "Heap", "BFS"],
+      hints: [
+        "'Signal reaches all nodes' = the MAX of all shortest-path distances from source. Shortest paths with weights → Dijkstra.",
+        "Initialize distances to infinity, source to 0. Use a min heap of (distance, node).",
+        "Pop the node with smallest distance, relax its neighbors. The answer is the max of finalized distances (or -1 if any is infinity).",
+      ],
+      keyIntuition:
+        "Dijkstra is the workhorse of single-source shortest path with non-negative weights. The min heap acts as a 'priority frontier' — always finalizing the closest unfinished node first. 'All nodes reached' means every distance finalized; the time for the signal is the LAST one to finalize (the max). Any weighted shortest-path single-source problem without negative edges is Dijkstra.",
       approach:
         "Use Dijkstra's algorithm from the source node k. Build an adjacency list with weights and use a min heap to process nodes in order of shortest distance. The answer is the maximum distance to any node, or -1 if not all nodes are reachable.",
       timeComplexity: "O(E log V)",
@@ -176,6 +200,14 @@ export const advancedGraphs: Category = {
           expected: 16,
         },
       ],
+      patterns: ["Graph", "Dijkstra", "Heap", "Binary Search", "BFS"],
+      hints: [
+        "Path 'cost' is the MAX elevation along the path (not sum). Min over paths of max on path — that's a minimax path.",
+        "Modified Dijkstra: instead of distance = sum, distance = max elevation. Always expand to the unvisited neighbor with the smallest max.",
+        "Alternative: binary search on t. For each t, BFS to check if (0,0)→(n-1,n-1) is reachable using only cells with elevation <= t.",
+      ],
+      keyIntuition:
+        "Dijkstra generalizes to any 'relaxation' operation that's monotone and well-defined. Here, the path cost is max(current path cost, cell elevation) instead of a sum. The heap still delivers the optimal next node. This 'Dijkstra with custom relaxation' pattern solves all 'minimize the worst step' problems (Path With Minimum Effort, Min Max Path, etc.).",
       approach:
         "Use Dijkstra's algorithm or binary search + BFS. With Dijkstra, start at (0,0) and always expand to the neighbor with the minimum elevation using a min heap. The answer is the maximum elevation along the optimal path to (n-1,n-1).",
       timeComplexity: "O(n^2 log n)",
@@ -216,6 +248,14 @@ export const advancedGraphs: Category = {
           expected: "",
         },
       ],
+      patterns: ["Graph", "Topological Sort", "DFS", "BFS", "String"],
+      hints: [
+        "Adjacent sorted words reveal ONE character ordering each: the first differing character tells you c1 < c2.",
+        "Build a directed graph from all such inferences. Topological sort gives a valid alphabet.",
+        "Edge case: if word A comes before its prefix (e.g., 'abc' before 'ab'), it's invalid.",
+      ],
+      keyIntuition:
+        "Ordering constraints from pairwise comparisons are the textbook topological sort setup. Careful: you can only extract ONE relation per adjacent pair (first differing character). Also watch the 'prefix' edge case — lexicographic order requires shorter prefixes to come first. Cycle → no valid alphabet. This pattern applies to any 'derive order from pairwise comparisons' problem.",
       approach:
         "Compare adjacent words to determine character ordering (find the first differing character). Build a directed graph of character precedences and perform topological sort. If a cycle exists, there's no valid ordering.",
       timeComplexity: "O(C)",
@@ -260,6 +300,14 @@ export const advancedGraphs: Category = {
           expected: 700,
         },
       ],
+      patterns: ["Graph", "Bellman-Ford", "Dynamic Programming", "BFS"],
+      hints: [
+        "Dijkstra doesn't directly respect hop limits. Bellman-Ford does: after i iterations, dp[v] = cheapest price to v using at most i edges.",
+        "Run k+1 iterations of edge relaxation. Use a COPY of prices each iteration so updates don't cascade within one round.",
+        "Alternative: BFS/Dijkstra with state (node, stops_used), expanding only when stops remain.",
+      ],
+      keyIntuition:
+        "Hop-limited shortest path is exactly what Bellman-Ford provides — iterate k+1 times, each pass 'extends' paths by one edge. The snapshot copy is crucial: without it, a single iteration could relax via MANY newly-updated edges, violating the hop count. This 'state = (node, constraint)' augmentation generalizes to many 'shortest path with extra dimension' problems.",
       approach:
         "Use Bellman-Ford with at most k+1 iterations. In each iteration, relax all edges. Use a copy of the price array to ensure only edges from the previous iteration contribute, preventing cascading updates.",
       timeComplexity: "O(k*E)",

@@ -49,6 +49,14 @@ export const graphs: Category = {
           expected: 3,
         },
       ],
+      patterns: ["DFS", "BFS", "Matrix", "Graph"],
+      hints: [
+        "Think of the grid as a graph: each land cell is a node, and edges connect horizontally/vertically adjacent land cells.",
+        "When you find an unvisited '1', that's a new island. Explore its entire connected component before moving on.",
+        "Mark visited cells in-place (set to '0') to avoid a separate visited set and save space.",
+      ],
+      keyIntuition:
+        "The core idea: count connected components in an implicit graph. Every time you start a new DFS/BFS from an unvisited land cell, you've found one complete island — the traversal is guaranteed to visit exactly one island because of the adjacency constraint. Mutating the grid as your visited marker is a common space-saving trick when the input can be modified.",
       approach:
         "Iterate through the grid and when a '1' is found, perform BFS or DFS to mark all connected land cells as visited. Each BFS/DFS initiation counts as one island. Mark visited cells by setting them to '0'.",
       timeComplexity: "O(m*n)",
@@ -89,6 +97,14 @@ export const graphs: Category = {
           expected: 6,
         },
       ],
+      patterns: ["DFS", "BFS", "Matrix", "Graph"],
+      hints: [
+        "Same as Number of Islands, but instead of counting islands, count the size of each connected component.",
+        "Have DFS return the count of land cells it visited. Sum of 1 (current cell) + DFS on each neighbor.",
+        "Track the maximum over all DFS starts. Marking visited in-place keeps you at O(1) extra space per cell.",
+      ],
+      keyIntuition:
+        "This generalizes 'counting components' to 'measuring components' — the same DFS skeleton, but with an accumulator. The pattern 'DFS returns a value computed from recursive results' (size here, but elsewhere max/sum/bool) is one of the most useful DFS templates. You'll see it in tree problems, graph problems, and DAG DP alike.",
       approach:
         "DFS from each unvisited land cell, counting cells in the connected component. Track the maximum area found across all islands. Mark cells as visited to avoid recounting.",
       timeComplexity: "O(m*n)",
@@ -117,6 +133,14 @@ export const graphs: Category = {
           expected: [[2, 4], [1, 3], [2, 4], [1, 3]],
         },
       ],
+      patterns: ["DFS", "BFS", "Hash Map", "Graph"],
+      hints: [
+        "The challenge is cycles. If you DFS blindly, you'll clone the same node many times or loop forever.",
+        "Use a HashMap mapping original nodes to their clones. Before cloning, check if the clone already exists.",
+        "DFS: for each node, create its clone, then recursively clone (and connect) each neighbor.",
+      ],
+      keyIntuition:
+        "The original -> clone HashMap serves double duty: it's both your visited set AND the way neighbors find their already-created clones. This 'memoize identity' pattern appears in any graph/tree deep-copy or graph-transformation problem. It's the graph analog of memoization in recursion — once you've made a clone, never make it again.",
       approach:
         "Use BFS or DFS with a HashMap mapping original nodes to clones. For each unvisited node, create a clone and recursively clone its neighbors. The HashMap prevents revisiting and duplicating nodes.",
       timeComplexity: "O(V+E)",
@@ -158,6 +182,14 @@ export const graphs: Category = {
           ],
         },
       ],
+      patterns: ["BFS", "Matrix", "Graph"],
+      hints: [
+        "BFS from each gate would be O((m*n)²). Can you do all gates at once?",
+        "Multi-source BFS: initialize the queue with ALL gates. BFS expands outward from all sources simultaneously.",
+        "When BFS reaches a cell, it's via the shortest path from some gate — so the first distance assigned is the minimum.",
+      ],
+      keyIntuition:
+        "Multi-source BFS is a powerful variant: whenever you want the shortest distance from any of many sources to every cell, seeding the queue with all sources at distance 0 solves it in one pass. BFS's 'wavefront' naturally reaches each cell via the nearest source first. This pattern handles 'nearest X' problems across entire grids without running BFS many times.",
       approach:
         "Perform multi-source BFS starting from all gate cells (value 0) simultaneously. Each BFS level increments the distance by 1. This naturally fills each empty room with the distance to its nearest gate.",
       timeComplexity: "O(m*n)",
@@ -204,6 +236,14 @@ export const graphs: Category = {
           expected: -1,
         },
       ],
+      patterns: ["BFS", "Matrix", "Graph"],
+      hints: [
+        "Time passes in simultaneous waves — that's exactly what multi-source BFS level-order models.",
+        "Seed the queue with all rotten oranges. Each BFS level = 1 minute. Track remaining fresh count.",
+        "After BFS, if any fresh oranges remain (unreachable), return -1. Otherwise return the elapsed levels.",
+      ],
+      keyIntuition:
+        "Simulating 'parallel spread' of infection/fire/time is a canonical multi-source BFS problem. BFS levels correspond perfectly to time steps because all adjacent cells update in lockstep. The twist here: not just distance, but also feasibility (-1 when some fresh oranges are in an unreachable region). Tracking a 'remaining count' lets you detect that in a single pass.",
       approach:
         "Use multi-source BFS starting from all initially rotten oranges. Each BFS level represents one minute. After BFS completes, check if any fresh oranges remain. If so, return -1; otherwise, return the total minutes elapsed.",
       timeComplexity: "O(m*n)",
@@ -251,6 +291,14 @@ export const graphs: Category = {
           ],
         },
       ],
+      patterns: ["DFS", "BFS", "Matrix", "Graph"],
+      hints: [
+        "Running DFS from every cell toward the oceans would be slow. What if you reverse the flow?",
+        "From each ocean's edge cells, DFS to cells with EQUAL OR GREATER height (reverse flow direction).",
+        "Cells reachable from both ocean DFS traversals are exactly the answer — intersect the two sets.",
+      ],
+      keyIntuition:
+        "Flow reversal is a deep trick. Instead of asking 'can this cell reach the ocean?' for every cell (expensive), ask 'which cells can the ocean reach going uphill?' Each ocean's reachable set is computed once via DFS/BFS from its borders. This reduces O(n⁴) per-cell work to O(n²) total. Whenever a problem asks 'which sources reach this sink', consider flipping to 'which sinks are reached from this source'.",
       approach:
         "Run DFS/BFS from the Pacific border (top and left edges) and separately from the Atlantic border (bottom and right edges). Track which cells can reach each ocean. The answer is the intersection of both sets.",
       timeComplexity: "O(m*n)",
@@ -292,6 +340,14 @@ export const graphs: Category = {
           ],
         },
       ],
+      patterns: ["DFS", "BFS", "Matrix", "Graph"],
+      hints: [
+        "A region is surrounded UNLESS it touches the border. Invert the question: which 'O's are connected to a border?",
+        "DFS/BFS from each border 'O', marking them (e.g., to 'T' for temporary-safe).",
+        "After marking: flip all remaining 'O' to 'X' (truly surrounded), then restore 'T' back to 'O'.",
+      ],
+      keyIntuition:
+        "'Surrounded' is hard to check directly — you'd need to verify isolation for every cell. The elegant inversion: flag the reachable-from-border cells, then the unreachable ones are surrounded by definition. This 'mark what's safe, flip what remains' pattern appears in many grid-surrounding problems. The temporary marker character trick avoids needing a separate visited array.",
       approach:
         "DFS/BFS from all border 'O' cells, marking them as safe. Then iterate through the board: flip remaining 'O' cells to 'X' (they are surrounded), and restore safe cells back to 'O'.",
       timeComplexity: "O(m*n)",
@@ -333,6 +389,14 @@ export const graphs: Category = {
           expected: false,
         },
       ],
+      patterns: ["DFS", "BFS", "Topological Sort", "Graph"],
+      hints: [
+        "'Course b must come before course a' is a directed edge b -> a. You can finish iff this graph has no cycles.",
+        "DFS with three states: unvisited, visiting (on stack), done. Seeing a 'visiting' node means cycle.",
+        "Alternative: Kahn's algorithm (BFS). Start with all in-degree-0 nodes; if you process all nodes, no cycle.",
+      ],
+      keyIntuition:
+        "Course scheduling is the archetypal topological sort / cycle detection problem. Two states ('visited'/'not') is NOT enough for directed cycle detection — you need three (unvisited/visiting/done) because re-entering a 'visiting' node indicates a back edge. Kahn's algorithm offers a different mental model: repeatedly remove nodes with no prerequisites; if you can't process all nodes, there must be a cycle.",
       approach:
         "Build a directed graph and detect cycles using DFS with three states: unvisited, in-progress, and completed. If a cycle is found (visiting an in-progress node), courses cannot be completed. Alternatively, use Kahn's algorithm (BFS topological sort).",
       timeComplexity: "O(V+E)",
@@ -377,6 +441,14 @@ export const graphs: Category = {
           expected: [0, 1, 2, 3],
         },
       ],
+      patterns: ["DFS", "BFS", "Topological Sort", "Graph"],
+      hints: [
+        "Same cycle-detection idea as Course Schedule, but now you must output a valid ordering.",
+        "Kahn's algorithm naturally produces the ordering: process nodes as they reach in-degree 0.",
+        "DFS alternative: post-order DFS, then reverse — the last-finished node has no descendants, so it goes last in the topological order.",
+      ],
+      keyIntuition:
+        "Topological sort is one of the most-used graph algorithms in practice: build order dependencies, task scheduling, spreadsheet recalculation, package managers. Kahn's algorithm (BFS by in-degree) is iterative, easy to debug, and detects cycles for free. The DFS variant (post-order + reverse) is more elegant but trickier to implement. Master both.",
       approach:
         "Perform topological sort using Kahn's algorithm: compute in-degrees, start BFS from nodes with in-degree 0, and process neighbors by decrementing their in-degrees. Return the order if all courses are processed, otherwise return empty array.",
       timeComplexity: "O(V+E)",
@@ -428,6 +500,14 @@ export const graphs: Category = {
           expected: false,
         },
       ],
+      patterns: ["Union-Find", "DFS", "BFS", "Graph"],
+      hints: [
+        "A tree with n nodes has exactly n-1 edges. That's a necessary condition (check it first).",
+        "A tree is acyclic and connected. Union-Find detects cycles naturally — if both endpoints of an edge share a root, adding it creates a cycle.",
+        "Alternatively: DFS/BFS. If you visit all n nodes without revisiting any (track parent to ignore back-edge), it's a valid tree.",
+      ],
+      keyIntuition:
+        "The two defining properties of a tree — connected + acyclic — map directly to two algorithmic checks. Union-Find excels here: each union is a 'merge', and if the merge is a no-op (same root), you've found a cycle. The edge-count shortcut (exactly n-1) is a necessary but not sufficient condition (two components of sizes 3 and 2 could also have 4 edges!), so you still need to verify connectivity.",
       approach:
         "A valid tree has exactly n-1 edges and is fully connected. Use Union-Find: for each edge, union the two nodes. If they're already in the same set, there's a cycle. After processing, check there's exactly one connected component.",
       timeComplexity: "O(V+E)",
@@ -478,6 +558,14 @@ export const graphs: Category = {
           expected: 1,
         },
       ],
+      patterns: ["Union-Find", "DFS", "BFS", "Graph"],
+      hints: [
+        "Start with n components (each node is its own). Each edge either merges two components or is redundant.",
+        "Union-Find: count = n initially; for each edge, if union succeeds (different roots), count--.",
+        "DFS/BFS alternative: count the number of DFS starts needed to cover all nodes.",
+      ],
+      keyIntuition:
+        "Counting connected components is the 'hello world' of Union-Find. The pattern 'start with n, decrement on each successful union' generalizes to 'counting groups that merge over time'. Any problem that incrementally joins elements and asks about groups is likely Union-Find. Understanding path compression and union-by-rank gets you to near-O(1) amortized ops.",
       approach:
         "Use Union-Find to group connected nodes. Initialize each node as its own component. For each edge, union the two nodes (decrementing component count when a merge occurs). The final count is the number of components.",
       timeComplexity: "O(V+E)",
@@ -527,6 +615,14 @@ export const graphs: Category = {
           expected: [1, 4],
         },
       ],
+      patterns: ["Union-Find", "Graph"],
+      hints: [
+        "A tree becomes non-tree when one extra edge creates a cycle. You need to find that cycle-causing edge.",
+        "Process edges in order with Union-Find. The first edge connecting two already-connected nodes is the culprit.",
+        "The problem asks for the LAST such edge in input order — by processing left-to-right, the first detected duplicate-union IS the last-occurring redundant edge.",
+      ],
+      keyIntuition:
+        "'The edge that creates a cycle' is a perfect fit for Union-Find — unions succeed for tree edges and fail (detect cycle) for the redundant one. A key subtlety: the problem specifies 'last in input order' for ambiguous cases, and processing sequentially with Union-Find handles this naturally. This 'first detected conflict' pattern applies to many graph-validation problems.",
       approach:
         "Use Union-Find to process edges in order. For each edge, try to union the two nodes. If they are already connected (same root), this edge creates a cycle and is the redundant connection. Return the first such edge found.",
       timeComplexity: "O(n)",
@@ -573,6 +669,14 @@ export const graphs: Category = {
           expected: 0,
         },
       ],
+      patterns: ["BFS", "Hash Map", "Graph"],
+      hints: [
+        "Shortest transformation sequence = shortest path in a graph where nodes are words and edges are 1-letter differences. Use BFS.",
+        "Building edges naively is O(n²·m). For each word, generate all wildcard patterns (e.g., 'h*t' from 'hit') to bucket neighbors efficiently.",
+        "Even simpler: for each word in the queue, try replacing each position with each of 26 letters and check the word set for membership.",
+      ],
+      keyIntuition:
+        "The problem looks like a string puzzle, but it's really unweighted shortest path — and BFS is the answer for unweighted shortest path. The implicit graph construction is the art: generating neighbors on-the-fly (via the 'change each letter' trick) is O(26·m) per word, vastly cheaper than pairwise comparison. Bidirectional BFS from both endpoints can further speed this up in practice.",
       approach:
         "Use BFS where each node is a word and edges connect words differing by one letter. For each word, try changing each character to all 26 letters and check if the result is in the word set. Track the transformation count (BFS level).",
       timeComplexity: "O(n*m^2)",

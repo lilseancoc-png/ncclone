@@ -34,6 +34,14 @@ export const tries: Category = {
           expected: [null, null, true, false, true, null, true],
         },
       ],
+      patterns: ["Trie", "Design", "String"],
+      hints: [
+        "A trie is a tree where each node has up to 26 children, one per letter. Each path from root to a marked node spells a word.",
+        "Insert: walk down or create children, char by char. Mark the last node as end-of-word.",
+        "Search: same walk, return false if any step is missing. search requires end-of-word marker; startsWith doesn't.",
+      ],
+      keyIntuition:
+        "Tries shine when you have many strings with shared prefixes. Each common prefix is stored once, enabling fast prefix operations that hash tables can't match. The key distinction: search (whole word) vs. startsWith (any word with this prefix) differ only in whether you check the end-of-word flag. This simple structure unlocks autocomplete, spell-check, and sub-string indexing.",
       approach:
         "Each TrieNode contains a map of children (one per character) and a boolean marking end-of-word. Insert builds the path character by character, search follows the path checking the end marker, and startsWith follows the path without checking the end marker.",
       timeComplexity: "O(m) per operation",
@@ -78,6 +86,14 @@ export const tries: Category = {
           expected: [null, null, null, null, false, true, true, true],
         },
       ],
+      patterns: ["Trie", "DFS", "Backtracking", "Design", "String"],
+      hints: [
+        "Use a Trie for insert and exact search. Challenge: wildcard '.' can match any character.",
+        "When you encounter '.', you can't pick one path — DFS into ALL current children and return true if any path matches.",
+        "Normal characters follow the single matching child as usual.",
+      ],
+      keyIntuition:
+        "The wildcard turns a linear trie traversal into a branching search — that's DFS over the trie. The lesson: tries and tree-search combine naturally. Once you see the trie as a tree of characters, any path/pattern query over it is a graph traversal. This 'trie + DFS' combo generalizes to regex-like matching, partial-word search, and autocorrect.",
       approach:
         "Build a Trie structure where addWord inserts character by character. For search, handle the '.' wildcard by branching to all children at that position using DFS. Regular characters follow the standard Trie path.",
       timeComplexity: "O(m) per operation",
@@ -116,6 +132,14 @@ export const tries: Category = {
           expected: ["eat", "oath"],
         },
       ],
+      patterns: ["Trie", "Backtracking", "DFS", "Matrix", "String"],
+      hints: [
+        "Running Word Search for each word would be O(W * mn * 4^L). Too slow.",
+        "Build a Trie of all words. Then DFS from each cell, simultaneously walking the board AND the trie. Prune as soon as the trie path dies.",
+        "When you find a word (marked trie node), add it to results and UNMARK to avoid duplicates. Optionally prune leaf trie nodes as you find words.",
+      ],
+      keyIntuition:
+        "The profound move: flip the computation. Instead of searching each word once (W searches), search the board once while multiplexing all words via the trie. The trie acts as a 'guide' that prunes the DFS instantly when no word shares the current prefix. This 'many-patterns + one-search' technique (Aho-Corasick is the next level) is a keystone of efficient string/grid matching.",
       approach:
         "Build a Trie from the word list, then perform DFS from each cell on the board, following Trie paths. When a word end is reached, add it to results. Prune Trie nodes after finding words to avoid duplicates and speed up subsequent searches.",
       timeComplexity: "O(m*n*4^L)",

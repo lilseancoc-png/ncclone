@@ -33,6 +33,14 @@ export const binarySearch: Category = {
           expected: -1,
         },
       ],
+      patterns: ["Binary Search", "Array"],
+      hints: [
+        "The array is sorted. Each comparison can eliminate half of the remaining candidates.",
+        "Keep two pointers (left, right). Check the middle element against the target.",
+        "Be careful with integer overflow when computing mid. Use left + (right - left) / 2 instead of (left + right) / 2.",
+      ],
+      keyIntuition:
+        "Binary search is the canonical halving algorithm: each step doubles the search space you've ruled out. The real skill is getting the boundary conditions right — inclusive vs. exclusive right pointer, when to use < vs. <=, and updating mid+1/mid-1 to guarantee progress. Master one template (e.g., [left, right] inclusive) and reuse it everywhere.",
       approach:
         "Maintain left and right pointers on the sorted array. Compare the middle element with the target: if equal, return the index; if target is smaller, search the left half; if larger, search the right half. Repeat until found or pointers cross.",
       timeComplexity: "O(log n)",
@@ -83,6 +91,14 @@ export const binarySearch: Category = {
           expected: false,
         },
       ],
+      patterns: ["Binary Search", "Matrix", "Array"],
+      hints: [
+        "The matrix has a strict total order: every element in row i is less than every element in row i+1. That's like one big sorted array.",
+        "Convert a flat index i in [0, m*n) to (row, col) as (i / cols, i % cols). Now you can binary search over flat indices.",
+        "Alternatively: two binary searches — one to find the target row, then one within that row. Both are O(log(m*n)).",
+      ],
+      keyIntuition:
+        "When disparate data structures share an ordering property, you can often treat them as a single flat structure. The row/column arithmetic (i/cols, i%cols) is a fundamental trick for mapping between 1D and 2D. Recognizing when a structure is 'virtually' a sorted array unlocks O(log n) solutions on seemingly 2D problems.",
       approach:
         "Treat the 2D matrix as a flattened sorted array and apply standard binary search. Convert the 1D index to 2D coordinates using row = mid / cols and col = mid % cols. This works because each row starts with a value greater than the last element of the previous row.",
       timeComplexity: "O(log(m * n))",
@@ -117,6 +133,14 @@ export const binarySearch: Category = {
           expected: 30,
         },
       ],
+      patterns: ["Binary Search", "Array"],
+      hints: [
+        "You don't binary search the array — you binary search the answer space. What are the min and max possible eating speeds?",
+        "For any speed k, you can compute total hours in O(n): sum of ceil(pile / k) for each pile. Does k=x work (hours <= h)? That's a yes/no question.",
+        "The 'works' property is monotonic: if speed k works, any faster speed also works. Binary search for the smallest k that works.",
+      ],
+      keyIntuition:
+        "This is 'binary search on the answer' — the array isn't sorted, but the predicate 'can finish in h hours at speed k' is monotonic in k. Whenever you can pose a problem as 'find the smallest/largest X where predicate(X) is true,' and the predicate flips at most once, binary search works. This pattern reappears in many 'minimum/maximum capacity' problems.",
       approach:
         "Binary search on the eating speed k between 1 and the maximum pile size. For each candidate speed, calculate the total hours needed to eat all piles (ceiling division). Find the minimum speed where the total hours is within the time limit h.",
       timeComplexity: "O(n log m)",
@@ -158,6 +182,14 @@ export const binarySearch: Category = {
           expected: 11,
         },
       ],
+      patterns: ["Binary Search", "Array"],
+      hints: [
+        "The minimum is the only element smaller than its predecessor — it's the rotation point.",
+        "Compare nums[mid] to nums[right]. If nums[mid] > nums[right], the rotation must be in the right half.",
+        "If nums[mid] <= nums[right], the right half is sorted, so the minimum is in the left half (including mid).",
+      ],
+      keyIntuition:
+        "A rotated sorted array consists of two sorted segments. Comparing mid to right (not left!) cleanly identifies which segment mid is in — and therefore which half contains the rotation point. The choice of comparing against right rather than left is intentional: it handles the edge case where the array isn't rotated at all (return nums[0]).",
       approach:
         "Use binary search comparing the middle element with the rightmost element. If mid > right, the minimum is in the right half; otherwise, it's in the left half including mid. This identifies which half contains the rotation point.",
       timeComplexity: "O(log n)",
@@ -193,6 +225,14 @@ export const binarySearch: Category = {
           expected: -1,
         },
       ],
+      patterns: ["Binary Search", "Array"],
+      hints: [
+        "At any midpoint in a rotated sorted array, at least one side (left or right of mid) is fully sorted.",
+        "Compare nums[left] with nums[mid] to determine which side is sorted. Then check if target fits in that side's range.",
+        "If target is in the sorted side's range, search that side. Otherwise, the target must be on the other (rotated) side.",
+      ],
+      keyIntuition:
+        "The key insight: in any rotated sorted array, bisecting at mid always leaves at least one sorted half. Identify the sorted half, then check if target falls within its known range — if yes, search there; if no, search the other half. This reduces a 'messy' rotated-search problem to standard binary search with one extra check per step.",
       approach:
         "Use binary search by first determining which half is sorted. If the left half is sorted and the target falls within it, search left; otherwise search right. Apply the same logic if the right half is sorted. One half is always sorted in a rotated array.",
       timeComplexity: "O(log n)",
@@ -235,6 +275,14 @@ export const binarySearch: Category = {
           expected: [null, "bar", "bar", null, "bar2", "bar2"],
         },
       ],
+      patterns: ["Binary Search", "Hash Map", "Design"],
+      hints: [
+        "Since timestamps for each key are strictly increasing, the stored list is already sorted — perfect for binary search.",
+        "For get(key, t), you want the largest stored timestamp <= t. That's a classic 'floor' query solved by binary search.",
+        "Combine a HashMap (key -> list) with binary search on each key's list. Each set is O(1), each get is O(log n).",
+      ],
+      keyIntuition:
+        "Design problems often combine two data structures — here, a HashMap for key isolation and sorted lists for timestamp lookup. The 'floor' query (largest element <= target) is a binary-search variant worth memorizing: when the comparison fails, you return left - 1 (or the equivalent). This shows up in any time-series / versioned-data design problem.",
       approach:
         "Store values in a HashMap where each key maps to a list of (timestamp, value) pairs. Since timestamps are strictly increasing, use binary search on the list to find the largest timestamp less than or equal to the query timestamp.",
       timeComplexity: "O(log n)",
@@ -271,6 +319,14 @@ export const binarySearch: Category = {
           expected: 2.5,
         },
       ],
+      patterns: ["Binary Search", "Array", "Divide and Conquer"],
+      hints: [
+        "The median divides the combined array into two equal halves. Can you find a partition without actually merging?",
+        "Partition the shorter array at index i; the partition in the longer array is forced: j = (m + n + 1) / 2 - i.",
+        "The partition is correct when nums1[i-1] <= nums2[j] AND nums2[j-1] <= nums1[i]. Binary search on i.",
+      ],
+      keyIntuition:
+        "This problem teaches a profound lesson: you don't always have to build the answer to find it. By defining the median as a partition point satisfying cross-boundary inequalities, you convert the problem into 'find the right partition' — a binary-searchable property on the shorter array. Binary searching only the shorter array gives O(log(min(m,n))). This 'partition search' technique generalizes to k-sorted-array problems.",
       approach:
         "Binary search on the shorter array to find the correct partition point. The partition divides both arrays such that all elements on the left are less than all elements on the right. Adjust the partition using binary search by comparing boundary elements across the two arrays.",
       timeComplexity: "O(log(min(m, n)))",
