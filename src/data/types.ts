@@ -36,6 +36,9 @@ export interface Problem {
   testCases?: TestCase[];
   functionName?: string;
   compareMode?: CompareMode;
+  hints?: string[];
+  patterns?: string[];
+  keyIntuition?: string;
 }
 
 export interface Category {

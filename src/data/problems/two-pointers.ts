@@ -51,6 +51,14 @@ export const twoPointers: Category = {
           expected: true,
         },
       ],
+      patterns: ["Two Pointers", "String"],
+      hints: [
+        "A palindrome reads the same forwards and backwards. How would you compare from both ends?",
+        "Use two pointers: one at the start, one at the end. Skip characters that aren't letters or digits.",
+        "Convert to lowercase before comparing. Move pointers inward until they cross.",
+      ],
+      keyIntuition:
+        "The two-pointer technique from both ends is the natural approach for palindrome checking — you're literally checking the 'mirror' property. The real lesson here is preprocessing: by ignoring non-alphanumeric characters and case, you separate the 'what to compare' from 'how to compare'. This is cleaner than filtering into a new string first.",
       approach:
         "Use two pointers starting from the beginning and end of the string. Skip non-alphanumeric characters and compare the remaining characters case-insensitively. Move the pointers inward until they meet.",
       timeComplexity: "O(n)",
@@ -98,6 +106,14 @@ export const twoPointers: Category = {
           expected: [4, 5],
         },
       ],
+      patterns: ["Two Pointers", "Array"],
+      hints: [
+        "The array is already sorted. How can you exploit that property?",
+        "If the sum of two elements is too large, you need a smaller number. If too small, you need a larger number.",
+        "Start with pointers at both ends. Move the left pointer right to increase the sum, or the right pointer left to decrease it.",
+      ],
+      keyIntuition:
+        "Sorted order is the key enabler. With pointers at both ends, you have the smallest + largest possible sum. Moving the right pointer left always decreases the sum; moving the left pointer right always increases it. This gives you a directed search that eliminates possibilities with each step — a hallmark of two-pointer problems on sorted arrays.",
       approach:
         "Place two pointers at the start and end of the sorted array. If the sum is too large, move the right pointer left; if too small, move the left pointer right. The sorted order guarantees convergence to the answer.",
       timeComplexity: "O(n)",
@@ -142,6 +158,14 @@ export const twoPointers: Category = {
           expected: [[0, 0, 0]],
         },
       ],
+      patterns: ["Two Pointers", "Sorting", "Array"],
+      hints: [
+        "If you fix one number, the problem reduces to Two Sum II on the remaining elements.",
+        "Sort the array first. Then for each element nums[i], use two pointers on nums[i+1..n-1] to find pairs summing to -nums[i].",
+        "To avoid duplicate triplets, skip over repeated values for the fixed element and both pointers.",
+      ],
+      keyIntuition:
+        "3Sum demonstrates a powerful problem-solving pattern: reduce an N-variable problem to an (N-1)-variable problem you've already solved. Fix one element → Two Sum on the rest. Sorting enables both the two-pointer search and duplicate skipping. This 'fix one, solve the rest' technique extends to 4Sum and beyond.",
       approach:
         "Sort the array, then fix one element and use two pointers on the remaining subarray to find pairs that sum to its negation. Skip duplicate values for the fixed element and the two pointers to avoid duplicate triplets in the result.",
       timeComplexity: "O(n^2)",
@@ -188,6 +212,14 @@ export const twoPointers: Category = {
           expected: 2,
         },
       ],
+      patterns: ["Two Pointers", "Greedy"],
+      hints: [
+        "Area = min(height[left], height[right]) × (right - left). Start with the widest container.",
+        "When you move a pointer inward, the width decreases. So you only gain area if the height increases.",
+        "Always move the pointer with the shorter height — moving the taller one can only decrease or maintain the limiting height, never increase the area.",
+      ],
+      keyIntuition:
+        "The greedy choice is: always move the shorter side inward. Why? The area is limited by the shorter bar. Moving the taller bar inward can never help — you'd lose width while the height is still bottlenecked by the shorter bar. By moving the shorter bar, you at least have a chance of finding a taller one. This greedy elimination proves no better solution was skipped.",
       approach:
         "Start with two pointers at the widest container (both ends). Calculate the area and move the pointer with the shorter height inward, since moving the taller one can never increase the area. Track the maximum area found.",
       timeComplexity: "O(n)",
@@ -234,6 +266,14 @@ export const twoPointers: Category = {
           expected: 10,
         },
       ],
+      patterns: ["Two Pointers", "Array"],
+      hints: [
+        "Water above bar i is determined by min(max height to its left, max height to its right) minus height[i].",
+        "You could precompute left-max and right-max arrays, but can you do it in O(1) space?",
+        "Use two pointers from both ends, tracking leftMax and rightMax. Process the side with the smaller max — you know water is bounded by that max regardless of what's on the other side.",
+      ],
+      keyIntuition:
+        "For each bar, water is bounded by the shorter of the two tallest walls on either side. The two-pointer optimization works because when leftMax < rightMax, the water at the left pointer is determined entirely by leftMax — no matter what's on the right, the right side is at least as tall. This allows you to process one side at a time without seeing the whole picture.",
       approach:
         "Use two pointers from both ends, tracking the maximum height seen from each side. The water trapped at any position is determined by the minimum of the two max heights minus the current height. Always process the side with the smaller max height.",
       timeComplexity: "O(n)",
