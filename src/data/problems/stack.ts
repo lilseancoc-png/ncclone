@@ -39,6 +39,14 @@ export const stack: Category = {
           expected: false,
         },
       ],
+      patterns: ["Stack", "String", "Hash Map"],
+      hints: [
+        "Think about what data structure naturally handles matching pairs in a last-in, first-out order.",
+        "Use a stack to track opening brackets, and a hash map to quickly look up which closing bracket matches which opening bracket.",
+        "For each character: if it's an opening bracket, push it. If it's a closing bracket, check that the stack is non-empty and the top matches. At the end, the stack must be empty.",
+      ],
+      keyIntuition:
+        "Bracket matching is inherently a LIFO problem: the most recently opened bracket must be closed first. A stack naturally enforces this nesting constraint. By pushing openers and popping on closers, we verify that every bracket is closed in the correct order.",
       approach:
         "Push opening brackets onto a stack. When a closing bracket is encountered, check if it matches the top of the stack. If the stack is empty or the brackets don't match, the string is invalid. The string is valid only if the stack is empty at the end.",
       timeComplexity: "O(n)",
@@ -73,6 +81,14 @@ export const stack: Category = {
           expected: [null, null, null, -3, null, 0, -2],
         },
       ],
+      patterns: ["Stack", "Design"],
+      hints: [
+        "The main stack handles values easily. How do you track the minimum without scanning the whole stack on every getMin?",
+        "Store the running minimum alongside each value, so the minimum is always accessible in O(1).",
+        "Use two stacks (or one stack of pairs). On push, compute min(val, currentMin) and push that to the min stack. On pop, pop from both.",
+      ],
+      keyIntuition:
+        "The trick is realizing that the minimum at any point depends only on what's currently in the stack. By storing the 'min so far' at each level, you effectively maintain a history of minimums that aligns with stack history. Popping naturally restores the previous minimum — no rescan needed.",
       approach:
         "Maintain two stacks: a main stack for values and a second stack that tracks the current minimum. On each push, push the new minimum (min of current value and previous minimum) onto the min stack. This ensures O(1) access to the minimum at any point.",
       timeComplexity: "O(1)",
@@ -108,6 +124,14 @@ export const stack: Category = {
           expected: 6,
         },
       ],
+      patterns: ["Stack", "Math"],
+      hints: [
+        "RPN puts operators after their operands. How does that match a stack's behavior?",
+        "Push operands onto a stack. When you see an operator, it applies to the top two stack values.",
+        "For each token: if it's a number, push it. If it's an operator, pop two numbers (right then left), compute, and push the result.",
+      ],
+      keyIntuition:
+        "Reverse Polish Notation eliminates the need for parentheses because operator precedence is encoded in token order. A stack is the perfect match: each operator's operands are always the most recent values pushed. This same stack-evaluation pattern is how compilers evaluate expressions internally after converting infix to postfix.",
       approach:
         "Process tokens left to right using a stack. Push numbers onto the stack. When an operator is encountered, pop the top two numbers, apply the operation, and push the result back. The final value on the stack is the answer.",
       timeComplexity: "O(n)",
@@ -143,6 +167,14 @@ export const stack: Category = {
           expected: ["()"],
         },
       ],
+      patterns: ["Backtracking", "Stack", "Recursion"],
+      hints: [
+        "Any valid string has exactly n opening and n closing parens. At each step, which characters can you legally add?",
+        "You can add '(' only if you haven't used all n opens. You can add ')' only if there are more opens than closes in the current string.",
+        "Backtrack: at each call, try adding '(' if open < n, and try adding ')' if close < open. When length == 2n, record the string.",
+      ],
+      keyIntuition:
+        "Instead of generating all 2^(2n) strings and filtering, prune invalid branches early. The two rules — open ≤ n and close ≤ open — encode 'well-formed' directly into the search tree. This is the essence of backtracking: explore choices, but abandon paths that can't lead to valid solutions.",
       approach:
         "Use backtracking, tracking the count of open and close parentheses used so far. Add an open parenthesis if the count is less than n, and add a close parenthesis if the close count is less than the open count. This ensures only valid combinations are generated.",
       timeComplexity: "O(4^n / sqrt(n))",
@@ -177,6 +209,14 @@ export const stack: Category = {
           expected: [1, 1, 1, 0],
         },
       ],
+      patterns: ["Monotonic Stack", "Array"],
+      hints: [
+        "For each day, you're looking for the next day with a higher value. This is the classic 'next greater element' problem.",
+        "Keep a stack of indices whose warmer day you haven't found yet. The stack stays monotonically decreasing in temperature.",
+        "Iterate through temperatures. While stack is non-empty and current temp > stack top's temp, pop and set answer[poppedIdx] = currentIdx - poppedIdx. Then push currentIdx.",
+      ],
+      keyIntuition:
+        "A monotonic decreasing stack stores days waiting for their answer. When a warmer day arrives, it resolves all colder days on the stack at once. Each index is pushed and popped at most once, giving O(n). This 'next greater element' template is one of the most reusable stack patterns.",
       approach:
         "Use a monotonic decreasing stack storing indices. For each new temperature, pop all indices from the stack whose temperatures are smaller, calculating the difference in days. This efficiently finds the next warmer day for each position.",
       timeComplexity: "O(n)",
@@ -211,6 +251,14 @@ export const stack: Category = {
           expected: 1,
         },
       ],
+      patterns: ["Stack", "Sorting", "Monotonic Stack"],
+      hints: [
+        "A faster car catches up to a slower one and then moves at the slower speed. Process cars in order of position.",
+        "For each car, compute time = (target - position) / speed. Sort by position descending so you process the leading car first.",
+        "Use a stack of arrival times. If a car behind has a shorter or equal time, it catches up and merges. If longer, it's its own fleet. Count stack size at the end.",
+      ],
+      keyIntuition:
+        "Cars can only merge, never unmerge. Sorting by position means you process leading cars first — their time defines the fleet they lead. Any following car with a smaller or equal time gets absorbed. The stack naturally keeps only the 'leader' times that define separate fleets.",
       approach:
         "Sort cars by position in descending order. Calculate the time each car takes to reach the target. Use a stack to track fleets: if a car takes longer than the car ahead, it forms a new fleet; otherwise, it merges into the fleet ahead.",
       timeComplexity: "O(n log n)",
@@ -246,6 +294,14 @@ export const stack: Category = {
           expected: 4,
         },
       ],
+      patterns: ["Monotonic Stack", "Array"],
+      hints: [
+        "For each bar, imagine the largest rectangle with that bar as the shortest. You need to know how far left and right it extends before hitting a shorter bar.",
+        "A monotonic increasing stack of bar indices lets you find, for each bar, the first shorter bar on its left (below it in stack) and on its right (the one that pops it).",
+        "Iterate through heights. While stack top is taller than current bar, pop it and compute width × height. Push current index. Process remaining stack after the loop using a sentinel.",
+      ],
+      keyIntuition:
+        "The max-area rectangle is bounded by the shortest bar it contains. So for each bar, find the maximal left-right extent where it's still the minimum. A monotonic increasing stack gives you both boundaries in amortized O(1): the first shorter bar on the left is just below it, and the one that causes it to pop is on the right. This is the quintessential monotonic-stack problem.",
       approach:
         "Use a monotonic increasing stack to track bar indices. When a shorter bar is found, pop taller bars and calculate the area they can form using the current boundaries. This efficiently finds the maximum rectangle by determining how far each bar can extend left and right.",
       timeComplexity: "O(n)",
