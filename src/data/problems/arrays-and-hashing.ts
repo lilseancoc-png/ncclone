@@ -38,6 +38,18 @@ export const arraysAndHashing: Category = {
           inputArgs: [[1, 1, 1, 3, 3, 4, 3, 2, 4, 2]],
           expected: true,
         },
+        {
+          id: 4,
+          input: "nums = []",
+          inputArgs: [[]],
+          expected: false,
+        },
+        {
+          id: 5,
+          input: "nums = [7]",
+          inputArgs: [[7]],
+          expected: false,
+        },
       ],
       approach:
         "Insert each element into a HashSet while iterating through the array. If the element already exists in the set, a duplicate is found. The HashSet provides O(1) average lookup, making this significantly faster than the brute-force O(n^2) comparison approach.",
@@ -70,6 +82,24 @@ export const arraysAndHashing: Category = {
           id: 2,
           input: 's = "rat", t = "car"',
           inputArgs: ["rat", "car"],
+          expected: false,
+        },
+        {
+          id: 3,
+          input: 's = "", t = ""',
+          inputArgs: ["", ""],
+          expected: true,
+        },
+        {
+          id: 4,
+          input: 's = "a", t = "ab"',
+          inputArgs: ["a", "ab"],
+          expected: false,
+        },
+        {
+          id: 5,
+          input: 's = "aacc", t = "ccac"',
+          inputArgs: ["aacc", "ccac"],
           expected: false,
         },
       ],
@@ -112,6 +142,18 @@ export const arraysAndHashing: Category = {
           inputArgs: [[3, 3], 6],
           expected: [0, 1],
         },
+        {
+          id: 4,
+          input: "nums = [-1,-2,-3,-4,-5], target = -8",
+          inputArgs: [[-1, -2, -3, -4, -5], -8],
+          expected: [2, 4],
+        },
+        {
+          id: 5,
+          input: "nums = [0,4,3,0], target = 0",
+          inputArgs: [[0, 4, 3, 0], 0],
+          expected: [0, 3],
+        },
       ],
       approach:
         "Use a HashMap to store each number's index as you iterate. For each element, check if the complement (target - current) exists in the map. This allows finding the pair in a single pass through the array.",
@@ -140,6 +182,24 @@ export const arraysAndHashing: Category = {
           input: 'strs = ["eat","tea","tan","ate","nat","bat"]',
           inputArgs: [["eat", "tea", "tan", "ate", "nat", "bat"]],
           expected: [["bat"], ["nat", "tan"], ["ate", "eat", "tea"]],
+        },
+        {
+          id: 2,
+          input: 'strs = [""]',
+          inputArgs: [[""]],
+          expected: [[""]],
+        },
+        {
+          id: 3,
+          input: 'strs = ["a"]',
+          inputArgs: [["a"]],
+          expected: [["a"]],
+        },
+        {
+          id: 4,
+          input: 'strs = ["abc","bca","cab","xyz","zyx","foo"]',
+          inputArgs: [["abc", "bca", "cab", "xyz", "zyx", "foo"]],
+          expected: [["abc", "bca", "cab"], ["xyz", "zyx"], ["foo"]],
         },
       ],
       approach:
@@ -176,6 +236,18 @@ export const arraysAndHashing: Category = {
           inputArgs: [[1], 1],
           expected: [1],
         },
+        {
+          id: 3,
+          input: "nums = [4,1,-1,2,-1,2,3], k = 2",
+          inputArgs: [[4, 1, -1, 2, -1, 2, 3], 2],
+          expected: [-1, 2],
+        },
+        {
+          id: 4,
+          input: "nums = [1,2,3,4,5], k = 5",
+          inputArgs: [[1, 2, 3, 4, 5], 5],
+          expected: [1, 2, 3, 4, 5],
+        },
       ],
       approach:
         "Count frequencies with a HashMap, then use bucket sort where the index represents frequency. Create an array of buckets where bucket[i] contains elements that appear i times. Iterate from the highest bucket down to collect the top k elements.",
@@ -209,6 +281,18 @@ export const arraysAndHashing: Category = {
           input: "nums = [-1,1,0,-3,3]",
           inputArgs: [[-1, 1, 0, -3, 3]],
           expected: [0, 0, 9, 0, 0],
+        },
+        {
+          id: 3,
+          input: "nums = [2,3]",
+          inputArgs: [[2, 3]],
+          expected: [3, 2],
+        },
+        {
+          id: 4,
+          input: "nums = [5,5,5,5]",
+          inputArgs: [[5, 5, 5, 5]],
+          expected: [125, 125, 125, 125],
         },
       ],
       approach:
@@ -336,6 +420,24 @@ export const arraysAndHashing: Category = {
           input: "nums = [0,3,7,2,5,8,4,6,0,1]",
           inputArgs: [[0, 3, 7, 2, 5, 8, 4, 6, 0, 1]],
           expected: 9,
+        },
+        {
+          id: 3,
+          input: "nums = []",
+          inputArgs: [[]],
+          expected: 0,
+        },
+        {
+          id: 4,
+          input: "nums = [5]",
+          inputArgs: [[5]],
+          expected: 1,
+        },
+        {
+          id: 5,
+          input: "nums = [-3,-2,-1,0,1]",
+          inputArgs: [[-3, -2, -1, 0, 1]],
+          expected: 5,
         },
       ],
       approach:

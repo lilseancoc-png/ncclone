@@ -167,23 +167,46 @@ function IDELayout({
   const [mobileTab, setMobileTab] = useState<MobileTab>("description");
   const [outputHeight, setOutputHeight] = useState(200);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const starterCode = problem.starterCode?.[language] || "";
   const { code, setCode, reset } = useCodeDrafts(slug, language, starterCode);
   const { run, results, consoleOutput, isRunning, error, clear } = useCodeRunner();
-  const { isCompleted, toggleCompleted, mounted } = useProgress();
+  const { isCompleted, toggleCompleted, markCompleted, mounted } = useProgress();
   const { toast } = useToast();
   const prevAllPassedRef = useRef(false);
+  const submitInFlightRef = useRef(false);
 
   const done = mounted && isCompleted(slug);
   const allPassed = (results?.length ?? 0) > 0 && results!.every((r) => r.passed);
 
   useEffect(() => {
+    if (isRunning) return;
+    const wasSubmit = submitInFlightRef.current;
+    submitInFlightRef.current = false;
+    setIsSubmitting(false);
+
+    if (wasSubmit && results && results.length > 0) {
+      if (allPassed) {
+        fireConfetti();
+        if (!done) {
+          markCompleted(slug);
+          toast("Accepted! Problem marked complete.", "success");
+        } else {
+          toast("Accepted!", "success");
+        }
+      } else {
+        const passedCount = results.filter((r) => r.passed).length;
+        toast(`Wrong answer: ${passedCount}/${results.length} passed`, "error");
+      }
+      return;
+    }
+
     if (allPassed && !prevAllPassedRef.current) {
       fireConfetti();
       toast("All test cases passed!", "success");
     }
     prevAllPassedRef.current = allPassed;
-  }, [allPassed, toast]);
+  }, [isRunning, allPassed, results, done, markCompleted, slug, toast]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -200,6 +223,20 @@ function IDELayout({
   }, []);
 
   const handleRun = useCallback(() => {
+    submitInFlightRef.current = false;
+    run(
+      code,
+      problem.functionName!,
+      problem.testCases!,
+      language,
+      problem.compareMode
+    );
+    setMobileTab("output");
+  }, [code, problem.functionName, problem.testCases, problem.compareMode, language, run]);
+
+  const handleSubmit = useCallback(() => {
+    submitInFlightRef.current = true;
+    setIsSubmitting(true);
     run(
       code,
       problem.functionName!,
@@ -322,8 +359,10 @@ function IDELayout({
             language={language}
             onLanguageChange={handleLanguageChange}
             onRun={handleRun}
+            onSubmit={handleSubmit}
             onReset={handleReset}
-            isRunning={isRunning}
+            isRunning={isRunning && !isSubmitting}
+            isSubmitting={isSubmitting}
           />
 
           {/* Editor */}

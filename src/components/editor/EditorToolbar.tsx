@@ -8,21 +8,27 @@ interface EditorToolbarProps {
   language: Language;
   onLanguageChange: (language: Language) => void;
   onRun: () => void;
+  onSubmit: () => void;
   onReset: () => void;
   isRunning: boolean;
+  isSubmitting: boolean;
 }
 
 export default function EditorToolbar({
   language,
   onLanguageChange,
   onRun,
+  onSubmit,
   onReset,
   isRunning,
+  isSubmitting,
 }: EditorToolbarProps) {
   const [isMac, setIsMac] = useState(false);
   useEffect(() => {
     setIsMac(navigator.platform.toUpperCase().includes("MAC"));
   }, []);
+
+  const busy = isRunning || isSubmitting;
 
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e2e] border-b border-border/50">
@@ -39,8 +45,8 @@ export default function EditorToolbar({
         </button>
         <button
           onClick={onRun}
-          disabled={isRunning}
-          className="px-4 py-1.5 text-xs font-semibold bg-easy/20 text-easy border border-easy/30 rounded-md hover:bg-easy/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+          disabled={busy}
+          className="px-3 py-1.5 text-xs font-semibold bg-white/5 text-gray-300 border border-white/10 rounded-md hover:bg-white/10 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
         >
           {isRunning ? (
             <>
@@ -71,6 +77,53 @@ export default function EditorToolbar({
                 <path d="M8 5v14l11-7z" />
               </svg>
               Run
+            </>
+          )}
+        </button>
+        <button
+          onClick={onSubmit}
+          disabled={busy}
+          className="px-4 py-1.5 text-xs font-semibold bg-easy/20 text-easy border border-easy/30 rounded-md hover:bg-easy/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+        >
+          {isSubmitting ? (
+            <>
+              <svg
+                className="w-3.5 h-3.5 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              Submitting...
+            </>
+          ) : (
+            <>
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Submit
             </>
           )}
         </button>

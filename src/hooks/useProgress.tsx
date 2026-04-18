@@ -21,6 +21,7 @@ function localKey(userId: string | null): string {
 interface ProgressContextType {
   isCompleted: (slug: string) => boolean;
   toggleCompleted: (slug: string) => void;
+  markCompleted: (slug: string) => void;
   completedCount: number;
   completedInCategory: (slugs: string[]) => number;
   mounted: boolean;
@@ -29,6 +30,7 @@ interface ProgressContextType {
 const ProgressContext = createContext<ProgressContextType>({
   isCompleted: () => false,
   toggleCompleted: () => {},
+  markCompleted: () => {},
   completedCount: 0,
   completedInCategory: () => 0,
   mounted: false,
@@ -175,6 +177,31 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     [user]
   );
 
+  const markCompleted = useCallback(
+    (slug: string) => {
+      setCompleted((prev) => {
+        if (prev[slug]) return prev;
+        const next = { ...prev, [slug]: true };
+
+        if (user && isSupabaseConfigured()) {
+          syncQueueRef.current = syncQueueRef.current.then(async () => {
+            try {
+              await supabase.from("progress").upsert(
+                { user_id: user.id, problem_slug: slug },
+                { onConflict: "user_id,problem_slug" }
+              );
+            } catch {
+              // Silently fail — localStorage is the source of truth
+            }
+          });
+        }
+
+        return next;
+      });
+    },
+    [user]
+  );
+
   const isCompleted = useCallback(
     (slug: string) => !!completed[slug],
     [completed]
@@ -189,7 +216,14 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   return (
     <ProgressContext.Provider
-      value={{ isCompleted, toggleCompleted, completedCount, completedInCategory, mounted }}
+      value={{
+        isCompleted,
+        toggleCompleted,
+        markCompleted,
+        completedCount,
+        completedInCategory,
+        mounted,
+      }}
     >
       {children}
     </ProgressContext.Provider>
