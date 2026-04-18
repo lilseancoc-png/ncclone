@@ -33,6 +33,14 @@ export const oneDDynamicProgramming: Category = {
           expected: 3,
         },
       ],
+      patterns: ["Dynamic Programming", "Math"],
+      hints: [
+        "To reach step n, your last move was either a 1-step (from n-1) or a 2-step (from n-2).",
+        "ways(n) = ways(n-1) + ways(n-2) — this is Fibonacci!",
+        "Only the last two values matter, so use two variables instead of an array.",
+      ],
+      keyIntuition:
+        "Climbing Stairs is the 'hello world' of DP: break a problem down by the LAST decision. Whatever options you have for the last step, the answer sums the counts from each resulting sub-problem. This 'sum over last-move choices' template underlies tons of counting DP problems. Recognizing Fibonacci here is the gateway to seeing DP as 'memoized recursion' rather than magic.",
       approach:
         "Use DP where dp[i] = dp[i-1] + dp[i-2], representing the number of ways to reach step i. This is equivalent to the Fibonacci sequence. Optimize space by keeping only the two previous values.",
       timeComplexity: "O(n)",
@@ -67,6 +75,14 @@ export const oneDDynamicProgramming: Category = {
           expected: 6,
         },
       ],
+      patterns: ["Dynamic Programming", "Array"],
+      hints: [
+        "Same recurrence shape as Climbing Stairs, but now each step has a cost to minimize.",
+        "dp[i] = cost[i] + min(dp[i-1], dp[i-2]) — at each step, pick the cheaper source.",
+        "The 'top' is past index n-1, so the answer is min(dp[n-1], dp[n-2]) — you can reach it from either.",
+      ],
+      keyIntuition:
+        "This is Climbing Stairs with the twist: instead of counting ways, minimize cost. The transition shape is identical — only the combining operator changes (sum → min). Notice how sum and min are both monoid-like operations; the underlying DP structure is operator-agnostic. This is a stepping stone to the broader idea: once you have the right state and transitions, many variants are just operator swaps.",
       approach:
         "DP where dp[i] = cost[i] + min(dp[i-1], dp[i-2]). Start from step 0 or 1 (both are free). The answer is min(dp[n-1], dp[n-2]) since you can reach the top from either of the last two steps.",
       timeComplexity: "O(n)",
@@ -101,6 +117,14 @@ export const oneDDynamicProgramming: Category = {
           expected: 12,
         },
       ],
+      patterns: ["Dynamic Programming", "Array"],
+      hints: [
+        "At each house, you have two choices: rob it or skip it. That's the decision being made.",
+        "If you rob house i, you get nums[i] + best-from-i-2. If you skip, you get best-from-i-1.",
+        "dp[i] = max(dp[i-1], dp[i-2] + nums[i]). Only two variables needed for O(1) space.",
+      ],
+      keyIntuition:
+        "House Robber is the canonical 'take it or skip it' DP. The adjacency constraint forces the 'two-back' reference. This pattern — at each element, choose to include (respecting a constraint) or exclude (skip forward) — extends to LIS, knapsack, and many scheduling problems. Internalize the state as 'best answer ending at / through index i', not 'best among all'.",
       approach:
         "DP where at each house, choose to either rob it (add its value to the best from two houses back) or skip it (keep the best from the previous house). dp[i] = max(dp[i-1], dp[i-2] + nums[i]).",
       timeComplexity: "O(n)",
@@ -141,6 +165,14 @@ export const oneDDynamicProgramming: Category = {
           expected: 3,
         },
       ],
+      patterns: ["Dynamic Programming", "Array"],
+      hints: [
+        "The circle creates a conflict: you can't rob both the first and last house.",
+        "Either the first house is skipped, or the last house is skipped. Try both cases.",
+        "Apply linear House Robber on nums[0..n-2] and nums[1..n-1], take the max.",
+      ],
+      keyIntuition:
+        "This is a classic technique: reduce a circular variant to its linear version by case-splitting on 'which one is excluded'. In general, when circular boundaries cause trouble, try breaking the circle by pinning one element's status. Both reductions reuse the solved linear sub-problem — a great example of 'solve once, reuse twice'.",
       approach:
         "Since houses form a circle, the first and last cannot both be robbed. Run the linear House Robber algorithm twice: once excluding the last house, once excluding the first. Return the maximum of the two results.",
       timeComplexity: "O(n)",
@@ -175,6 +207,14 @@ export const oneDDynamicProgramming: Category = {
           expected: "bb",
         },
       ],
+      patterns: ["Dynamic Programming", "String", "Two Pointers"],
+      hints: [
+        "Every palindrome has a center. There are 2n-1 possible centers: n single-character centers (odd length) and n-1 between-character centers (even length).",
+        "For each center, expand outward while the two characters match. Record the longest expansion.",
+        "This 'expand around center' is O(n²) with O(1) extra space — often cleaner than 2D DP.",
+      ],
+      keyIntuition:
+        "The 'expand around center' trick reframes palindromes by their structure rather than by substring ranges. Since every palindrome has a center (or between-center), enumerating all 2n-1 possible centers and expanding is exhaustive. This avoids the O(n²) space of a DP table. Manacher's algorithm takes this further to O(n) — a rabbit hole worth exploring later.",
       approach:
         "Expand around each center position, trying both odd-length (single center) and even-length (double center) palindromes. Track the longest palindrome found. Each expansion takes O(n) time in the worst case.",
       timeComplexity: "O(n^2)",
@@ -209,6 +249,14 @@ export const oneDDynamicProgramming: Category = {
           expected: 6,
         },
       ],
+      patterns: ["Dynamic Programming", "String", "Two Pointers"],
+      hints: [
+        "Same 'expand around center' technique as Longest Palindromic Substring — but this time you count expansions instead of tracking the longest.",
+        "For each of the 2n-1 centers, count how far the expansion continues — each valid expansion IS a palindromic substring.",
+        "Alternatively: 2D DP where dp[i][j] = s[i..j] is palindrome. dp[i][j] = s[i]==s[j] AND dp[i+1][j-1].",
+      ],
+      keyIntuition:
+        "When you solve Longest Palindromic Substring, you're 'for free' finding ALL palindromes during the scan — you just don't count them. This problem makes you count them. A great lesson: many algorithms compute intermediate facts that multiple problems can leverage. Both problems share the same O(n²) expand-around-center skeleton — different objective, same work.",
       approach:
         "Expand around each center for both odd and even length palindromes. Count each valid expansion as a palindromic substring. There are 2n-1 possible centers (n for odd, n-1 for even).",
       timeComplexity: "O(n^2)",
@@ -249,6 +297,14 @@ export const oneDDynamicProgramming: Category = {
           expected: 0,
         },
       ],
+      patterns: ["Dynamic Programming", "String"],
+      hints: [
+        "At position i, your last decoded 'character' was either 1 digit (s[i-1]) or 2 digits (s[i-2..i-1]).",
+        "If s[i-1] is 1-9, add dp[i-1]. If s[i-2..i-1] is 10-26, add dp[i-2]. '0' can only be decoded as part of 10 or 20.",
+        "This is Climbing Stairs with validity checks on which 'steps' you can take.",
+      ],
+      keyIntuition:
+        "Decode Ways is Climbing Stairs with a twist: your transitions are conditional on the input (digit validity), not unconditional. The '0' character is the boobytrap — always think through it first. The general lesson: DP recurrences often depend on LOCAL validity (can I make this move from here?) on top of the global structure (how do sub-answers combine?).",
       approach:
         "DP where dp[i] represents the number of ways to decode the substring s[0..i]. A single digit (1-9) adds dp[i-1] ways; a valid two-digit number (10-26) adds dp[i-2] ways. Handle '0' specially as it cannot be decoded alone.",
       timeComplexity: "O(n)",
@@ -289,6 +345,14 @@ export const oneDDynamicProgramming: Category = {
           expected: 0,
         },
       ],
+      patterns: ["Dynamic Programming", "Array"],
+      hints: [
+        "To make amount i, your last coin was some coin c. Then you needed dp[i-c] coins before.",
+        "dp[i] = 1 + min over coins c of dp[i-c] (where i-c >= 0). Initialize dp[0] = 0, rest = infinity.",
+        "Order matters for complexity but not correctness: outer loop amount, inner loop coins works. Greedy fails — always try DP.",
+      ],
+      keyIntuition:
+        "Unbounded knapsack in disguise. The crucial insight: greedy ('always pick the biggest coin that fits') fails for general denominations (e.g. coins=[1,3,4], amount=6 — greedy gives 4+1+1=3, optimal is 3+3=2). DP guarantees optimality by trying every last-coin choice. This is the template for 'minimum/maximum count of items that sum to target' — one of the most reusable DP shapes.",
       approach:
         "DP where dp[i] = minimum coins needed for amount i. For each amount from 1 to target, try each coin: dp[i] = min(dp[i], dp[i-coin] + 1). Initialize with infinity and dp[0] = 0.",
       timeComplexity: "O(n*m)",
@@ -323,6 +387,14 @@ export const oneDDynamicProgramming: Category = {
           expected: 0,
         },
       ],
+      patterns: ["Dynamic Programming", "Array"],
+      hints: [
+        "Unlike sums, products behave weirdly with negatives — the MINIMUM product can become the maximum after multiplying by a negative.",
+        "Track both max AND min product ending at i. At each step, both are derived from {current, current*prevMax, current*prevMin}.",
+        "The global answer is the max across all positions, not just at the end.",
+      ],
+      keyIntuition:
+        "This is Kadane's algorithm with a twist: negative numbers flip max and min. By tracking both, you preserve the 'hidden promise' of the minimum — a very negative product today could become very positive tomorrow. The lesson: when your aggregation operator isn't monotone (like product with signs), you may need to carry multiple extremes. This same idea shows up in problems involving absolute values and XOR.",
       approach:
         "Track both the maximum and minimum product ending at each position, since a negative number can flip the minimum to maximum. At each element, compute new max and min from current * prevMax, current * prevMin, and current alone.",
       timeComplexity: "O(n)",
@@ -363,6 +435,14 @@ export const oneDDynamicProgramming: Category = {
           expected: false,
         },
       ],
+      patterns: ["Dynamic Programming", "Hash Map", "String"],
+      hints: [
+        "dp[i] = 'can s[0..i-1] be segmented?'. Base: dp[0] = true.",
+        "For each i, check all split points j: if dp[j] is true AND s[j..i] is in the dictionary, dp[i] = true.",
+        "Use a Set for O(1) dictionary lookup. Optional optimization: only try j values where i-j ≤ max dictionary word length.",
+      ],
+      keyIntuition:
+        "Word Break generalizes the 'try all last-decisions' pattern: the last decision is 'what's the last word placed?'. Every decomposition reduces to: some-prefix-is-breakable AND the-remaining-suffix-is-a-word. This 'split the last chunk' pattern is the core of many segmentation problems (Palindrome Partitioning, Split Array for Sum, etc.).",
       approach:
         "DP where dp[i] = true if s[0..i-1] can be segmented using the dictionary. For each position i, check all possible last words: if dp[j] is true and s[j..i] is in the dictionary, then dp[i] = true.",
       timeComplexity: "O(n^2*m)",
@@ -397,6 +477,14 @@ export const oneDDynamicProgramming: Category = {
           expected: 4,
         },
       ],
+      patterns: ["Dynamic Programming", "Binary Search", "Array"],
+      hints: [
+        "Start simple: O(n²) DP. dp[i] = length of LIS ending at index i. dp[i] = 1 + max(dp[j]) for j < i where nums[j] < nums[i].",
+        "For O(n log n): maintain 'tails' where tails[k] is the smallest tail value among all increasing subsequences of length k+1.",
+        "For each num, binary-search tails for the first value >= num; replace it. If num is larger than all tails, append it.",
+      ],
+      keyIntuition:
+        "The patience-sorting / tails-array approach is subtle: 'tails' is NOT the actual LIS — it's a compressed representation that preserves one key invariant (smallest tail per length). Why does replacing work? A smaller tail at length k is better: it's easier to extend. This 'maintain an invariant, not the real answer' style is a powerful DP-pruning technique. LIS also underlies problems like Russian Doll Envelopes, Box Stacking, etc.",
       approach:
         "Use a patience sorting approach with binary search. Maintain a tails array where tails[i] is the smallest tail element of all increasing subsequences of length i+1. For each number, binary search for its position in tails.",
       timeComplexity: "O(n log n)",
@@ -431,6 +519,14 @@ export const oneDDynamicProgramming: Category = {
           expected: false,
         },
       ],
+      patterns: ["Dynamic Programming", "Array", "Subset Sum"],
+      hints: [
+        "If two subsets have equal sums, each must be sum(nums) / 2. So total sum must be even.",
+        "Reduces to: can any subset sum to target = total/2? That's 0/1 knapsack (subset sum).",
+        "dp[j] = true if sum j is achievable. Iterate j from target down to num to avoid reusing the same element twice.",
+      ],
+      keyIntuition:
+        "'Partition into equal halves' is a disguised subset-sum problem — a classic reduction to recognize. The downward iteration for j is crucial: going high-to-low ensures each num is used at most once, maintaining 0/1 semantics. This space-compressed knapsack (rolling 1D array) is a frequently-reused technique. Key takeaway: when a problem talks about splitting or partitioning to equal sizes, try sum/2 subset-sum.",
       approach:
         "Calculate the total sum; if odd, return false. Use DP to check if a subset sums to sum/2. Use a boolean array dp where dp[j] = true if sum j is achievable with the elements seen so far.",
       timeComplexity: "O(n*sum)",

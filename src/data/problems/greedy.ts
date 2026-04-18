@@ -39,6 +39,14 @@ export const greedy: Category = {
           expected: 23,
         },
       ],
+      patterns: ["Greedy", "Dynamic Programming", "Array"],
+      hints: [
+        "Consider: at each index, what's the max-sum subarray ending right here?",
+        "If the running sum becomes negative, discard it — it only hurts future sums. Start fresh from the next element.",
+        "Track the global max separately. currentSum = max(nums[i], currentSum + nums[i]).",
+      ],
+      keyIntuition:
+        "Kadane's algorithm is a masterclass in locality: you only care about the best subarray ENDING at each position. A negative running total is always worse than starting over. That one observation collapses an O(n²) problem to O(n). The same 'track best-ending-here' view unlocks many variants (max circular subarray, max product, etc.).",
       approach:
         "Use Kadane's algorithm: maintain a running sum and reset it to the current element whenever it drops below zero. Track the maximum sum seen. The key insight is that a negative running sum can never help a future subarray.",
       timeComplexity: "O(n)",
@@ -73,6 +81,14 @@ export const greedy: Category = {
           expected: false,
         },
       ],
+      patterns: ["Greedy", "Array", "Dynamic Programming"],
+      hints: [
+        "You don't need to trace actual jump paths. Just track how far you can possibly reach.",
+        "At each index i, if i > maxReach, you're stuck. Otherwise, maxReach = max(maxReach, i + nums[i]).",
+        "If you never get stuck and reach the end (or maxReach >= n-1), return true.",
+      ],
+      keyIntuition:
+        "The elegant reframing: don't think about sequences of jumps, think about reachability. A single variable ('farthest reachable index') captures all useful information from the prefix you've seen. If it ever falls behind i, you're stuck. This pattern — collapse all path history into a summary statistic — is a hallmark of greedy thinking.",
       approach:
         "Greedily track the farthest reachable index. Iterate through the array; at each position, update the farthest reach. If the current index exceeds the farthest reach, the end is unreachable.",
       timeComplexity: "O(n)",
@@ -107,6 +123,14 @@ export const greedy: Category = {
           expected: 2,
         },
       ],
+      patterns: ["Greedy", "Array", "Dynamic Programming", "BFS"],
+      hints: [
+        "Think of jumps as BFS 'levels'. Each level is the set of positions reachable in k jumps.",
+        "Track the end of the CURRENT level (currentEnd) and the farthest seen within it (farthest).",
+        "When i reaches currentEnd, you must jump: jumps++, currentEnd = farthest.",
+      ],
+      keyIntuition:
+        "Viewing Jump Game II as implicit BFS is the unlock: the greedy 'extend to farthest and jump' corresponds exactly to BFS level progression. When you 'spend' a jump, you're committing to the best next range, and the greedy provably minimizes jumps. This 'BFS in disguise' shows up in many 'minimum steps' problems where levels can be computed on the fly.",
       approach:
         "Use a BFS-style greedy approach. Track the current range boundary and the farthest reachable from that range. When you reach the boundary, increment jumps and extend to the farthest point.",
       timeComplexity: "O(n)",
@@ -141,6 +165,14 @@ export const greedy: Category = {
           expected: -1,
         },
       ],
+      patterns: ["Greedy", "Array"],
+      hints: [
+        "If the total gas is less than the total cost, it's impossible. That's the necessary condition.",
+        "Walk the stations tracking a running tank. When tank goes negative, no station up to here can be the start.",
+        "Reset tank to 0 and set start = i+1. The answer is start when total gas >= total cost.",
+      ],
+      keyIntuition:
+        "Two-part greedy proof: (1) Feasibility — sum(gas) >= sum(cost) is both necessary and sufficient. (2) Optimal start — if the tank goes negative at index i, NO station between the last start and i can work, because even with a full head-start we failed. So skip past i. This 'rule out a whole range in one observation' technique collapses O(n²) to O(n).",
       approach:
         "If total gas >= total cost, a solution exists. Track the current tank surplus; whenever it drops below zero, the starting station must be after this point. Reset the start to the next station and continue.",
       timeComplexity: "O(n)",
@@ -175,6 +207,14 @@ export const greedy: Category = {
           expected: false,
         },
       ],
+      patterns: ["Greedy", "Hash Map", "Sorting"],
+      hints: [
+        "The smallest remaining card MUST be the start of some group — no other group can include it.",
+        "Build a frequency count. Process cards in sorted order (min-heap or sorted iteration).",
+        "For each min card with freq > 0, try to decrement counts for [min, min+groupSize-1]. Any missing card → return false.",
+      ],
+      keyIntuition:
+        "When a greedy choice is FORCED, the problem becomes easy. Here, the smallest available card has no choice but to anchor a group. Follow the forced choice, update state, repeat. This 'find the forced move' heuristic applies widely — in Tetris-like stacking, card games, and scheduling with strict constraints.",
       approach:
         "Sort the cards and use a frequency map. For each unprocessed smallest card, try to form a consecutive group of the required size. If any card in the sequence is missing, return false.",
       timeComplexity: "O(n log n)",
@@ -223,6 +263,14 @@ export const greedy: Category = {
           expected: false,
         },
       ],
+      patterns: ["Greedy", "Array"],
+      hints: [
+        "Since merging takes element-wise MAX, a triplet with ANY element > target can never help — including it can only overshoot.",
+        "Filter to 'valid' triplets where each component is <= target's component.",
+        "Among valid triplets, check if each target component is achieved by some triplet's corresponding component.",
+      ],
+      keyIntuition:
+        "Element-wise max is monotone: including more valid triplets can only INCREASE coordinates. So the best we can do is the element-wise max over all valid triplets — if that equals target, yes; else, no. Recognizing monotone aggregations lets you avoid combinatorial search entirely.",
       approach:
         "Filter out triplets where any value exceeds the corresponding target value (they can never contribute). From the remaining valid triplets, check if we can achieve each target value independently by taking the maximum across valid triplets.",
       timeComplexity: "O(n)",
@@ -257,6 +305,14 @@ export const greedy: Category = {
           expected: [10],
         },
       ],
+      patterns: ["Greedy", "Hash Map", "Two Pointers", "String"],
+      hints: [
+        "A partition must be self-contained: every character in it must have its last occurrence inside it.",
+        "Precompute last[c] = last index of character c in s.",
+        "Scan with a current-partition end pointer. Extend it to max(end, last[s[i]]). When i == end, close the partition.",
+      ],
+      keyIntuition:
+        "The trick: once you know each character's last occurrence, greedy extension works perfectly. The current partition 'grows' to accommodate whatever letter it contains. When the pointer catches up to the extended end, the partition is closed. This 'precompute last-positions, then greedy-extend' pattern solves many partitioning / contiguous-grouping problems.",
       approach:
         "First, record the last occurrence of each character. Then iterate through the string, extending the current partition's end to the max last occurrence of any character within it. When the current index reaches the partition end, close the partition.",
       timeComplexity: "O(n)",
@@ -297,6 +353,14 @@ export const greedy: Category = {
           expected: false,
         },
       ],
+      patterns: ["Greedy", "Stack", "String"],
+      hints: [
+        "Track a RANGE of possible open-parenthesis counts instead of committing each '*'.",
+        "'(' → both low and high ++. ')' → both --. '*' → low-- and high++ (low floors at 0).",
+        "If high ever < 0, too many ')'. Valid iff low == 0 at the end.",
+      ],
+      keyIntuition:
+        "The stroke of genius: since '*' has three interpretations, maintain the whole interval [low, high] of possible open counts and let each token update that interval. Any valid final assignment exists iff 0 lies in the final range — and that's equivalent to low == 0. This 'range of possibilities' trick avoids exponential branching and is a classic in ambiguous-parsing problems.",
       approach:
         "Track the range of possible open parenthesis counts using two variables: low and high. '(' increments both, ')' decrements both, '*' increments high and decrements low (clamp low at 0). The string is valid if low reaches 0.",
       timeComplexity: "O(n)",

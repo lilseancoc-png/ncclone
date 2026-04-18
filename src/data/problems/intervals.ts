@@ -56,6 +56,14 @@ export const intervals: Category = {
           ],
         },
       ],
+      patterns: ["Intervals", "Array"],
+      hints: [
+        "Input is already sorted. Walk through and categorize each interval: strictly before, overlapping, or strictly after.",
+        "'Before' and 'After' pass through unchanged. Overlapping intervals get merged into one by taking min(starts) and max(ends).",
+        "Two intervals [a,b] and [c,d] overlap iff a <= d AND c <= b.",
+      ],
+      keyIntuition:
+        "Because input is pre-sorted, this is O(n). The three-group split is the clearest mental model: the new interval only interacts with a contiguous range of existing intervals. Identifying that range, merging it into one, and splicing it back reveals the structure. Any interval-insertion problem is really 'find the overlapping range, fold it, splice'.",
       approach:
         "Split intervals into three groups: those entirely before the new interval, those overlapping (merge them by taking min start and max end), and those entirely after. Concatenate the three groups.",
       timeComplexity: "O(n)",
@@ -106,6 +114,14 @@ export const intervals: Category = {
           expected: [[1, 5]],
         },
       ],
+      patterns: ["Intervals", "Sorting", "Array"],
+      hints: [
+        "Unsorted intervals are chaos. Sort by start time first — overlaps become detectable by comparing consecutive intervals.",
+        "Iterate: if current.start <= last_merged.end, extend the last merged interval's end.",
+        "Otherwise, current is its own cluster — push it.",
+      ],
+      keyIntuition:
+        "Sorting by start time is the universal interval-problem prelude. After sorting, overlaps are local (consecutive pairs), turning a global problem into a linear scan. This 'sort then sweep' pattern underlies nearly every interval problem — memorize the template and you'll solve many variants instantly.",
       approach:
         "Sort intervals by start time. Iterate through and merge overlapping intervals: if the current interval's start is <= the previous interval's end, extend the previous interval's end. Otherwise, add the current interval as a new non-overlapping interval.",
       timeComplexity: "O(n log n)",
@@ -153,6 +169,14 @@ export const intervals: Category = {
           expected: 2,
         },
       ],
+      patterns: ["Intervals", "Greedy", "Sorting", "Array"],
+      hints: [
+        "Reframe: instead of 'minimum removals', find 'maximum non-overlapping intervals to keep'. Removals = total - kept.",
+        "Sort by END time. Greedy: always keep the interval that ends earliest among candidates — it leaves the most room for future choices.",
+        "Scan: if current.start >= last kept's end, keep it. Else, count it as a removal.",
+      ],
+      keyIntuition:
+        "The classic 'activity selection' greedy. Sorting by END time is critical — sorting by start fails here. Intuition: the interval ending earliest is the least constraining choice, so it should be taken first. This 'earliest-deadline-first' idea appears in scheduling, bandwidth allocation, and many other problems. An exchange-argument proves optimality.",
       approach:
         "Sort by end time and use greedy selection. Keep track of the previous interval's end. For each interval, if it starts before the previous end (overlap), increment the removal count; otherwise, update the previous end.",
       timeComplexity: "O(n log n)",
@@ -198,6 +222,14 @@ export const intervals: Category = {
           expected: true,
         },
       ],
+      patterns: ["Intervals", "Sorting", "Array"],
+      hints: [
+        "After sorting by start time, if any pair overlaps, adjacent pairs will overlap too.",
+        "Scan consecutive pairs. If next.start < current.end, return false.",
+        "If no overlaps found, return true.",
+      ],
+      keyIntuition:
+        "This is Merge Intervals' diagnostic twin — same sort + sweep pattern, but asks a yes/no rather than merge. The key property: after sorting by start, adjacency overlap implies global overlap (and vice versa). Entry-level interval problem; mastering its template immediately helps with all other interval problems.",
       approach:
         "Sort intervals by start time, then check if any two consecutive intervals overlap (current start < previous end). If no overlaps are found, all meetings can be attended.",
       timeComplexity: "O(n log n)",
@@ -243,6 +275,14 @@ export const intervals: Category = {
           expected: 1,
         },
       ],
+      patterns: ["Intervals", "Heap", "Sorting", "Two Pointers"],
+      hints: [
+        "The answer is the max number of overlapping meetings at any moment. You need to count concurrent meetings.",
+        "Sweep line: each start is a +1 event, each end is a -1 event. Sort events, accumulate, track the running max.",
+        "Alternative: sort starts and ends separately. For each start, if start >= earliest-end, pop the ended meeting; else, allocate a room.",
+      ],
+      keyIntuition:
+        "Two equally valid frameworks: sweep-line (events ± 1) and min-heap (earliest end). Sweep-line generalizes to counting any overlapping range — it's the workhorse of computational geometry. The heap approach maps intuitively to 'allocating resources'. Knowing both lets you pick the one best suited to each variant (e.g., with sizes, priorities, etc.).",
       approach:
         "Use a sweep line approach: create events for meeting starts (+1) and ends (-1). Sort events by time (with ends before starts at the same time). Track the running count of concurrent meetings and return the maximum.",
       timeComplexity: "O(n log n)",
@@ -296,6 +336,14 @@ export const intervals: Category = {
           expected: [2, -1, 4, 6],
         },
       ],
+      patterns: ["Intervals", "Heap", "Sorting"],
+      hints: [
+        "Queries can be answered in ANY order (offline). Sort queries ascending — process small queries first.",
+        "Sort intervals by start. Sweep queries: add intervals whose start <= query to a min heap keyed by interval size.",
+        "Before answering, pop intervals whose end < query (they can't contain it). Heap top is the smallest containing interval.",
+      ],
+      keyIntuition:
+        "A beautiful application of offline processing + two-pointer + heap. Because queries can be reordered, sort them; then a single sweep handles all queries in O((n+q) log n). The heap stores ACTIVE intervals (start reached, end not yet passed) and always pops the 'dead' ones lazily. This 'sort queries to enable sweep' pattern is fundamental in range-query problems.",
       approach:
         "Sort intervals by size and queries by value. Use a sweep line with a min heap sorted by interval size. For each query, add all intervals containing it and select the smallest. Use offline processing with sorted queries for efficiency.",
       timeComplexity: "O((n+q) log n)",

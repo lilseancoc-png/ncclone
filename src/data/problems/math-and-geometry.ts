@@ -37,6 +37,14 @@ export const mathAndGeometry: Category = {
           ],
         },
       ],
+      patterns: ["Matrix", "Math", "In-Place"],
+      hints: [
+        "Rotation sends (i, j) to (j, n-1-i). In-place is the tricky part — you can't just write to a new grid.",
+        "Decompose the rotation: transpose (swap across the main diagonal) then reverse each row. Two simple passes, no allocation.",
+        "Alternative layer-by-layer rotation: swap 4 corners at a time, moving inward. Both work; the transpose+reverse is easier to get right.",
+      ],
+      keyIntuition:
+        "Any rotation/reflection of a square matrix can be decomposed into simpler in-place operations. Transpose + reverse-rows = 90° CW; transpose + reverse-cols = 90° CCW; reverse both = 180°. This decomposition trick — building a complex transform from commuting simple ones — appears in linear algebra, graphics, and image processing. The lesson: even 'in-place' problems often have a two-pass solution that's cleaner than the one-pass cleverness.",
       approach:
         "Rotate the matrix 90 degrees clockwise in-place by first transposing the matrix (swap rows and columns), then reversing each row. This two-step process achieves the rotation without extra space.",
       timeComplexity: "O(n^2)",
@@ -71,6 +79,14 @@ export const mathAndGeometry: Category = {
           expected: [1, 2, 3, 6, 9, 8, 7, 4, 5],
         },
       ],
+      patterns: ["Matrix", "Simulation"],
+      hints: [
+        "Walk the boundary, peel it off, recurse on the inner matrix. Use four bounds: top, bottom, left, right.",
+        "In each ring: go right along top, down along right, left along bottom (if top < bottom), up along left (if left < right). Shrink bounds after each side.",
+        "Off-by-one trap: always check top <= bottom and left <= right after shrinking — a single row or column needs special handling.",
+      ],
+      keyIntuition:
+        "Spiral traversal is a bounded simulation: you mimic the physical act of unwinding. The hardest part isn't the movement — it's terminating correctly when rows and columns aren't equal. Maintaining explicit bounds (vs. tracking direction changes) is the more robust template. This 'peel-the-onion' pattern reappears in problems involving nested shells, BFS by distance, and convex hull layers.",
       approach:
         "Traverse the matrix layer by layer, maintaining four boundaries (top, bottom, left, right). Process each layer by traversing right, down, left, then up, shrinking the boundaries after each direction.",
       timeComplexity: "O(m*n)",
@@ -109,6 +125,14 @@ export const mathAndGeometry: Category = {
           ],
         },
       ],
+      patterns: ["Matrix", "Hash Set", "In-Place"],
+      hints: [
+        "Naive: two sets tracking zero rows and zero cols. O(m+n) space. Can we do O(1) extra space?",
+        "Use the matrix itself as storage. Use row 0 and column 0 as flags: if matrix[i][j] == 0, set matrix[i][0] = matrix[0][j] = 0.",
+        "Trap: row 0 and col 0 are both used as flags AND need to be zeroed themselves. Track their fate in two separate boolean variables before overwriting them.",
+      ],
+      keyIntuition:
+        "The elegant move is using the matrix as its own scratchpad — storing metadata in cells that'll be overwritten anyway. This 'data as flag' trick recurs when you need O(1) auxiliary memory: encoding two pieces of state per cell (via sign bits, sentinel values, or repurposing existing cells). The tricky part is order of operations: you must process dependents before overwriting the markers.",
       approach:
         "Use the first row and first column as markers. First pass: scan the matrix and mark the first cell of the corresponding row and column when a zero is found. Second pass: zero out cells based on markers. Handle the first row and column separately.",
       timeComplexity: "O(m*n)",
@@ -143,6 +167,14 @@ export const mathAndGeometry: Category = {
           expected: false,
         },
       ],
+      patterns: ["Math", "Fast & Slow Pointers", "Hash Set", "Cycle Detection"],
+      hints: [
+        "The sequence either reaches 1 or enters a cycle. You need to detect which.",
+        "Approach 1: hash set of seen values. If you see one again, it's a cycle → false. If you see 1, return true.",
+        "Approach 2: Floyd's cycle detection. Treat the digit-square-sum as a function f(n). Run slow = f(n), fast = f(f(n)) until they meet. If they meet at 1, happy; else cycle.",
+      ],
+      keyIntuition:
+        "This problem secretly reuses Linked List Cycle. Any deterministic function f(x) that maps a finite range to itself eventually cycles — that's the pigeonhole principle. Detecting the cycle with fast/slow pointers works because the iteration sequence is structurally identical to a linked list. Recognizing when an iterative process is 'a linked list in disguise' is a powerful reframing technique across number theory and graph problems.",
       approach:
         "Compute the sum of squares of digits repeatedly. Use Floyd's cycle detection (fast/slow pointers) to detect if the sequence enters a cycle. If the sequence reaches 1, the number is happy; if it cycles, it is not.",
       timeComplexity: "O(log n)",
@@ -183,6 +215,14 @@ export const mathAndGeometry: Category = {
           expected: [1, 0],
         },
       ],
+      patterns: ["Array", "Math", "Simulation"],
+      hints: [
+        "Walk digits from right to left simulating addition. The only carry source is adding 1 to 9 → 10.",
+        "If digit < 9, just increment and return. Otherwise set to 0 and continue left.",
+        "If you exit the loop still carrying, the input was all 9s. Prepend a 1: e.g., [9,9,9] → [1,0,0,0].",
+      ],
+      keyIntuition:
+        "Despite its simplicity, plus-one teaches the carry-propagation pattern that generalizes to big-integer arithmetic, binary addition, and string-number operations. The key observation — carry only travels as far as the first non-9 digit — saves you from thinking you need a full-width ripple. Cleanly handling the 'all 9s → grow the array' edge case is the hallmark of bug-free arithmetic code.",
       approach:
         "Start from the last digit and add 1. Handle carry: if a digit becomes 10, set it to 0 and carry 1 to the next position. If carry remains after processing all digits, prepend 1 to the array.",
       timeComplexity: "O(n)",
@@ -223,6 +263,14 @@ export const mathAndGeometry: Category = {
           expected: 0.25,
         },
       ],
+      patterns: ["Math", "Recursion", "Binary Exponentiation", "Divide and Conquer"],
+      hints: [
+        "Linear n multiplications gives O(n). Exploit that x^n = (x^(n/2))^2 when n is even — each halving doubles the exponent reached.",
+        "Recursive: if n == 0 return 1. If n is even, half = myPow(x, n/2); return half * half. If n is odd, return x * myPow(x, n-1).",
+        "Edge cases: handle n < 0 by computing myPow(1/x, -n). Watch for INT_MIN, where -n overflows.",
+      ],
+      keyIntuition:
+        "Binary exponentiation is the 'square-and-multiply' approach: each step squares the base, corresponding to doubling the exponent. Reading the binary representation of n tells you which squared bases to include. This O(log n) technique extends to matrix exponentiation (for linear recurrences like Fibonacci), modular exponentiation (cryptography), and monoid fast-power (any associative operation).",
       approach:
         "Use fast exponentiation (binary exponentiation). If n is even, x^n = (x^(n/2))^2. If n is odd, x^n = x * x^(n-1). Handle negative n by computing 1/x^(-n). This reduces the number of multiplications to O(log n).",
       timeComplexity: "O(log n)",
@@ -257,6 +305,14 @@ export const mathAndGeometry: Category = {
           expected: "56088",
         },
       ],
+      patterns: ["Math", "String", "Simulation"],
+      hints: [
+        "Simulate long multiplication from grade school. Result has at most len(num1) + len(num2) digits.",
+        "Key insight: num1[i] * num2[j] contributes to result positions i+j (carry) and i+j+1 (digit). Pre-allocate a result array of that size.",
+        "After accumulating all digit products, walk left-to-right applying carries. Strip leading zero(s) at the end. Special case: either operand is '0' returns '0'.",
+      ],
+      keyIntuition:
+        "This implements what a CPU does when you multiply without hardware multipliers: accumulate partial products at the right positions. The insight 'digit at position i * digit at position j lands at positions i+j and i+j+1' is a tiny but profound claim that underlies polynomial multiplication, FFT-based big-integer math, and convolution. Master this and you're ready for arbitrary-precision arithmetic.",
       approach:
         "Simulate grade-school multiplication. Create a result array of length m+n. For each digit pair, multiply and add to the corresponding position in the result array, handling carries. Convert the result array to a string.",
       timeComplexity: "O(m*n)",
@@ -291,6 +347,14 @@ export const mathAndGeometry: Category = {
           expected: [null, null, null, null, 1, 0, null, 2],
         },
       ],
+      patterns: ["Hash Map", "Geometry", "Counting", "Design"],
+      hints: [
+        "For an axis-aligned square, fixing two opposite corners determines the other two. Iterate candidates instead of all 4-tuples.",
+        "Strategy: for query point (qx, qy), find every stored point (qx, y) on the same vertical line. Side length = |y - qy|.",
+        "The other two corners are at (qx + side, qy) and (qx + side, y), or (qx - side, qy) and (qx - side, y). Multiply counts from the hash map (duplicates supported).",
+      ],
+      keyIntuition:
+        "The clever framing: rather than searching over 4-tuples (O(n^4)), iterate one axis (same x as query) and derive the other two corners. This reduction — 'lock one dimension, derive the rest' — is a go-to trick in computational geometry for counting shapes. Storing points as (point → count) rather than a set lets duplicate points legitimately form multiple squares, which is a common spec twist to watch for.",
       approach:
         "Store point counts in a HashMap. For a query point, enumerate all points with the same x-coordinate. For each such point, compute the side length and check if the two other corners of the axis-aligned square exist. Count valid squares.",
       timeComplexity: "O(n)",
