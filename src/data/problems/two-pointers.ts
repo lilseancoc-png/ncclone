@@ -32,6 +32,24 @@ export const twoPointers: Category = {
           inputArgs: ["race a car"],
           expected: false,
         },
+        {
+          id: 3,
+          input: 's = " "',
+          inputArgs: [" "],
+          expected: true,
+        },
+        {
+          id: 4,
+          input: 's = "0P"',
+          inputArgs: ["0P"],
+          expected: false,
+        },
+        {
+          id: 5,
+          input: 's = "ab_a"',
+          inputArgs: ["ab_a"],
+          expected: true,
+        },
       ],
       approach:
         "Use two pointers starting from the beginning and end of the string. Skip non-alphanumeric characters and compare the remaining characters case-insensitively. Move the pointers inward until they meet.",
@@ -66,6 +84,18 @@ export const twoPointers: Category = {
           input: "numbers = [2,3,4], target = 6",
           inputArgs: [[2, 3, 4], 6],
           expected: [1, 3],
+        },
+        {
+          id: 3,
+          input: "numbers = [-1,0], target = -1",
+          inputArgs: [[-1, 0], -1],
+          expected: [1, 2],
+        },
+        {
+          id: 4,
+          input: "numbers = [1,2,3,4,4,9,56,90], target = 8",
+          inputArgs: [[1, 2, 3, 4, 4, 9, 56, 90], 8],
+          expected: [4, 5],
         },
       ],
       approach:
@@ -145,6 +175,18 @@ export const twoPointers: Category = {
           inputArgs: [[1, 1]],
           expected: 1,
         },
+        {
+          id: 3,
+          input: "height = [4,3,2,1,4]",
+          inputArgs: [[4, 3, 2, 1, 4]],
+          expected: 16,
+        },
+        {
+          id: 4,
+          input: "height = [1,2,1]",
+          inputArgs: [[1, 2, 1]],
+          expected: 2,
+        },
       ],
       approach:
         "Start with two pointers at the widest container (both ends). Calculate the area and move the pointer with the shorter height inward, since moving the taller one can never increase the area. Track the maximum area found.",
@@ -178,6 +220,18 @@ export const twoPointers: Category = {
           input: "height = [4,2,0,3,2,5]",
           inputArgs: [[4, 2, 0, 3, 2, 5]],
           expected: 9,
+        },
+        {
+          id: 3,
+          input: "height = []",
+          inputArgs: [[]],
+          expected: 0,
+        },
+        {
+          id: 4,
+          input: "height = [3,0,0,2,0,4]",
+          inputArgs: [[3, 0, 0, 2, 0, 4]],
+          expected: 10,
         },
       ],
       approach:
