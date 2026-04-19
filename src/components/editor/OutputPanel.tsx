@@ -37,7 +37,8 @@ export default function OutputPanel({
   const prevReviewingRef = useRef(false);
   const prevMsgCountRef = useRef(0);
   const [chatInput, setChatInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
+  const stickToBottomRef = useRef(true);
 
   // Auto-switch to Review tab when a review starts.
   useEffect(() => {
@@ -47,11 +48,20 @@ export default function OutputPanel({
     prevReviewingRef.current = isReviewing;
   }, [isReviewing]);
 
-  // Auto-scroll on new tokens / new messages.
+  // Auto-follow new tokens/messages, but only if the user is already pinned
+  // near the bottom — otherwise leave their scroll position alone.
   useEffect(() => {
     if (tab !== "review") return;
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    if (!stickToBottomRef.current) return;
+    const el = chatScrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [reviewMessages, tab]);
+
+  const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    stickToBottomRef.current = distance < 32;
+  };
 
   // Auto-switch to review tab when a new chat message arrives.
   useEffect(() => {
@@ -129,6 +139,8 @@ export default function OutputPanel({
 
       {/* Content */}
       <div
+        ref={chatScrollRef}
+        onScroll={handleChatScroll}
         className={`flex-1 min-h-0 overflow-auto px-4 py-3 text-sm font-mono ${
           tab === "review" ? "pb-0" : ""
         }`}
@@ -304,7 +316,6 @@ export default function OutputPanel({
               </div>
             )}
 
-            <div ref={messagesEndRef} />
           </div>
         )}
       </div>
