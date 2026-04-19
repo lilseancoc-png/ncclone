@@ -22,6 +22,34 @@ export type CompareMode =
   | "unordered-nested"
   | "set-of-strings";
 
+// Per-problem test-runner metadata. Lets the runner inject extra classes
+// (e.g. ListNode) and convert test arg/return shapes around the user function.
+export interface LinkedListRunner {
+  kind: "linked-list";
+  // Arg indices whose array value converts to a single ListNode chain.
+  listInputIndices?: number[];
+  // Arg indices whose array-of-arrays value converts to an array of chains.
+  listOfListsInputIndices?: number[];
+  // Convert the return value (a ListNode chain) to an array for comparison.
+  returnsList?: boolean;
+  // Ignore the return value; instead serialize the first list input's chain.
+  inPlace?: boolean;
+  // Arg index holding a cycle-position int. Forms a cycle in the first list
+  // input at that index, then drops this arg before calling the user function.
+  cyclePosArgIndex?: number;
+}
+
+export interface ClassOpsRunner {
+  kind: "class-ops";
+  className: string;
+}
+
+export interface RandomListRunner {
+  kind: "random-list";
+}
+
+export type RunnerMeta = LinkedListRunner | ClassOpsRunner | RandomListRunner;
+
 export interface Problem {
   id: number;
   title: string;
@@ -36,6 +64,7 @@ export interface Problem {
   testCases?: TestCase[];
   functionName?: string;
   compareMode?: CompareMode;
+  runner?: RunnerMeta;
   hints?: string[];
   patterns?: string[];
   keyIntuition?: string;

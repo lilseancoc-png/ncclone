@@ -13,6 +13,11 @@ export const linkedList: Category = {
       description:
         "Given the head of a singly linked list, reverse the list and return the reversed list. The input and output are represented as arrays for testing purposes.",
       functionName: "reverseList",
+      runner: {
+        kind: "linked-list",
+        listInputIndices: [0],
+        returnsList: true,
+      },
       starterCode: {
         javascript: "function reverseList(head) {\n  \n}",
         python: "def reverse_list(head):\n    pass",
@@ -61,6 +66,11 @@ export const linkedList: Category = {
       description:
         "Merge two sorted linked lists and return it as a single sorted list. The lists are represented as arrays for testing. The merged list should be made by splicing together the nodes of the first two lists.",
       functionName: "mergeTwoLists",
+      runner: {
+        kind: "linked-list",
+        listInputIndices: [0, 1],
+        returnsList: true,
+      },
       starterCode: {
         javascript: "function mergeTwoLists(list1, list2) {\n  \n}",
         python: "def merge_two_lists(list1, list2):\n    pass",
@@ -109,6 +119,11 @@ export const linkedList: Category = {
       description:
         "Given the head of a singly linked list L0 -> L1 -> ... -> Ln-1 -> Ln, reorder it to L0 -> Ln -> L1 -> Ln-1 -> L2 -> Ln-2 -> ... You may not modify the values, only rearrange the nodes. Input and output are represented as arrays.",
       functionName: "reorderList",
+      runner: {
+        kind: "linked-list",
+        listInputIndices: [0],
+        inPlace: true,
+      },
       starterCode: {
         javascript: "function reorderList(head) {\n  \n}",
         python: "def reorder_list(head):\n    pass",
@@ -152,6 +167,11 @@ export const linkedList: Category = {
       description:
         "Given the head of a linked list, remove the nth node from the end of the list and return its head. The list is represented as an array for testing purposes.",
       functionName: "removeNthFromEnd",
+      runner: {
+        kind: "linked-list",
+        listInputIndices: [0],
+        returnsList: true,
+      },
       starterCode: {
         javascript: "function removeNthFromEnd(head, n) {\n  \n}",
         python: "def remove_nth_from_end(head, n):\n    pass",
@@ -201,6 +221,7 @@ export const linkedList: Category = {
       description:
         "A linked list of length n is given where each node has an additional random pointer that could point to any node or null. Construct a deep copy of the list. The input is represented as an array of [val, randomIndex] pairs where randomIndex is the index of the node the random pointer points to, or null.",
       functionName: "copyRandomList",
+      runner: { kind: "random-list" },
       starterCode: {
         javascript: "function copyRandomList(head) {\n  \n}",
         python: "def copy_random_list(head):\n    pass",
@@ -265,6 +286,11 @@ export const linkedList: Category = {
       description:
         "Two non-negative integers are represented as linked lists where each node contains a single digit, stored in reverse order. Add the two numbers and return the sum as a linked list in the same reverse-order format. Input and output are represented as arrays.",
       functionName: "addTwoNumbers",
+      runner: {
+        kind: "linked-list",
+        listInputIndices: [0, 1],
+        returnsList: true,
+      },
       starterCode: {
         javascript: "function addTwoNumbers(l1, l2) {\n  \n}",
         python: "def add_two_numbers(l1, l2):\n    pass",
@@ -307,6 +333,11 @@ export const linkedList: Category = {
       description:
         "Given the head of a linked list, determine if the linked list has a cycle. A cycle exists if some node can be reached again by continuously following the next pointer. The input is an array and a pos value indicating where the tail connects to (or -1 for no cycle).",
       functionName: "hasCycle",
+      runner: {
+        kind: "linked-list",
+        listInputIndices: [0],
+        cyclePosArgIndex: 1,
+      },
       starterCode: {
         javascript: "function hasCycle(head) {\n  \n}",
         python: "def has_cycle(head):\n    pass",
@@ -397,6 +428,7 @@ export const linkedList: Category = {
       description:
         "Design a data structure that follows the Least Recently Used (LRU) cache constraints. Implement the LRUCache class with a capacity constructor, get(key) that returns the value or -1 if not found, and put(key, value) that inserts or updates a key-value pair, evicting the least recently used item when capacity is exceeded.",
       functionName: "LRUCache",
+      runner: { kind: "class-ops", className: "LRUCache" },
       starterCode: {
         javascript:
           "class LRUCache {\n  constructor(capacity) {\n    \n  }\n\n  get(key) {\n    \n  }\n\n  put(key, value) {\n    \n  }\n}",
@@ -450,6 +482,11 @@ export const linkedList: Category = {
       description:
         "Given an array of k linked lists, each sorted in ascending order, merge all the linked lists into one sorted linked list and return it. Lists are represented as arrays for testing purposes.",
       functionName: "mergeKLists",
+      runner: {
+        kind: "linked-list",
+        listOfListsInputIndices: [0],
+        returnsList: true,
+      },
       starterCode: {
         javascript: "function mergeKLists(lists) {\n  \n}",
         python: "def merge_k_lists(lists):\n    pass",
@@ -498,6 +535,11 @@ export const linkedList: Category = {
       description:
         "Given the head of a linked list, reverse the nodes of the list k at a time and return the modified list. If the number of remaining nodes is less than k, leave them as-is. Only the nodes themselves may be changed, not the values. Input and output are represented as arrays.",
       functionName: "reverseKGroup",
+      runner: {
+        kind: "linked-list",
+        listInputIndices: [0],
+        returnsList: true,
+      },
       starterCode: {
         javascript: "function reverseKGroup(head, k) {\n  \n}",
         python: "def reverse_k_group(head, k):\n    pass",
