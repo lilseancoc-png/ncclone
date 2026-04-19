@@ -155,6 +155,18 @@ function ProblemNav({ slug }: { slug: string }) {
 
 type MobileTab = "description" | "code" | "output";
 
+function useIsDesktop(): boolean {
+  const [isDesktop, setIsDesktop] = useState(true);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return isDesktop;
+}
+
 function IDELayout({
   problem,
   category,
@@ -166,7 +178,8 @@ function IDELayout({
 }) {
   const [language, setLanguage] = useState<Language>("python");
   const [mobileTab, setMobileTab] = useState<MobileTab>("description");
-  const [outputHeight, setOutputHeight] = useState(200);
+  const [outputHeight, setOutputHeight] = useState(280);
+  const isDesktop = useIsDesktop();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const starterCode = problem.starterCode?.[language] || "";
@@ -416,8 +429,12 @@ function IDELayout({
 
           {/* Output panel */}
           <div
-            className={`${mobileTab === "output" ? "flex-1" : ""} flex-shrink-0`}
-            style={mobileTab !== "output" ? { height: outputHeight } : undefined}
+            className={`${!isDesktop && mobileTab === "output" ? "flex-1 min-h-0" : "flex-shrink-0"}`}
+            style={
+              !isDesktop && mobileTab === "output"
+                ? undefined
+                : { height: outputHeight }
+            }
           >
             <OutputPanel
               results={results}
