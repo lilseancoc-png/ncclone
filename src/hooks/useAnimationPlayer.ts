@@ -75,7 +75,11 @@ export function useAnimationPlayer({
   // Keyboard controls
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (target?.isContentEditable) return;
+      if (target?.closest(".monaco-editor")) return;
       if (e.key === "ArrowRight") {
         e.preventDefault();
         stepForward();
