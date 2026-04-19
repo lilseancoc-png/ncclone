@@ -3,9 +3,9 @@ import type { PuterChatChunk, PuterChatMessage } from "@/types/puter";
 
 const REVIEW_MODEL = "claude-sonnet-4-5";
 
-const SYSTEM_PROMPT = `You are a senior coding mentor reviewing a candidate's solution to a LeetCode-style problem.
+export const SYSTEM_PROMPT = `You are a senior coding mentor pair-programming with a candidate on a LeetCode-style problem.
 
-Focus on two things:
+Focus on:
 1. **Bugs & correctness** — logic errors, mishandled edge cases (empty input, single element, duplicates, negatives, overflow), off-by-ones.
 2. **Time & space complexity** — give Big-O for the candidate's approach, and flag if a meaningfully better complexity exists.
 
@@ -13,7 +13,8 @@ Hard rules:
 - Give **hints, not solutions**. Nudge the candidate toward the fix; never write the corrected code or pseudocode that hands them the answer.
 - If the code is correct and optimal, say so in one or two sentences and stop.
 - Be specific: cite variable names or describe the exact line.
-- Keep the whole response under ~200 words. Use light markdown (short headings or bullets).`;
+- Keep each response under ~200 words. Use light markdown (short headings or bullets).
+- The candidate may ask follow-up questions or share updated code. Stay in mentor mode across the conversation.`;
 
 interface BuildPromptInput {
   problem: Problem;
@@ -23,13 +24,13 @@ interface BuildPromptInput {
   testCases: TestCase[];
 }
 
-export function buildReviewPrompt({
+export function buildInitialReviewMessage({
   problem,
   language,
   code,
   failingResults,
   testCases,
-}: BuildPromptInput): { system: string; user: string } {
+}: BuildPromptInput): string {
   const parts: string[] = [];
   parts.push(`# Problem ${problem.id}: ${problem.title} (${problem.difficulty})`);
 
@@ -41,7 +42,7 @@ export function buildReviewPrompt({
     parts.push(`\n## Required function\n\`${problem.functionName}\``);
   }
 
-  parts.push(`\n## Candidate's ${language} solution\n\`\`\`${language}\n${code}\n\`\`\``);
+  parts.push(`\n## My ${language} solution\n\`\`\`${language}\n${code}\n\`\`\``);
 
   if (failingResults.length > 0) {
     const lines = failingResults.slice(0, 5).map((r) => {
@@ -54,11 +55,16 @@ export function buildReviewPrompt({
     parts.push(`\n## Failing tests (most recent run)\n${lines.join("\n")}`);
   }
 
-  parts.push(
-    `\n## Your task\nReview the solution per the system rules. Be concise.`,
-  );
+  parts.push(`\nReview my solution per the rules. Be concise.`);
+  return parts.join("\n");
+}
 
-  return { system: SYSTEM_PROMPT, user: parts.join("\n") };
+export function buildFollowUpMessage(
+  text: string,
+  language: Language,
+  currentCode: string,
+): string {
+  return `${text}\n\n## My current ${language} code\n\`\`\`${language}\n${currentCode}\n\`\`\``;
 }
 
 export class PuterUnavailableError extends Error {
@@ -79,8 +85,8 @@ function extractChunkText(chunk: PuterChatChunk | string | unknown): string {
   return "";
 }
 
-export async function streamReview(
-  prompt: { system: string; user: string },
+export async function streamChat(
+  messages: PuterChatMessage[],
   onDelta: (text: string) => void,
   signal?: AbortSignal,
 ): Promise<string> {
@@ -89,11 +95,6 @@ export async function streamReview(
   }
 
   if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
-
-  const messages: PuterChatMessage[] = [
-    { role: "system", content: prompt.system },
-    { role: "user", content: prompt.user },
-  ];
 
   const stream = await window.puter.ai.chat(messages, {
     model: REVIEW_MODEL,
