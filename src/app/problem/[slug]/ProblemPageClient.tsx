@@ -16,6 +16,7 @@ import ShortcutsModal from "@/components/editor/ShortcutsModal";
 import { useCodeDrafts } from "@/hooks/useCodeDrafts";
 import { useCodeRunner } from "@/hooks/useCodeRunner";
 import { useCodeReview } from "@/hooks/useCodeReview";
+import { useComplexityReport } from "@/hooks/useComplexityReport";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ResizeHandle from "@/components/editor/ResizeHandle";
 import { fireConfetti } from "@/lib/confetti";
@@ -191,13 +192,22 @@ function IDELayout({
     error: reviewError,
     start: startReview,
     send: sendReviewMessage,
+    explainFailure,
     stop: stopReview,
     clear: clearReview,
   } = useCodeReview();
+  const {
+    report: complexityReport,
+    isLoading: isComplexityLoading,
+    error: complexityError,
+    request: requestComplexity,
+    clear: clearComplexity,
+  } = useComplexityReport();
   const { isCompleted, toggleCompleted, markCompleted, mounted } = useProgress();
   const { toast } = useToast();
   const prevAllPassedRef = useRef(false);
   const submitInFlightRef = useRef(false);
+  const submittedSnapshotRef = useRef<{ code: string; language: Language } | null>(null);
 
   const done = mounted && isCompleted(slug);
   const allPassed = (results?.length ?? 0) > 0 && results!.every((r) => r.passed);
@@ -209,6 +219,8 @@ function IDELayout({
     setIsSubmitting(false);
 
     if (wasSubmit && results && results.length > 0) {
+      const snap = submittedSnapshotRef.current;
+      submittedSnapshotRef.current = null;
       if (allPassed) {
         fireConfetti();
         if (!done) {
@@ -217,6 +229,7 @@ function IDELayout({
         } else {
           toast("Accepted!", "success");
         }
+        if (snap) void requestComplexity(problem, snap.language, snap.code);
       } else {
         const passedCount = results.filter((r) => r.passed).length;
         toast(`Wrong answer: ${passedCount}/${results.length} passed`, "error");
@@ -229,7 +242,7 @@ function IDELayout({
       toast("All test cases passed!", "success");
     }
     prevAllPassedRef.current = allPassed;
-  }, [isRunning, allPassed, results, done, markCompleted, slug, toast]);
+  }, [isRunning, allPassed, results, done, markCompleted, slug, toast, problem, requestComplexity]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -259,7 +272,9 @@ function IDELayout({
 
   const handleSubmit = useCallback(() => {
     submitInFlightRef.current = true;
+    submittedSnapshotRef.current = { code, language };
     setIsSubmitting(true);
+    clearComplexity();
     run(
       code,
       problem.functionName!,
@@ -268,7 +283,7 @@ function IDELayout({
       problem.compareMode
     );
     setMobileTab("output");
-  }, [code, problem.functionName, problem.testCases, problem.compareMode, language, run]);
+  }, [code, problem.functionName, problem.testCases, problem.compareMode, language, run, clearComplexity]);
 
   const handleReview = useCallback(() => {
     startReview({
@@ -288,12 +303,25 @@ function IDELayout({
     [sendReviewMessage, language, code],
   );
 
+  const handleExplainFailure = useCallback(
+    (
+      testNumber: number,
+      result: Parameters<typeof explainFailure>[1],
+      testCase: Parameters<typeof explainFailure>[2],
+    ) => {
+      explainFailure(testNumber, result, testCase, language, code);
+      setMobileTab("output");
+    },
+    [explainFailure, language, code],
+  );
+
   const handleReset = useCallback(() => {
     reset();
     clear();
     clearReview();
+    clearComplexity();
     toast("Code reset to starter template", "info");
-  }, [reset, clear, clearReview, toast]);
+  }, [reset, clear, clearReview, clearComplexity, toast]);
 
   const handleToggleComplete = useCallback(() => {
     toggleCompleted(slug);
@@ -305,8 +333,9 @@ function IDELayout({
       setLanguage(lang);
       clear();
       clearReview();
+      clearComplexity();
     },
-    [clear, clearReview]
+    [clear, clearReview, clearComplexity]
   );
 
   return (
@@ -392,7 +421,12 @@ function IDELayout({
       <div className="flex flex-1 min-h-0">
         {/* Left pane - Problem description */}
         <div className={`${mobileTab === "description" ? "flex" : "hidden"} md:flex w-full md:w-[40%] md:min-w-[300px] border-r border-border overflow-hidden flex-col`}>
-          <ProblemDescription problem={problem} category={category} />
+          <ProblemDescription
+            problem={problem}
+            category={category}
+            language={language}
+            code={code}
+          />
         </div>
 
         {/* Right pane - Editor + Output */}
@@ -448,6 +482,11 @@ function IDELayout({
               reviewError={reviewError}
               onSendReviewMessage={handleSendReviewMessage}
               onStopReview={stopReview}
+              onExplainFailure={handleExplainFailure}
+              complexityReport={complexityReport}
+              isComplexityLoading={isComplexityLoading}
+              complexityError={complexityError}
+              onDismissComplexity={clearComplexity}
             />
           </div>
         </div>

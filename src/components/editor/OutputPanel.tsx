@@ -18,6 +18,15 @@ interface OutputPanelProps {
   reviewError: string | null;
   onSendReviewMessage: (text: string) => void;
   onStopReview: () => void;
+  onExplainFailure?: (
+    testNumber: number,
+    result: TestResult,
+    testCase: TestCase | undefined,
+  ) => void;
+  complexityReport: string;
+  isComplexityLoading: boolean;
+  complexityError: string | null;
+  onDismissComplexity: () => void;
 }
 
 export default function OutputPanel({
@@ -32,6 +41,11 @@ export default function OutputPanel({
   reviewError,
   onSendReviewMessage,
   onStopReview,
+  onExplainFailure,
+  complexityReport,
+  isComplexityLoading,
+  complexityError,
+  onDismissComplexity,
 }: OutputPanelProps) {
   const [tab, setTab] = useState<Tab>("results");
   const prevReviewingRef = useRef(false);
@@ -199,6 +213,15 @@ export default function OutputPanel({
                     All test cases passed!
                   </div>
                 )}
+                {allPassed &&
+                  (isComplexityLoading || complexityReport || complexityError) && (
+                    <ComplexityCard
+                      report={complexityReport}
+                      isLoading={isComplexityLoading}
+                      error={complexityError}
+                      onDismiss={onDismissComplexity}
+                    />
+                  )}
                 {results.map((result, i) => {
                   const tc = testCases.find((t) => t.id === result.testCaseId);
                   return (
@@ -228,6 +251,19 @@ export default function OutputPanel({
                         >
                           {result.passed ? "PASS" : "FAIL"}
                         </span>
+                        {!result.passed && onExplainFailure && (
+                          <button
+                            onClick={() => onExplainFailure(i + 1, result, tc)}
+                            disabled={isReviewing}
+                            className="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold text-violet-200 border border-violet-500/30 bg-violet-500/10 rounded hover:bg-violet-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            title="Ask the AI mentor why this test failed"
+                          >
+                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Explain
+                          </button>
+                        )}
                       </div>
                       {tc && (
                         <div className="text-xs text-gray-400 mb-1 font-mono">
@@ -362,6 +398,134 @@ export default function OutputPanel({
             Your current code is automatically attached to each follow-up.
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function parseComplexityReport(text: string): {
+  time: string | null;
+  timeNote: string | null;
+  space: string | null;
+  spaceNote: string | null;
+  tail: string;
+} {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  let time: string | null = null;
+  let timeNote: string | null = null;
+  let space: string | null = null;
+  let spaceNote: string | null = null;
+  const tailLines: string[] = [];
+
+  for (const line of lines) {
+    const t = /^time:\s*(.+)$/i.exec(line);
+    const s = /^space:\s*(.+)$/i.exec(line);
+    if (t) {
+      time = t[1].trim();
+      continue;
+    }
+    if (s) {
+      space = s[1].trim();
+      continue;
+    }
+    if (time && !timeNote && !space) {
+      timeNote = line;
+      continue;
+    }
+    if (space && !spaceNote) {
+      spaceNote = line;
+      continue;
+    }
+    tailLines.push(line);
+  }
+
+  return { time, timeNote, space, spaceNote, tail: tailLines.join(" ") };
+}
+
+function ComplexityCard({
+  report,
+  isLoading,
+  error,
+  onDismiss,
+}: {
+  report: string;
+  isLoading: boolean;
+  error: string | null;
+  onDismiss: () => void;
+}) {
+  const parsed = report ? parseComplexityReport(report) : null;
+  const hasParsed = parsed && (parsed.time || parsed.space);
+
+  return (
+    <div className="relative rounded-lg border border-violet-500/30 bg-violet-500/5 px-3 py-2.5">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <svg
+          className={`w-3.5 h-3.5 text-violet-300 ${isLoading ? "animate-pulse" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-300">
+          Complexity
+        </span>
+        {isLoading && (
+          <span className="text-[10px] text-violet-300/70">analyzing…</span>
+        )}
+        <button
+          onClick={onDismiss}
+          className="ml-auto text-gray-500 hover:text-gray-300 text-xs leading-none"
+          aria-label="Dismiss complexity card"
+          title="Dismiss"
+        >
+          ×
+        </button>
+      </div>
+
+      {error && !report && (
+        <div className="text-xs text-hard">{error}</div>
+      )}
+
+      {!error && hasParsed && (
+        <div className="space-y-1.5 text-xs font-sans">
+          {parsed!.time && (
+            <div>
+              <span className="text-gray-400">Time: </span>
+              <code className="text-easy font-mono">{parsed!.time}</code>
+              {parsed!.timeNote && (
+                <div className="text-[11px] text-foreground/70 mt-0.5">
+                  {parsed!.timeNote}
+                </div>
+              )}
+            </div>
+          )}
+          {parsed!.space && (
+            <div>
+              <span className="text-gray-400">Space: </span>
+              <code className="text-medium font-mono">{parsed!.space}</code>
+              {parsed!.spaceNote && (
+                <div className="text-[11px] text-foreground/70 mt-0.5">
+                  {parsed!.spaceNote}
+                </div>
+              )}
+            </div>
+          )}
+          {parsed!.tail && (
+            <div className="text-[11px] text-foreground/60">{parsed!.tail}</div>
+          )}
+        </div>
+      )}
+
+      {!error && !hasParsed && report && (
+        <div className="text-xs text-foreground/80 whitespace-pre-wrap">
+          {report}
+        </div>
+      )}
+
+      {!error && !report && isLoading && (
+        <div className="text-xs text-gray-500">Measuring your solution…</div>
       )}
     </div>
   );
