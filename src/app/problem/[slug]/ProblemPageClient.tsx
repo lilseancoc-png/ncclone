@@ -15,6 +15,7 @@ import OutputPanel from "@/components/editor/OutputPanel";
 import ShortcutsModal from "@/components/editor/ShortcutsModal";
 import { useCodeDrafts } from "@/hooks/useCodeDrafts";
 import { useCodeRunner } from "@/hooks/useCodeRunner";
+import { useCodeReview } from "@/hooks/useCodeReview";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ResizeHandle from "@/components/editor/ResizeHandle";
 import { fireConfetti } from "@/lib/confetti";
@@ -171,6 +172,13 @@ function IDELayout({
   const starterCode = problem.starterCode?.[language] || "";
   const { code, setCode, reset } = useCodeDrafts(slug, language, starterCode);
   const { run, results, consoleOutput, isRunning, error, clear } = useCodeRunner();
+  const {
+    review,
+    isReviewing,
+    error: reviewError,
+    run: runReview,
+    clear: clearReview,
+  } = useCodeReview();
   const { isCompleted, toggleCompleted, markCompleted, mounted } = useProgress();
   const { toast } = useToast();
   const prevAllPassedRef = useRef(false);
@@ -247,11 +255,23 @@ function IDELayout({
     setMobileTab("output");
   }, [code, problem.functionName, problem.testCases, problem.compareMode, language, run]);
 
+  const handleReview = useCallback(() => {
+    runReview({
+      problem,
+      language,
+      code,
+      failingResults: results?.filter((r) => !r.passed) ?? [],
+      testCases: problem.testCases ?? [],
+    });
+    setMobileTab("output");
+  }, [runReview, problem, language, code, results]);
+
   const handleReset = useCallback(() => {
     reset();
     clear();
+    clearReview();
     toast("Code reset to starter template", "info");
-  }, [reset, clear, toast]);
+  }, [reset, clear, clearReview, toast]);
 
   const handleToggleComplete = useCallback(() => {
     toggleCompleted(slug);
@@ -262,8 +282,9 @@ function IDELayout({
     (lang: Language) => {
       setLanguage(lang);
       clear();
+      clearReview();
     },
-    [clear]
+    [clear, clearReview]
   );
 
   return (
@@ -361,8 +382,10 @@ function IDELayout({
             onRun={handleRun}
             onSubmit={handleSubmit}
             onReset={handleReset}
+            onReview={handleReview}
             isRunning={isRunning && !isSubmitting}
             isSubmitting={isSubmitting}
+            isReviewing={isReviewing}
           />
 
           {/* Editor */}
@@ -394,6 +417,9 @@ function IDELayout({
               error={error}
               isRunning={isRunning}
               isPythonLoading={isRunning && language === "python"}
+              review={review}
+              isReviewing={isReviewing}
+              reviewError={reviewError}
             />
           </div>
         </div>
