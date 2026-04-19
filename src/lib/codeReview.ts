@@ -67,6 +67,122 @@ export function buildFollowUpMessage(
   return `${text}\n\n## My current ${language} code\n\`\`\`${language}\n${currentCode}\n\`\`\``;
 }
 
+export function buildFailureExplanationMessage({
+  testNumber,
+  result,
+  testCase,
+  language,
+  code,
+}: {
+  testNumber: number;
+  result: TestResult;
+  testCase: TestCase | undefined;
+  language: Language;
+  code: string;
+}): string {
+  const input = testCase?.input ?? `(test id ${result.testCaseId})`;
+  const expected = JSON.stringify(result.expected);
+  const actual = result.error
+    ? `error: ${result.error}`
+    : JSON.stringify(result.actual);
+
+  return [
+    `Focus only on why **test ${testNumber}** is failing. Be concrete: name the variable or line, and keep it tight.`,
+    ``,
+    `## Failing case`,
+    `- Input: \`${input}\``,
+    `- Expected: \`${expected}\``,
+    `- Got: \`${actual}\``,
+    ``,
+    `## My ${language} code`,
+    "```" + language,
+    code,
+    "```",
+  ].join("\n");
+}
+
+export const COMPLEXITY_SYSTEM_PROMPT = `You analyze the Big-O complexity of a submitted solution.
+
+Respond in **exactly this format** and nothing else:
+
+Time: O(...)
+<one short sentence justifying time>
+Space: O(...)
+<one short sentence justifying space>
+
+Rules:
+- Use the tightest correct bound for the candidate's actual code (not the optimal solution).
+- Sentences must be <= 20 words each.
+- No code, no markdown headings, no lists, no preface.`;
+
+export function buildComplexityMessage({
+  problem,
+  language,
+  code,
+}: {
+  problem: Problem;
+  language: Language;
+  code: string;
+}): string {
+  return [
+    `Problem: ${problem.title} (${problem.difficulty})`,
+    ``,
+    `## ${language} solution`,
+    "```" + language,
+    code,
+    "```",
+  ].join("\n");
+}
+
+export const HINT_SYSTEM_PROMPT = `You give ONE hint at a time to a candidate solving a LeetCode-style problem.
+
+The user will tell you their current hint level (1-5). Each level is strictly more revealing:
+- Level 1: broad direction — which family of algorithms or data structures fits.
+- Level 2: a key property of the input or invariant they should notice.
+- Level 3: name the concrete data structure or technique to use.
+- Level 4: describe the loop/pass structure in plain English.
+- Level 5: point at the specific line or variable in their current code that is wrong (or the exact missing step), as close to a spoiler as you can get without writing code.
+
+Hard rules:
+- Output **one short paragraph only** (<= 50 words). No lists, no headings.
+- Never write code, pseudocode, or a step-by-step solution.
+- Do not repeat a previous hint — each new level must add genuinely new information.
+- If the candidate's code is already correct, say so in one sentence.`;
+
+export function buildHintMessage({
+  problem,
+  language,
+  code,
+  level,
+  previousHints,
+}: {
+  problem: Problem;
+  language: Language;
+  code: string;
+  level: number;
+  previousHints: string[];
+}): string {
+  const parts: string[] = [];
+  parts.push(`Problem: ${problem.title} (${problem.difficulty})`);
+  if (problem.description) {
+    parts.push(`\n## Description\n${problem.description.trim()}`);
+  }
+  if (code.trim()) {
+    parts.push(`\n## My current ${language} code`);
+    parts.push("```" + language);
+    parts.push(code);
+    parts.push("```");
+  } else {
+    parts.push(`\n(The candidate has not written any code yet.)`);
+  }
+  if (previousHints.length > 0) {
+    parts.push(`\n## Previous hints I already saw`);
+    parts.push(previousHints.map((h, i) => `${i + 1}. ${h}`).join("\n"));
+  }
+  parts.push(`\nGive me hint level ${level} per the rules.`);
+  return parts.join("\n");
+}
+
 export class PuterUnavailableError extends Error {
   constructor() {
     super(

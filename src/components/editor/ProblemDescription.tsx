@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Problem, Category } from "@/data/types";
+import { Problem, Category, Language } from "@/data/types";
 import DifficultyBadge from "@/components/DifficultyBadge";
 import { useProgress } from "@/hooks/useProgress";
 import { hasSolution } from "@/data/solutions";
+import { useAdaptiveHints } from "@/hooks/useAdaptiveHints";
 import SolutionTab from "./SolutionTab";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -41,13 +42,16 @@ const DEFAULT_PATTERN_COLOR = "bg-gray-500/15 text-gray-400 border-gray-500/30";
 interface ProblemDescriptionProps {
   problem: Problem;
   category: Category;
+  language?: Language;
+  code?: string;
 }
 
 export default function ProblemDescription({
   problem,
   category,
+  language,
+  code,
 }: ProblemDescriptionProps) {
-  const [hintLevel, setHintLevel] = useState(0);
   const [showApproach, setShowApproach] = useState(false);
   const [showIntuition, setShowIntuition] = useState(false);
   const [tab, setTab] = useState<"description" | "solution">("description");
@@ -55,9 +59,18 @@ export default function ProblemDescription({
   const done = mounted && isCompleted(problem.slug);
   const showSolutionTab = hasSolution(problem.slug);
 
-  const hints = problem.hints ?? [];
+  const canUseAiHints = Boolean(language);
+  const {
+    hints,
+    streamingHint,
+    isLoading: isHintLoading,
+    error: hintError,
+    usedFallback,
+    maxLevel,
+    revealNext,
+  } = useAdaptiveHints(problem);
+
   const patterns = problem.patterns ?? [];
-  const maxHints = hints.length;
 
   return (
     <div className="h-full flex flex-col bg-[#0d0d1a]">
@@ -147,66 +160,89 @@ export default function ProblemDescription({
               </div>
             )}
 
-            {/* Progressive Hints */}
-            {maxHints > 0 && (
+            {/* Adaptive Hints (AI-generated, escalating 1..5). Falls back to
+                problem.hints[] when Puter is unavailable. */}
+            {canUseAiHints && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                     Hints
+                    {usedFallback && (
+                      <span className="text-[9px] font-normal text-gray-500 normal-case tracking-normal">
+                        (offline hints)
+                      </span>
+                    )}
                   </h3>
                   <span className="text-[10px] text-gray-500">
-                    {hintLevel}/{maxHints} revealed
+                    {hints.length}/{maxLevel} revealed
                   </span>
                 </div>
                 <div className="space-y-2">
-                  {hints.map((hint, i) => {
-                    const revealed = i < hintLevel;
-                    return (
-                      <div
-                        key={i}
-                        className={`rounded-lg border transition-all duration-300 ${
-                          revealed
-                            ? "bg-[#151525] border-border/30"
-                            : "bg-[#0f0f1f] border-border/15"
-                        }`}
-                      >
-                        {revealed ? (
-                          <div className="px-3.5 py-2.5">
-                            <div className="flex items-start gap-2">
-                              <span className="text-[10px] font-bold text-gray-500 mt-0.5 shrink-0">
-                                {i + 1}.
-                              </span>
-                              <p className="text-sm text-foreground/75 leading-relaxed">
-                                {hint}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setHintLevel(i + 1)}
-                            className="w-full px-3.5 py-2.5 flex items-center gap-2 text-left group"
-                          >
-                            <span className="text-[10px] font-bold text-gray-600 shrink-0">
-                              {i + 1}.
-                            </span>
-                            <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
-                              Click to reveal hint {i + 1}
-                            </span>
-                            <svg
-                              className="w-3 h-3 text-gray-600 group-hover:text-gray-400 transition-colors ml-auto"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                          </button>
-                        )}
+                  {hints.map((hint, i) => (
+                    <div
+                      key={i}
+                      className="rounded-lg border bg-[#151525] border-border/30"
+                    >
+                      <div className="px-3.5 py-2.5">
+                        <div className="flex items-start gap-2">
+                          <span className="text-[10px] font-bold text-gray-500 mt-0.5 shrink-0">
+                            {i + 1}.
+                          </span>
+                          <p className="text-sm text-foreground/75 leading-relaxed whitespace-pre-wrap">
+                            {hint}
+                          </p>
+                        </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
+
+                  {isHintLoading && (
+                    <div className="rounded-lg border bg-[#151525] border-violet-500/30">
+                      <div className="px-3.5 py-2.5">
+                        <div className="flex items-start gap-2">
+                          <span className="text-[10px] font-bold text-violet-300 mt-0.5 shrink-0">
+                            {hints.length + 1}.
+                          </span>
+                          <p className="text-sm text-foreground/75 leading-relaxed whitespace-pre-wrap">
+                            {streamingHint}
+                            <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-violet-400 animate-pulse" />
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isHintLoading && hints.length < maxLevel && (
+                    <button
+                      onClick={() =>
+                        revealNext(language!, code ?? "")
+                      }
+                      className="w-full rounded-lg border bg-[#0f0f1f] border-border/15 hover:border-violet-500/40 px-3.5 py-2.5 flex items-center gap-2 text-left group transition-colors"
+                    >
+                      <span className="text-[10px] font-bold text-gray-600 group-hover:text-violet-300 shrink-0">
+                        {hints.length + 1}.
+                      </span>
+                      <span className="text-xs text-gray-500 group-hover:text-gray-300 transition-colors">
+                        {hints.length === 0
+                          ? "Reveal the first hint"
+                          : `Reveal hint ${hints.length + 1}`}
+                      </span>
+                      <svg
+                        className="w-3 h-3 text-gray-600 group-hover:text-violet-300 transition-colors ml-auto"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                  )}
+
+                  {hintError && !isHintLoading && (
+                    <div className="text-[11px] text-hard">{hintError}</div>
+                  )}
                 </div>
               </div>
             )}
