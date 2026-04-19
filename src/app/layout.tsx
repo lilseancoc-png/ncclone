@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProgressProvider } from "@/hooks/useProgress";
 import { ToastProvider } from "@/components/Toast";
@@ -30,6 +31,7 @@ export default function RootLayout({
             <ToastProvider>{children}</ToastProvider>
           </ProgressProvider>
         </AuthProvider>
+        <Script src="https://js.puter.com/v2/" strategy="afterInteractive" />
       </body>
     </html>
   );

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TestCase, TestResult } from "@/data/types";
+
+type Tab = "results" | "console" | "review";
 
 interface OutputPanelProps {
   results: TestResult[] | null;
@@ -10,6 +12,9 @@ interface OutputPanelProps {
   error: string | null;
   isRunning: boolean;
   isPythonLoading?: boolean;
+  review: string | null;
+  isReviewing: boolean;
+  reviewError: string | null;
 }
 
 export default function OutputPanel({
@@ -19,8 +24,20 @@ export default function OutputPanel({
   error,
   isRunning,
   isPythonLoading,
+  review,
+  isReviewing,
+  reviewError,
 }: OutputPanelProps) {
-  const [tab, setTab] = useState<"results" | "console">("results");
+  const [tab, setTab] = useState<Tab>("results");
+  const prevReviewingRef = useRef(false);
+
+  // Auto-switch to Review tab when a review starts.
+  useEffect(() => {
+    if (isReviewing && !prevReviewingRef.current) {
+      setTab("review");
+    }
+    prevReviewingRef.current = isReviewing;
+  }, [isReviewing]);
 
   const passedCount = results?.filter((r) => r.passed).length ?? 0;
   const totalCount = results?.length ?? 0;
@@ -62,11 +79,27 @@ export default function OutputPanel({
             </span>
           )}
         </button>
+        <button
+          onClick={() => setTab("review")}
+          className={`px-3 py-1 text-xs font-medium rounded transition-colors flex items-center gap-1.5 ${
+            tab === "review"
+              ? "bg-card text-foreground"
+              : "text-gray-500 hover:text-gray-300"
+          }`}
+        >
+          AI Review
+          {isReviewing && (
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+          )}
+          {!isReviewing && review && (
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+          )}
+        </button>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto px-4 py-3 text-sm font-mono">
-        {isRunning && (
+        {isRunning && tab !== "review" && (
           <div className="flex items-center gap-2.5 text-medium">
             <svg
               className="w-4 h-4 animate-spin"
@@ -98,7 +131,7 @@ export default function OutputPanel({
           </div>
         )}
 
-        {!isRunning && error && !results?.length && (
+        {!isRunning && tab !== "review" && error && !results?.length && (
           <div className="text-hard whitespace-pre-wrap text-xs leading-relaxed">{error}</div>
         )}
 
@@ -192,6 +225,56 @@ export default function OutputPanel({
                 {line}
               </div>
             ))}
+          </>
+        )}
+
+        {tab === "review" && (
+          <>
+            {reviewError && (
+              <div className="text-hard whitespace-pre-wrap text-xs leading-relaxed">
+                {reviewError}
+              </div>
+            )}
+            {!reviewError && review === null && !isReviewing && (
+              <div className="text-gray-500">
+                Click <span className="text-violet-300 font-semibold">Review</span> to have an AI mentor look over your code.
+                <div className="text-gray-600 text-xs mt-1.5">
+                  Hints, not solutions. First use prompts a puter.com sign-in.
+                </div>
+              </div>
+            )}
+            {!reviewError && isReviewing && !review && (
+              <div className="flex items-center gap-2.5 text-violet-300">
+                <svg
+                  className="w-4 h-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+                <span>Reviewing your code...</span>
+              </div>
+            )}
+            {!reviewError && review !== null && review.length > 0 && (
+              <div className="text-foreground/85 whitespace-pre-wrap leading-relaxed text-[13px] font-sans">
+                {review}
+                {isReviewing && (
+                  <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-violet-400 animate-pulse" />
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
