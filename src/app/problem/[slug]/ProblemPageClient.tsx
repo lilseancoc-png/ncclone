@@ -173,10 +173,12 @@ function IDELayout({
   const { code, setCode, reset } = useCodeDrafts(slug, language, starterCode);
   const { run, results, consoleOutput, isRunning, error, clear } = useCodeRunner();
   const {
-    review,
+    messages: reviewMessages,
     isReviewing,
     error: reviewError,
-    run: runReview,
+    start: startReview,
+    send: sendReviewMessage,
+    stop: stopReview,
     clear: clearReview,
   } = useCodeReview();
   const { isCompleted, toggleCompleted, markCompleted, mounted } = useProgress();
@@ -256,7 +258,7 @@ function IDELayout({
   }, [code, problem.functionName, problem.testCases, problem.compareMode, language, run]);
 
   const handleReview = useCallback(() => {
-    runReview({
+    startReview({
       problem,
       language,
       code,
@@ -264,7 +266,14 @@ function IDELayout({
       testCases: problem.testCases ?? [],
     });
     setMobileTab("output");
-  }, [runReview, problem, language, code, results]);
+  }, [startReview, problem, language, code, results]);
+
+  const handleSendReviewMessage = useCallback(
+    (text: string) => {
+      sendReviewMessage(text, language, code);
+    },
+    [sendReviewMessage, language, code],
+  );
 
   const handleReset = useCallback(() => {
     reset();
@@ -417,9 +426,11 @@ function IDELayout({
               error={error}
               isRunning={isRunning}
               isPythonLoading={isRunning && language === "python"}
-              review={review}
+              reviewMessages={reviewMessages}
               isReviewing={isReviewing}
               reviewError={reviewError}
+              onSendReviewMessage={handleSendReviewMessage}
+              onStopReview={stopReview}
             />
           </div>
         </div>

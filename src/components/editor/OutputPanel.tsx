@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { TestCase, TestResult } from "@/data/types";
+import type { ChatTurn } from "@/hooks/useCodeReview";
 
 type Tab = "results" | "console" | "review";
 
@@ -12,9 +13,11 @@ interface OutputPanelProps {
   error: string | null;
   isRunning: boolean;
   isPythonLoading?: boolean;
-  review: string | null;
+  reviewMessages: ChatTurn[];
   isReviewing: boolean;
   reviewError: string | null;
+  onSendReviewMessage: (text: string) => void;
+  onStopReview: () => void;
 }
 
 export default function OutputPanel({
@@ -24,12 +27,17 @@ export default function OutputPanel({
   error,
   isRunning,
   isPythonLoading,
-  review,
+  reviewMessages,
   isReviewing,
   reviewError,
+  onSendReviewMessage,
+  onStopReview,
 }: OutputPanelProps) {
   const [tab, setTab] = useState<Tab>("results");
   const prevReviewingRef = useRef(false);
+  const prevMsgCountRef = useRef(0);
+  const [chatInput, setChatInput] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // Auto-switch to Review tab when a review starts.
   useEffect(() => {
@@ -38,6 +46,26 @@ export default function OutputPanel({
     }
     prevReviewingRef.current = isReviewing;
   }, [isReviewing]);
+
+  // Auto-scroll on new tokens / new messages.
+  useEffect(() => {
+    if (tab !== "review") return;
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [reviewMessages, tab]);
+
+  // Auto-switch to review tab when a new chat message arrives.
+  useEffect(() => {
+    if (reviewMessages.length > prevMsgCountRef.current) {
+      setTab("review");
+    }
+    prevMsgCountRef.current = reviewMessages.length;
+  }, [reviewMessages.length]);
+
+  const handleSubmitChat = () => {
+    if (!chatInput.trim() || isReviewing) return;
+    onSendReviewMessage(chatInput);
+    setChatInput("");
+  };
 
   const passedCount = results?.filter((r) => r.passed).length ?? 0;
   const totalCount = results?.length ?? 0;
@@ -87,18 +115,24 @@ export default function OutputPanel({
               : "text-gray-500 hover:text-gray-300"
           }`}
         >
-          AI Review
+          AI Chat
           {isReviewing && (
             <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
           )}
-          {!isReviewing && review && (
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+          {!isReviewing && reviewMessages.length > 0 && (
+            <span className="text-violet-300/80">
+              {reviewMessages.filter((m) => m.role === "assistant").length}
+            </span>
           )}
         </button>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto px-4 py-3 text-sm font-mono">
+      <div
+        className={`flex-1 min-h-0 overflow-auto px-4 py-3 text-sm font-mono ${
+          tab === "review" ? "pb-0" : ""
+        }`}
+      >
         {isRunning && tab !== "review" && (
           <div className="flex items-center gap-2.5 text-medium">
             <svg
@@ -229,55 +263,95 @@ export default function OutputPanel({
         )}
 
         {tab === "review" && (
-          <>
+          <div className="space-y-3">
+            {reviewMessages.length === 0 && !isReviewing && !reviewError && (
+              <div className="text-gray-500">
+                Click <span className="text-violet-300 font-semibold">Review</span> to start a chat with the AI mentor.
+                <div className="text-gray-600 text-xs mt-1.5">
+                  After the first response you can ask follow-up questions below. Hints, not solutions.
+                </div>
+              </div>
+            )}
+
+            {reviewMessages.map((msg, i) => {
+              const text = msg.display ?? msg.content;
+              const isLast = i === reviewMessages.length - 1;
+              const showCursor = isReviewing && isLast && msg.role === "assistant";
+              if (msg.role === "user") {
+                return (
+                  <div key={i} className="flex justify-end">
+                    <div className="max-w-[85%] bg-violet-500/15 border border-violet-500/25 text-violet-100 rounded-lg px-3 py-2 text-[13px] font-sans whitespace-pre-wrap leading-relaxed">
+                      {text}
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div key={i} className="flex justify-start">
+                  <div className="max-w-[92%] text-foreground/85 text-[13px] font-sans whitespace-pre-wrap leading-relaxed">
+                    {text || (showCursor ? "" : "…")}
+                    {showCursor && (
+                      <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-violet-400 animate-pulse" />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
             {reviewError && (
               <div className="text-hard whitespace-pre-wrap text-xs leading-relaxed">
                 {reviewError}
               </div>
             )}
-            {!reviewError && review === null && !isReviewing && (
-              <div className="text-gray-500">
-                Click <span className="text-violet-300 font-semibold">Review</span> to have an AI mentor look over your code.
-                <div className="text-gray-600 text-xs mt-1.5">
-                  Hints, not solutions. First use prompts a puter.com sign-in.
-                </div>
-              </div>
-            )}
-            {!reviewError && isReviewing && !review && (
-              <div className="flex items-center gap-2.5 text-violet-300">
-                <svg
-                  className="w-4 h-4 animate-spin"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                <span>Reviewing your code...</span>
-              </div>
-            )}
-            {!reviewError && review !== null && review.length > 0 && (
-              <div className="text-foreground/85 whitespace-pre-wrap leading-relaxed text-[13px] font-sans">
-                {review}
-                {isReviewing && (
-                  <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-violet-400 animate-pulse" />
-                )}
-              </div>
-            )}
-          </>
+
+            <div ref={messagesEndRef} />
+          </div>
         )}
       </div>
+
+      {tab === "review" && reviewMessages.length > 0 && (
+        <div className="flex-shrink-0 border-t border-border/50 bg-[#0f0f1f] px-3 py-2">
+          <div className="flex items-end gap-2">
+            <textarea
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmitChat();
+                }
+              }}
+              placeholder={
+                isReviewing
+                  ? "Mentor is replying..."
+                  : "Ask a follow-up (Enter to send, Shift+Enter for newline)"
+              }
+              disabled={isReviewing}
+              rows={1}
+              className="flex-1 resize-none bg-[#151525] border border-border/50 rounded-md px-2.5 py-1.5 text-[13px] font-sans text-foreground placeholder:text-gray-600 focus:outline-none focus:border-violet-500/50 disabled:opacity-60 max-h-32"
+            />
+            {isReviewing ? (
+              <button
+                onClick={onStopReview}
+                className="px-3 py-1.5 text-xs font-semibold bg-hard/20 text-hard border border-hard/30 rounded-md hover:bg-hard/30 transition-colors"
+              >
+                Stop
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmitChat}
+                disabled={!chatInput.trim()}
+                className="px-3 py-1.5 text-xs font-semibold bg-violet-500/20 text-violet-200 border border-violet-500/30 rounded-md hover:bg-violet-500/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Send
+              </button>
+            )}
+          </div>
+          <div className="text-[10px] text-gray-600 mt-1 px-0.5">
+            Your current code is automatically attached to each follow-up.
+          </div>
+        </div>
+      )}
     </div>
   );
 }
