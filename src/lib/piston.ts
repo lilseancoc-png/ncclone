@@ -352,7 +352,7 @@ function buildPythonScript(
     "__results = []",
     "__console_output = []",
     `__compare_mode = ${JSON.stringify(compareMode)}`,
-    `__runner = ${JSON.stringify(runner ?? null)}`,
+    `__runner = json.loads(${JSON.stringify(JSON.stringify(runner ?? null))})`,
     "",
     "class __CaptureOutput:",
     "    def __init__(self):",
