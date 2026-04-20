@@ -7,6 +7,7 @@ import { useProgress } from "@/hooks/useProgress";
 import { hasSolution } from "@/data/solutions";
 import { useAdaptiveHints } from "@/hooks/useAdaptiveHints";
 import SolutionTab from "./SolutionTab";
+import ExampleVisual from "./ExampleVisual";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const PATTERN_COLORS: Record<string, string> = {
@@ -140,6 +141,7 @@ export default function ProblemDescription({
                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Examples
                 </h3>
+                <ExampleVisual problem={problem} category={category} />
                 {problem.testCases.slice(0, 3).map((tc) => (
                   <div
                     key={tc.id}
