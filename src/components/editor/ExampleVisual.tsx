@@ -13,6 +13,19 @@ import LinkedListViz from "@/components/visualizer/structures/LinkedListViz";
 import TreeViz from "@/components/visualizer/structures/TreeViz";
 import MatrixViz from "@/components/visualizer/structures/MatrixViz";
 
+// Colorize cells in a grid-style matrix so "0" vs "1", walls, rotten/fresh
+// oranges etc. read visually instead of as a wall of digits. Keys match the
+// highlight colors MatrixViz already knows about.
+function gridCellHighlight(cell: unknown): string | undefined {
+  if (cell === "1" || cell === 1) return "path";     // land / filled
+  if (cell === "0" || cell === 0) return "water";    // empty / water
+  if (cell === 2) return "rotten";                    // rotting oranges
+  if (cell === -1) return "wall";                     // walls & gates
+  if (cell === "X") return "wall";                    // surrounded regions
+  if (cell === "O") return "water";
+  return undefined;
+}
+
 // Figure out the best diagram to show for a problem's first example, based
 // on the runner metadata and category. Returns null when nothing fits
 // (e.g. class-ops design problems, pure-number inputs) — the Examples
@@ -82,7 +95,10 @@ function pickVisual(problem: Problem, category: Category): DataStructureState | 
     );
     if (looks2d && rows2d.length <= 12 && (rows2d[0] as unknown[]).length <= 12) {
       const rows: MatrixCellState[][] = rows2d.map((row) =>
-        (row as unknown[]).map((cell) => ({ value: cell as string | number }))
+        (row as unknown[]).map((cell) => ({
+          value: cell as string | number,
+          highlight: gridCellHighlight(cell),
+        }))
       );
       return { type: "matrix", label: "Example 1 input", rows };
     }
