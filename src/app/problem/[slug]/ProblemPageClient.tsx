@@ -265,10 +265,11 @@ function IDELayout({
       problem.functionName!,
       problem.testCases!,
       language,
-      problem.compareMode
+      problem.compareMode,
+      problem.runner
     );
     setMobileTab("output");
-  }, [code, problem.functionName, problem.testCases, problem.compareMode, language, run]);
+  }, [code, problem.functionName, problem.testCases, problem.compareMode, problem.runner, language, run]);
 
   const handleSubmit = useCallback(() => {
     submitInFlightRef.current = true;
@@ -280,10 +281,11 @@ function IDELayout({
       problem.functionName!,
       problem.testCases!,
       language,
-      problem.compareMode
+      problem.compareMode,
+      problem.runner
     );
     setMobileTab("output");
-  }, [code, problem.functionName, problem.testCases, problem.compareMode, language, run, clearComplexity]);
+  }, [code, problem.functionName, problem.testCases, problem.compareMode, problem.runner, language, run, clearComplexity]);
 
   const handleReview = useCallback(() => {
     startReview({
