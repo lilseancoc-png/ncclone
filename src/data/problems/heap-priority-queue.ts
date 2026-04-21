@@ -14,6 +14,7 @@ export const heapPriorityQueue: Category = {
       description:
         "Design a class that finds the kth largest element in a stream of numbers. Implement a constructor that accepts an integer k and an initial array, and an add method that accepts a new value and returns the kth largest element.",
       functionName: "KthLargest",
+      runner: { kind: "class-ops", className: "KthLargest" },
       starterCode: {
         javascript:
           "class KthLargest {\n  constructor(k, nums) {\n    \n  }\n\n  add(val) {\n    \n  }\n}",
@@ -227,6 +228,7 @@ export const heapPriorityQueue: Category = {
       description:
         "Design a simplified version of Twitter with postTweet, getNewsFeed (10 most recent tweets from user and followees), follow, and unfollow operations.",
       functionName: "Twitter",
+      runner: { kind: "class-ops", className: "Twitter" },
       starterCode: {
         javascript:
           "class Twitter {\n  constructor() {\n    \n  }\n\n  postTweet(userId, tweetId) {\n    \n  }\n\n  getNewsFeed(userId) {\n    \n  }\n\n  follow(followerId, followeeId) {\n    \n  }\n\n  unfollow(followerId, followeeId) {\n    \n  }\n}",
@@ -279,6 +281,7 @@ export const heapPriorityQueue: Category = {
       description:
         "Design a data structure that supports adding integers from a data stream and finding the median of all elements added so far. Implement addNum to add a number and findMedian to return the current median.",
       functionName: "MedianFinder",
+      runner: { kind: "class-ops", className: "MedianFinder" },
       starterCode: {
         javascript:
           "class MedianFinder {\n  constructor() {\n    \n  }\n\n  addNum(num) {\n    \n  }\n\n  findMedian() {\n    \n  }\n}",

@@ -248,6 +248,7 @@ export const binarySearch: Category = {
       description:
         "Design a time-based key-value data structure that can store multiple values for the same key at different timestamps and retrieve the value at a certain timestamp. Implement the TimeMap class with set(key, value, timestamp) and get(key, timestamp) methods. get should return the value with the largest timestamp <= the given timestamp.",
       functionName: "TimeMap",
+      runner: { kind: "class-ops", className: "TimeMap" },
       starterCode: {
         javascript:
           "class TimeMap {\n  constructor() {\n    \n  }\n\n  set(key, value, timestamp) {\n    \n  }\n\n  get(key, timestamp) {\n    \n  }\n}",

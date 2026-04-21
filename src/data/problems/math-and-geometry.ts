@@ -327,6 +327,7 @@ export const mathAndGeometry: Category = {
       description:
         "Design a data structure that supports adding points on the X-Y plane and counting the number of ways to form axis-aligned squares with a given query point.",
       functionName: "DetectSquares",
+      runner: { kind: "class-ops", className: "DetectSquares" },
       starterCode: {
         javascript:
           "class DetectSquares {\n  constructor() {\n    \n  }\n\n  add(point) {\n    \n  }\n\n  count(point) {\n    \n  }\n}",

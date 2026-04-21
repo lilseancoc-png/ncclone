@@ -14,6 +14,7 @@ export const tries: Category = {
       description:
         "Implement a Trie (prefix tree) with insert, search, and startsWith methods. Insert adds a word, search checks if a word exists, and startsWith checks if any word begins with the given prefix.",
       functionName: "Trie",
+      runner: { kind: "class-ops", className: "Trie" },
       starterCode: {
         javascript:
           "class Trie {\n  constructor() {\n    \n  }\n\n  insert(word) {\n    \n  }\n\n  search(word) {\n    \n  }\n\n  startsWith(prefix) {\n    \n  }\n}",
@@ -57,6 +58,7 @@ export const tries: Category = {
       description:
         "Design a data structure that supports adding words and searching for them. The search method can include '.' as a wildcard that matches any single character.",
       functionName: "WordDictionary",
+      runner: { kind: "class-ops", className: "WordDictionary" },
       starterCode: {
         javascript:
           "class WordDictionary {\n  constructor() {\n    \n  }\n\n  addWord(word) {\n    \n  }\n\n  search(word) {\n    \n  }\n}",

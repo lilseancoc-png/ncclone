@@ -61,6 +61,7 @@ export const stack: Category = {
       description:
         "Design a stack that supports push, pop, top, and retrieving the minimum element, all in O(1) time. Implement the MinStack class with methods: push(val), pop(), top(), and getMin().",
       functionName: "MinStack",
+      runner: { kind: "class-ops", className: "MinStack" },
       starterCode: {
         javascript:
           "class MinStack {\n  constructor() {\n    \n  }\n\n  push(val) {\n    \n  }\n\n  pop() {\n    \n  }\n\n  top() {\n    \n  }\n\n  getMin() {\n    \n  }\n}",
