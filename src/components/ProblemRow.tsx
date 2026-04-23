@@ -40,12 +40,26 @@ export default function ProblemRow({ problem }: { problem: Problem }) {
         )}
       </button>
 
-      <Link
-        href={`/problem/${problem.slug}`}
-        className="flex-1 text-sm text-foreground/90 hover:text-foreground transition-colors"
-      >
-        {problem.id}. {problem.title}
-      </Link>
+      <div className="flex-1 min-w-0">
+        <Link
+          href={`/problem/${problem.slug}`}
+          className="text-sm text-foreground/90 hover:text-foreground transition-colors"
+        >
+          {problem.id}. {problem.title}
+        </Link>
+        {problem.patterns && problem.patterns.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-0.5">
+            {problem.patterns.map((tag) => (
+              <span
+                key={tag}
+                className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-500 border border-white/5"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       <DifficultyBadge difficulty={problem.difficulty} />
 

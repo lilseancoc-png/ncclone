@@ -18,6 +18,9 @@ export default function CategorySection({
   const slugs = category.problems.map((p) => p.slug);
   const done = mounted ? completedInCategory(slugs) : 0;
   const total = category.problems.length;
+  const easyCount = category.problems.filter((p) => p.difficulty === "Easy").length;
+  const medCount = category.problems.filter((p) => p.difficulty === "Medium").length;
+  const hardCount = category.problems.filter((p) => p.difficulty === "Hard").length;
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden">
@@ -41,8 +44,13 @@ export default function CategorySection({
           />
         </svg>
         <span className="font-medium flex-1">{category.name}</span>
+        <span className="hidden sm:flex items-center gap-1.5 text-[10px] mr-2">
+          {easyCount > 0 && <span className="text-easy tabular-nums">{easyCount}E</span>}
+          {medCount > 0 && <span className="text-medium tabular-nums">{medCount}M</span>}
+          {hardCount > 0 && <span className="text-hard tabular-nums">{hardCount}H</span>}
+        </span>
         {mounted ? (
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-gray-400 tabular-nums">
             {done} / {total}
           </span>
         ) : (
