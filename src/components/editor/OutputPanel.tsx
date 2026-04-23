@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { TestCase, TestResult } from "@/data/types";
 import type { ChatTurn } from "@/hooks/useCodeReview";
+import MarkdownMessage from "@/components/editor/MarkdownMessage";
 
 type Tab = "results" | "console" | "review";
 
@@ -23,6 +24,7 @@ interface OutputPanelProps {
     result: TestResult,
     testCase: TestCase | undefined,
   ) => void;
+  onClearReview?: () => void;
   complexityReport: string;
   isComplexityLoading: boolean;
   complexityError: string | null;
@@ -42,6 +44,7 @@ export default function OutputPanel({
   onSendReviewMessage,
   onStopReview,
   onExplainFailure,
+  onClearReview,
   complexityReport,
   isComplexityLoading,
   complexityError,
@@ -52,7 +55,16 @@ export default function OutputPanel({
   const prevMsgCountRef = useRef(0);
   const [chatInput, setChatInput] = useState("");
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
   const stickToBottomRef = useRef(true);
+
+  // Auto-grow the chat textarea as the user types, up to max-h-32 (~128px).
+  useEffect(() => {
+    const el = chatInputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
+  }, [chatInput]);
 
   // Auto-switch to Review tab when a review starts.
   useEffect(() => {
@@ -149,6 +161,19 @@ export default function OutputPanel({
             </span>
           )}
         </button>
+
+        {tab === "review" &&
+          reviewMessages.length > 0 &&
+          !isReviewing &&
+          onClearReview && (
+            <button
+              onClick={onClearReview}
+              className="ml-auto px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 hover:text-violet-200 border border-transparent hover:border-violet-500/30 rounded transition-colors"
+              title="Clear the chat history"
+            >
+              Clear
+            </button>
+          )}
       </div>
 
       {/* Content */}
@@ -336,8 +361,12 @@ export default function OutputPanel({
               }
               return (
                 <div key={i} className="flex justify-start">
-                  <div className="max-w-[92%] text-foreground/85 text-[13px] font-sans whitespace-pre-wrap leading-relaxed">
-                    {text || (showCursor ? "" : "…")}
+                  <div className="max-w-[92%] text-foreground/85 text-[13px] font-sans leading-relaxed space-y-1.5">
+                    {text ? (
+                      <MarkdownMessage text={text} />
+                    ) : (
+                      !showCursor && <span>…</span>
+                    )}
                     {showCursor && (
                       <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-violet-400 animate-pulse" />
                     )}
@@ -360,6 +389,7 @@ export default function OutputPanel({
         <div className="flex-shrink-0 border-t border-border/50 bg-[#0f0f1f] px-3 py-2">
           <div className="flex items-end gap-2">
             <textarea
+              ref={chatInputRef}
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => {
@@ -375,7 +405,7 @@ export default function OutputPanel({
               }
               disabled={isReviewing}
               rows={1}
-              className="flex-1 resize-none bg-[#151525] border border-border/50 rounded-md px-2.5 py-1.5 text-[13px] font-sans text-foreground placeholder:text-gray-600 focus:outline-none focus:border-violet-500/50 disabled:opacity-60 max-h-32"
+              className="flex-1 resize-none bg-[#151525] border border-border/50 rounded-md px-2.5 py-1.5 text-[13px] font-sans text-foreground placeholder:text-gray-600 focus:outline-none focus:border-violet-500/50 disabled:opacity-60 max-h-32 overflow-y-auto"
             />
             {isReviewing ? (
               <button

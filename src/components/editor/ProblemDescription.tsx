@@ -9,6 +9,7 @@ import { useAdaptiveHints } from "@/hooks/useAdaptiveHints";
 import SolutionTab from "./SolutionTab";
 import ExampleVisual from "./ExampleVisual";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import MarkdownMessage from "@/components/editor/MarkdownMessage";
 
 const PATTERN_COLORS: Record<string, string> = {
   "Hash Map": "bg-blue-500/15 text-blue-400 border-blue-500/30",
@@ -190,9 +191,13 @@ export default function ProblemDescription({
                           <span className="text-[10px] font-bold text-gray-500 mt-0.5 shrink-0">
                             {i + 1}.
                           </span>
-                          <p className="text-sm text-foreground/75 leading-relaxed whitespace-pre-wrap">
-                            {hint}
-                          </p>
+                          <div className="text-sm text-foreground/75 leading-relaxed flex-1 min-w-0">
+                            {usedFallback ? (
+                              <p className="whitespace-pre-wrap">{hint}</p>
+                            ) : (
+                              <MarkdownMessage text={hint} />
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -205,10 +210,12 @@ export default function ProblemDescription({
                           <span className="text-[10px] font-bold text-violet-300 mt-0.5 shrink-0">
                             {hints.length + 1}.
                           </span>
-                          <p className="text-sm text-foreground/75 leading-relaxed whitespace-pre-wrap">
-                            {streamingHint}
+                          <div className="text-sm text-foreground/75 leading-relaxed flex-1 min-w-0">
+                            {streamingHint ? (
+                              <MarkdownMessage text={streamingHint} />
+                            ) : null}
                             <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-violet-400 animate-pulse" />
-                          </p>
+                          </div>
                         </div>
                       </div>
                     </div>

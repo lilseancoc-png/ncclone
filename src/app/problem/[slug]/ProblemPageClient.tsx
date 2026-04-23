@@ -485,6 +485,7 @@ function IDELayout({
               onSendReviewMessage={handleSendReviewMessage}
               onStopReview={stopReview}
               onExplainFailure={handleExplainFailure}
+              onClearReview={clearReview}
               complexityReport={complexityReport}
               isComplexityLoading={isComplexityLoading}
               complexityError={complexityError}

@@ -303,6 +303,18 @@ const PYTHON_SNIPPETS: SnippetDef[] = [
     documentation: "Requires: from functools import cache",
   },
   {
+    label: "matrix",
+    detail: "m x n grid of zeros",
+    body: "${1:grid} = [[0] * ${2:n} for _ in range(${3:m})]",
+    aliases: ["grid", "2d"],
+  },
+  {
+    label: "dirs",
+    detail: "4-direction deltas",
+    body: "${1:dirs} = [(-1, 0), (1, 0), (0, -1), (0, 1)]",
+    aliases: ["directions", "deltas"],
+  },
+  {
     label: "imp",
     detail: "Common LeetCode imports",
     body: [
@@ -544,6 +556,18 @@ const JS_SNIPPETS: SnippetDef[] = [
     ].join("\n"),
     aliases: ["cache"],
   },
+  {
+    label: "matrix",
+    detail: "m x n grid of zeros",
+    body: "const ${1:grid} = Array.from({ length: ${2:m} }, () => new Array(${3:n}).fill(0));",
+    aliases: ["grid", "2d"],
+  },
+  {
+    label: "dirs",
+    detail: "4-direction deltas",
+    body: "const ${1:dirs} = [[-1, 0], [1, 0], [0, -1], [0, 1]];",
+    aliases: ["directions", "deltas"],
+  },
 ];
 
 const JAVA_SNIPPETS: SnippetDef[] = [
@@ -764,6 +788,24 @@ const JAVA_SNIPPETS: SnippetDef[] = [
     aliases: ["println", "print"],
   },
   {
+    label: "matrix2d",
+    detail: "m x n int grid",
+    body: "int[][] ${1:grid} = new int[${2:m}][${3:n}];",
+    aliases: ["grid", "2d"],
+  },
+  {
+    label: "dirs",
+    detail: "4-direction deltas",
+    body: "int[][] ${1:dirs} = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};",
+    aliases: ["directions", "deltas"],
+  },
+  {
+    label: "sb",
+    detail: "StringBuilder",
+    body: "StringBuilder ${1:sb} = new StringBuilder();",
+    aliases: ["stringbuilder"],
+  },
+  {
     label: "imp",
     detail: "Common LeetCode imports",
     body: "import java.util.*;\n$0",
@@ -980,6 +1022,12 @@ const CPP_SNIPPETS: SnippetDef[] = [
       "$0",
     ].join("\n"),
     aliases: ["dsu", "disjointset", "uf"],
+  },
+  {
+    label: "dirs",
+    detail: "4-direction deltas",
+    body: "int ${1:dirs}[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};",
+    aliases: ["directions", "deltas"],
   },
   {
     label: "imp",
