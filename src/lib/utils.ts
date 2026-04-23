@@ -18,7 +18,7 @@ export function getAdjacentProblems(categories: Category[], slug: string) {
     if (idx === -1) continue;
     const prev = idx > 0 ? category.problems[idx - 1] : null;
     const next = idx < category.problems.length - 1 ? category.problems[idx + 1] : null;
-    return { prev, next };
+    return { prev, next, position: idx + 1, total: category.problems.length };
   }
-  return { prev: null, next: null };
+  return { prev: null, next: null, position: 0, total: 0 };
 }

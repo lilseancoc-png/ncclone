@@ -42,7 +42,11 @@ export default function EditorToolbar({
           {isMac ? "\u2318" : "Ctrl"}+Enter
         </kbd>
         <button
-          onClick={onReset}
+          onClick={() => {
+            if (window.confirm("Reset to starter code? Your current code will be lost.")) {
+              onReset();
+            }
+          }}
           className="px-3 py-1.5 text-xs text-gray-400 hover:text-foreground border border-border/50 rounded-md hover:bg-card-hover transition-colors"
         >
           Reset

@@ -103,9 +103,19 @@ export default function OutputPanel({
     setChatInput("");
   };
 
+  // Auto-focus the chat input once the assistant finishes replying.
+  useEffect(() => {
+    if (!isReviewing && prevReviewingRef.current && reviewMessages.length > 0) {
+      setTimeout(() => chatInputRef.current?.focus(), 50);
+    }
+  }, [isReviewing, reviewMessages.length]);
+
+  const [showOnlyFailing, setShowOnlyFailing] = useState(false);
+
   const passedCount = results?.filter((r) => r.passed).length ?? 0;
   const totalCount = results?.length ?? 0;
   const allPassed = totalCount > 0 && passedCount === totalCount;
+  const failedCount = totalCount - passedCount;
 
   return (
     <div className="flex flex-col h-full bg-[#151525]">
@@ -247,7 +257,20 @@ export default function OutputPanel({
                       onDismiss={onDismissComplexity}
                     />
                   )}
+
+                {failedCount > 0 && failedCount < totalCount && (
+                  <button
+                    onClick={() => setShowOnlyFailing((v) => !v)}
+                    className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 hover:text-foreground transition-colors"
+                  >
+                    {showOnlyFailing
+                      ? `Show all ${totalCount} tests`
+                      : `Show only ${failedCount} failing`}
+                  </button>
+                )}
+
                 {results.map((result, i) => {
+                  if (showOnlyFailing && result.passed) return null;
                   const tc = testCases.find((t) => t.id === result.testCaseId);
                   return (
                     <div
@@ -291,23 +314,30 @@ export default function OutputPanel({
                         )}
                       </div>
                       {tc && (
-                        <div className="text-xs text-gray-400 mb-1 font-mono">
-                          {tc.input}
+                        <div className="group text-xs text-gray-400 mb-1 font-mono flex items-start gap-1">
+                          <span className="flex-1 break-all">{tc.input}</span>
+                          <CopyBadge text={tc.input} />
                         </div>
                       )}
                       {!result.passed && (
                         <div className="text-xs space-y-0.5 mt-1.5">
-                          <div className="text-gray-400">
-                            Expected:{" "}
-                            <span className="text-easy font-mono">
-                              {JSON.stringify(result.expected)}
+                          <div className="group text-gray-400 flex items-start gap-1">
+                            <span className="flex-1">
+                              Expected:{" "}
+                              <span className="text-easy font-mono">
+                                {JSON.stringify(result.expected)}
+                              </span>
                             </span>
+                            <CopyBadge text={JSON.stringify(result.expected)} />
                           </div>
-                          <div className="text-gray-400">
-                            Got:{" "}
-                            <span className="text-hard font-mono">
-                              {result.error || JSON.stringify(result.actual)}
+                          <div className="group text-gray-400 flex items-start gap-1">
+                            <span className="flex-1">
+                              Got:{" "}
+                              <span className="text-hard font-mono">
+                                {result.error || JSON.stringify(result.actual)}
+                              </span>
                             </span>
+                            <CopyBadge text={result.error || JSON.stringify(result.actual)} />
                           </div>
                         </div>
                       )}
@@ -430,6 +460,25 @@ export default function OutputPanel({
         </div>
       )}
     </div>
+  );
+}
+
+function CopyBadge({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1200);
+        } catch { /* clipboard not available */ }
+      }}
+      className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-gray-500 hover:text-violet-200 border border-transparent hover:border-violet-500/30 rounded transition-all"
+      title="Copy to clipboard"
+    >
+      {copied ? "Copied" : "Copy"}
+    </button>
   );
 }
 
