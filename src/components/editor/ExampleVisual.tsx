@@ -12,6 +12,7 @@ import ArrayViz from "@/components/visualizer/structures/ArrayViz";
 import LinkedListViz from "@/components/visualizer/structures/LinkedListViz";
 import TreeViz from "@/components/visualizer/structures/TreeViz";
 import MatrixViz from "@/components/visualizer/structures/MatrixViz";
+import BarChartViz from "@/components/visualizer/structures/BarChartViz";
 
 // Colorize cells in a grid-style matrix so "0" vs "1", walls, rotten/fresh
 // oranges etc. read visually instead of as a wall of digits. Keys match the
@@ -26,11 +27,110 @@ function gridCellHighlight(cell: unknown): string | undefined {
   return undefined;
 }
 
+// Problem-specific annotated diagrams. Returns null when the slug has no
+// custom visual, so pickVisual falls through to the generic renderers.
+function customVisual(problem: Problem): DataStructureState | null {
+  const first = problem.testCases?.[0]?.inputArgs?.[0];
+  if (!Array.isArray(first) || first.length === 0 || first.length > 20) return null;
+  if (!first.every((v) => typeof v === "number")) return null;
+  const values = first as number[];
+
+  switch (problem.slug) {
+    case "best-time-to-buy-and-sell-stock": {
+      let minIdx = 0;
+      let buy = 0;
+      let sell = 0;
+      let profit = 0;
+      for (let i = 1; i < values.length; i++) {
+        if (values[i] - values[minIdx] > profit) {
+          profit = values[i] - values[minIdx];
+          buy = minIdx;
+          sell = i;
+        }
+        if (values[i] < values[minIdx]) minIdx = i;
+      }
+      if (profit === 0) {
+        return {
+          type: "barchart",
+          label: "Example 1 — prices",
+          values,
+          caption: "Prices only decline — no profitable trade (max profit = 0)",
+        };
+      }
+      return {
+        type: "barchart",
+        label: "Example 1 — prices",
+        values,
+        barColors: { [buy]: "buy", [sell]: "sell" },
+        topLabels: { [buy]: "buy", [sell]: "sell" },
+        caption: `Buy day ${buy} ($${values[buy]}) → sell day ${sell} ($${values[sell]}) · profit = ${profit}`,
+      };
+    }
+
+    case "container-with-most-water": {
+      let l = 0;
+      let r = values.length - 1;
+      let best = 0;
+      let bestL = 0;
+      let bestR = values.length - 1;
+      while (l < r) {
+        const area = Math.min(values[l], values[r]) * (r - l);
+        if (area > best) {
+          best = area;
+          bestL = l;
+          bestR = r;
+        }
+        if (values[l] < values[r]) l++;
+        else r--;
+      }
+      const level = Math.min(values[bestL], values[bestR]);
+      return {
+        type: "barchart",
+        label: "Example 1 — heights",
+        values,
+        barColors: { [bestL]: "container", [bestR]: "container" },
+        topLabels: { [bestL]: "left", [bestR]: "right" },
+        containerBetween: { left: bestL, right: bestR, level },
+        caption: `Best: min(${values[bestL]}, ${values[bestR]}) × ${bestR - bestL} = ${best}`,
+      };
+    }
+
+    case "trapping-rain-water": {
+      const n = values.length;
+      if (n < 3) return null;
+      const leftMax = new Array<number>(n);
+      const rightMax = new Array<number>(n);
+      leftMax[0] = values[0];
+      for (let i = 1; i < n; i++) leftMax[i] = Math.max(leftMax[i - 1], values[i]);
+      rightMax[n - 1] = values[n - 1];
+      for (let i = n - 2; i >= 0; i--) rightMax[i] = Math.max(rightMax[i + 1], values[i]);
+      const waterMask = new Array<number>(n);
+      let total = 0;
+      for (let i = 0; i < n; i++) {
+        waterMask[i] = Math.max(0, Math.min(leftMax[i], rightMax[i]) - values[i]);
+        total += waterMask[i];
+      }
+      return {
+        type: "barchart",
+        label: "Example 1 — elevation",
+        values,
+        waterMask,
+        caption: `Water trapped = ${total} (shaded in cyan)`,
+      };
+    }
+  }
+
+  return null;
+}
+
 // Figure out the best diagram to show for a problem's first example, based
 // on the runner metadata and category. Returns null when nothing fits
 // (e.g. class-ops design problems, pure-number inputs) — the Examples
 // section alone is clearer in those cases.
 function pickVisual(problem: Problem, category: Category): DataStructureState | null {
+  const custom = customVisual(problem);
+  if (custom) return custom;
+
   const tc = problem.testCases?.[0];
   if (!tc) return null;
   const args = tc.inputArgs;
@@ -132,6 +232,8 @@ function RenderVisual({ state }: { state: DataStructureState }) {
       return <TreeViz state={state} />;
     case "matrix":
       return <MatrixViz state={state} />;
+    case "barchart":
+      return <BarChartViz state={state} />;
     default:
       return null;
   }

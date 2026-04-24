@@ -183,6 +183,21 @@ export interface GraphVisualState {
   directed?: boolean;
 }
 
+// Bar chart for numeric arrays where the shape *is* the point (stock prices,
+// heights, elevation). Supports annotated bars ("buy"/"sell"), a shaded
+// container between two columns (two-pointer area problems), and per-column
+// water overlays (trapping-rain-water).
+export interface BarChartVisualState {
+  type: "barchart";
+  label?: string;
+  values: number[];
+  barColors?: Record<number, string>;  // index -> color key ("buy", "sell", "container", …)
+  topLabels?: Record<number, string>;  // index -> label drawn above the bar
+  waterMask?: number[];                // water depth per column
+  containerBetween?: { left: number; right: number; level: number };
+  caption?: string;
+}
+
 export type DataStructureState =
   | ArrayVisualState
   | SetVisualState
@@ -192,7 +207,8 @@ export type DataStructureState =
   | TreeVisualState
   | LinkedListVisualState
   | MatrixVisualState
-  | GraphVisualState;
+  | GraphVisualState
+  | BarChartVisualState;
 
 export interface AnimationStep {
   description: string;
