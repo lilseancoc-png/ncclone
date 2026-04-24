@@ -4,6 +4,7 @@ export interface ExecutionResult {
   results: TestResult[];
   consoleOutput: string[];
   error?: string;
+  executionMs?: number;
 }
 
 function extractPythonFunctionName(code: string): string | null {
@@ -31,9 +32,12 @@ function executeJavaScriptInWorker(
       "use strict";
       const __consoleOutput = [];
       const __origLog = console.log;
-      console.log = (...args) => __consoleOutput.push(
-        args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')
-      );
+      const __origWarn = console.warn;
+      const __origError = console.error;
+      const __fmt = (args) => args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+      console.log = (...args) => __consoleOutput.push(__fmt(args));
+      console.warn = (...args) => __consoleOutput.push('[warn] ' + __fmt(args));
+      console.error = (...args) => __consoleOutput.push('[error] ' + __fmt(args));
 
       const __compareMode = ${JSON.stringify(compareMode)};
       const __runner = ${JSON.stringify(runner ?? null)};
@@ -213,18 +217,22 @@ function executeJavaScriptInWorker(
 
         const __testCases = ${testCasesJson};
         const __results = [];
+        const __t0 = performance.now();
 
         for (const tc of __testCases) {
           try {
+            const __ts = performance.now();
             const actual = __runTest(tc);
+            const __dur = performance.now() - __ts;
             const passed = __isEqual(actual, tc.expected);
-            __results.push({ testCaseId: tc.id, passed, actual, expected: tc.expected });
+            __results.push({ testCaseId: tc.id, passed, actual, expected: tc.expected, durationMs: __dur });
           } catch (e) {
             __results.push({ testCaseId: tc.id, passed: false, actual: null, expected: tc.expected, error: e.message });
           }
         }
 
-        postMessage({ results: __results, consoleOutput: __consoleOutput });
+        const __totalMs = performance.now() - __t0;
+        postMessage({ results: __results, consoleOutput: __consoleOutput, executionMs: __totalMs });
       } catch (e) {
         postMessage({ results: [], consoleOutput: __consoleOutput, error: e.message });
       }
@@ -259,6 +267,7 @@ function executeJavaScriptInWorker(
         results: data.results || [],
         consoleOutput: data.consoleOutput || [],
         error: data.error,
+        executionMs: data.executionMs,
       });
     };
 
@@ -283,7 +292,7 @@ function buildPythonScript(
   // Build the Python test harness as a plain string.
   // Lines are joined with real newlines. No JS template literal nesting issues.
   const lines = [
-    "import json, sys, io",
+    "import json, sys, io, time",
     "",
     "class ListNode:",
     "    def __init__(self, val=0, next=None):",
@@ -467,16 +476,20 @@ function buildPythonScript(
     "        return result",
     "    return __fn(*tc['args'])",
     "",
+    "__t0 = time.perf_counter()",
     "for tc in __test_cases:",
     "    try:",
+    "        __ts = time.perf_counter()",
     "        with __CaptureOutput():",
     "            actual = __run_test(tc)",
+    "        __dur = (time.perf_counter() - __ts) * 1000",
     "        passed = __is_equal(actual, tc['expected'])",
-    "        __results.append({'testCaseId': tc['id'], 'passed': passed, 'actual': __to_jsonable(actual), 'expected': tc['expected']})",
+    "        __results.append({'testCaseId': tc['id'], 'passed': passed, 'actual': __to_jsonable(actual), 'expected': tc['expected'], 'durationMs': __dur})",
     "    except Exception as e:",
     "        __results.append({'testCaseId': tc['id'], 'passed': False, 'actual': None, 'expected': tc['expected'], 'error': str(e)})",
     "",
-    "json.dumps({'results': __results, 'consoleOutput': __console_output}, default=str)",
+    "__total_ms = (time.perf_counter() - __t0) * 1000",
+    "json.dumps({'results': __results, 'consoleOutput': __console_output, 'executionMs': __total_ms}, default=str)",
   ];
   return lines.join("\n");
 }
@@ -510,7 +523,7 @@ function executePythonInWorker(
           pyodide.globals.set("__test_cases_json", testCasesJson);
           const resultJson = pyodide.runPython(pythonScript);
           const parsed = JSON.parse(resultJson);
-          postMessage({ results: parsed.results || [], consoleOutput: parsed.consoleOutput || [] });
+          postMessage({ results: parsed.results || [], consoleOutput: parsed.consoleOutput || [], executionMs: parsed.executionMs });
         } catch (e) {
           postMessage({ results: [], consoleOutput: [], error: e.message || String(e) });
         }
@@ -552,6 +565,7 @@ function executePythonInWorker(
         results: data.results || [],
         consoleOutput: data.consoleOutput || [],
         error: data.error,
+        executionMs: data.executionMs,
       });
     };
 

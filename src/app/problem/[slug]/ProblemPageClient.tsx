@@ -207,7 +207,7 @@ function IDELayout({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const starterCode = problem.starterCode?.[language] || "";
   const { code, setCode, reset } = useCodeDrafts(slug, language, starterCode);
-  const { run, results, consoleOutput, isRunning, error, clear } = useCodeRunner();
+  const { run, results, consoleOutput, isRunning, error, executionMs, clear } = useCodeRunner();
   const {
     messages: reviewMessages,
     isReviewing,
@@ -466,6 +466,7 @@ function IDELayout({
             isRunning={isRunning && !isSubmitting}
             isSubmitting={isSubmitting}
             isReviewing={isReviewing}
+            leetcodeUrl={problem.leetcodeUrl}
           />
 
           {/* Editor */}
@@ -501,6 +502,8 @@ function IDELayout({
               error={error}
               isRunning={isRunning}
               isPythonLoading={isRunning && language === "python"}
+              executionMs={executionMs}
+              language={language}
               reviewMessages={reviewMessages}
               isReviewing={isReviewing}
               reviewError={reviewError}

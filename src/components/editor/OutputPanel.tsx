@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { TestCase, TestResult } from "@/data/types";
+import { TestCase, TestResult, Language } from "@/data/types";
 import type { ChatTurn } from "@/hooks/useCodeReview";
 import MarkdownMessage from "@/components/editor/MarkdownMessage";
 
@@ -14,6 +14,8 @@ interface OutputPanelProps {
   error: string | null;
   isRunning: boolean;
   isPythonLoading?: boolean;
+  executionMs?: number | null;
+  language?: Language;
   reviewMessages: ChatTurn[];
   isReviewing: boolean;
   reviewError: string | null;
@@ -38,6 +40,8 @@ export default function OutputPanel({
   error,
   isRunning,
   isPythonLoading,
+  executionMs,
+  language,
   reviewMessages,
   isReviewing,
   reviewError,
@@ -246,6 +250,16 @@ export default function OutputPanel({
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     All test cases passed!
+                    {executionMs != null && (
+                      <span className="text-xs text-gray-400 font-normal ml-auto tabular-nums">
+                        {executionMs < 1 ? "<1" : Math.round(executionMs)} ms
+                      </span>
+                    )}
+                  </div>
+                )}
+                {!allPassed && executionMs != null && (
+                  <div className="text-[10px] text-gray-500 tabular-nums">
+                    Executed in {executionMs < 1 ? "<1" : Math.round(executionMs)} ms
                   </div>
                 )}
                 {allPassed &&
@@ -299,6 +313,11 @@ export default function OutputPanel({
                         >
                           {result.passed ? "PASS" : "FAIL"}
                         </span>
+                        {result.durationMs != null && (
+                          <span className="text-[10px] text-gray-600 tabular-nums">
+                            {result.durationMs < 0.1 ? "<0.1" : result.durationMs.toFixed(1)} ms
+                          </span>
+                        )}
                         {!result.passed && onExplainFailure && (
                           <button
                             onClick={() => onExplainFailure(i + 1, result, tc)}
@@ -358,7 +377,16 @@ export default function OutputPanel({
               <div className="text-gray-500">No console output</div>
             )}
             {consoleOutput.map((line, i) => (
-              <div key={i} className="text-foreground/80 leading-relaxed">
+              <div
+                key={i}
+                className={`leading-relaxed ${
+                  line.startsWith("[error]")
+                    ? "text-hard"
+                    : line.startsWith("[warn]")
+                      ? "text-medium"
+                      : "text-foreground/80"
+                }`}
+              >
                 {line}
               </div>
             ))}

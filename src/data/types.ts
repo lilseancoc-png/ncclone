@@ -82,6 +82,7 @@ export interface TestResult {
   actual: unknown;
   expected: unknown;
   error?: string;
+  durationMs?: number;
 }
 
 // ---- Algorithm Visualization Types ----

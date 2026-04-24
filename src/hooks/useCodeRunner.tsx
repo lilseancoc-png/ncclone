@@ -9,6 +9,7 @@ export function useCodeRunner() {
   const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [executionMs, setExecutionMs] = useState<number | null>(null);
 
   const run = useCallback(
     async (
@@ -23,6 +24,7 @@ export function useCodeRunner() {
       setError(null);
       setResults(null);
       setConsoleOutput([]);
+      setExecutionMs(null);
 
       try {
         const result: ExecutionResult = await executeCode(
@@ -35,6 +37,7 @@ export function useCodeRunner() {
         );
         setResults(result.results);
         setConsoleOutput(result.consoleOutput);
+        if (result.executionMs != null) setExecutionMs(result.executionMs);
         if (result.error) setError(result.error);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Execution failed");
@@ -49,7 +52,8 @@ export function useCodeRunner() {
     setResults(null);
     setConsoleOutput([]);
     setError(null);
+    setExecutionMs(null);
   }, []);
 
-  return { run, results, consoleOutput, isRunning, error, clear };
+  return { run, results, consoleOutput, isRunning, error, executionMs, clear };
 }
