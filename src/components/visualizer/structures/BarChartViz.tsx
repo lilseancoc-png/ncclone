@@ -6,7 +6,8 @@ const BAR_COLORS: Record<string, { fill: string; stroke: string }> = {
   buy: { fill: "rgba(16, 185, 129, 0.75)", stroke: "#10b981" },
   sell: { fill: "rgba(244, 63, 94, 0.75)", stroke: "#f43f5e" },
   container: { fill: "rgba(59, 130, 246, 0.75)", stroke: "#3b82f6" },
-  max: { fill: "rgba(168, 85, 247, 0.75)", stroke: "#a855f7" },
+  max: { fill: "rgba(168, 85, 247, 0.8)", stroke: "#c084fc" },
+  dim: { fill: "rgba(100, 116, 139, 0.35)", stroke: "#64748b" },
   default: { fill: "rgba(100, 116, 139, 0.55)", stroke: "#94a3b8" },
 };
 
@@ -14,7 +15,8 @@ const LABEL_COLORS: Record<string, string> = {
   buy: "fill-emerald-400",
   sell: "fill-rose-400",
   container: "fill-blue-400",
-  max: "fill-violet-400",
+  max: "fill-violet-300",
+  dim: "fill-gray-500",
   default: "fill-gray-400",
 };
 
@@ -22,11 +24,10 @@ export default function BarChartViz({ state }: { state: BarChartVisualState }) {
   const values = state.values;
   if (!values.length) return null;
 
-  const maxBarValue = Math.max(
-    ...values,
-    ...(state.waterMask?.map((w, i) => (values[i] ?? 0) + w) ?? [0]),
-    1,
-  );
+  const waterTops = state.waterMask?.map((w, i) => (values[i] ?? 0) + (w ?? 0)) ?? [];
+  const yMax = Math.max(0, ...values, ...waterTops, 1);
+  const yMin = Math.min(0, ...values);
+  const yRange = yMax - yMin || 1;
 
   const barWidth = 24;
   const barGap = 5;
@@ -38,12 +39,13 @@ export default function BarChartViz({ state }: { state: BarChartVisualState }) {
   const totalH = marginTop + plotH + marginBottom;
   const totalW = marginLeft + marginRight + values.length * barWidth;
 
-  const yFor = (v: number) => marginTop + plotH - (v / maxBarValue) * plotH;
+  const yFor = (v: number) => marginTop + ((yMax - v) / yRange) * plotH;
   const xFor = (i: number) => marginLeft + i * barWidth + barGap / 2;
   const barInner = barWidth - barGap;
   const baseline = yFor(0);
 
   const container = state.containerBetween;
+  const range = state.highlightRange;
 
   return (
     <div className="space-y-1.5">
@@ -51,6 +53,22 @@ export default function BarChartViz({ state }: { state: BarChartVisualState }) {
         <div className="text-[11px] text-gray-400 font-mono">{state.label}</div>
       )}
       <svg width={totalW} height={totalH} className="overflow-visible">
+        {/* Subarray/window range overlay — drawn behind the bars */}
+        {range && (
+          <rect
+            x={xFor(range.start) - barGap / 2}
+            y={marginTop}
+            width={
+              xFor(range.end) + barInner - xFor(range.start) + barGap
+            }
+            height={plotH}
+            fill={range.color ?? "rgba(168, 85, 247, 0.14)"}
+            stroke={range.color ? undefined : "rgba(168, 85, 247, 0.35)"}
+            strokeDasharray="3 3"
+            rx={3}
+          />
+        )}
+
         {/* Trapping-rain water columns, sitting on top of each bar */}
         {state.waterMask?.map((w, i) => {
           if (!w || w <= 0) return null;
@@ -87,18 +105,20 @@ export default function BarChartViz({ state }: { state: BarChartVisualState }) {
         {values.map((v, i) => {
           const colorKey = state.barColors?.[i] ?? "default";
           const c = BAR_COLORS[colorKey] ?? BAR_COLORS.default;
-          const y = yFor(v);
-          const h = baseline - y;
+          const y0 = yFor(v);
+          const top = Math.min(y0, baseline);
+          const bottom = Math.max(y0, baseline);
           const cx = xFor(i) + barInner / 2;
           const topLabel = state.topLabels?.[i];
           const labelColor = LABEL_COLORS[colorKey] ?? LABEL_COLORS.default;
+          const valueLabelY = v >= 0 ? y0 - 3 : y0 + 10;
           return (
             <g key={i}>
               <rect
                 x={xFor(i)}
-                y={y}
+                y={top}
                 width={barInner}
-                height={h}
+                height={Math.max(1, bottom - top)}
                 fill={c.fill}
                 stroke={c.stroke}
                 strokeWidth={1}
@@ -106,7 +126,7 @@ export default function BarChartViz({ state }: { state: BarChartVisualState }) {
               />
               <text
                 x={cx}
-                y={y - 3}
+                y={valueLabelY}
                 textAnchor="middle"
                 fontSize={9}
                 className="fill-gray-400 font-mono"
@@ -137,7 +157,7 @@ export default function BarChartViz({ state }: { state: BarChartVisualState }) {
           );
         })}
 
-        {/* x-axis baseline */}
+        {/* x-axis baseline (zero line) */}
         <line
           x1={marginLeft}
           x2={totalW - marginRight}

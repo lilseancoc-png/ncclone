@@ -93,6 +93,7 @@ export interface ArrayVisualState {
   values: (string | number | boolean)[];
   highlights?: Record<number, string>;
   pointers?: { index: number; label: string; color?: string }[];
+  caption?: string;
 }
 
 export interface SetVisualState {
@@ -185,8 +186,10 @@ export interface GraphVisualState {
 
 // Bar chart for numeric arrays where the shape *is* the point (stock prices,
 // heights, elevation). Supports annotated bars ("buy"/"sell"), a shaded
-// container between two columns (two-pointer area problems), and per-column
-// water overlays (trapping-rain-water).
+// container between two columns (two-pointer area problems), per-column
+// water overlays (trapping-rain-water), and a translucent range overlay
+// for subarray/window problems. Handles negative values via a signed
+// y-axis around zero.
 export interface BarChartVisualState {
   type: "barchart";
   label?: string;
@@ -195,6 +198,7 @@ export interface BarChartVisualState {
   topLabels?: Record<number, string>;  // index -> label drawn above the bar
   waterMask?: number[];                // water depth per column
   containerBetween?: { left: number; right: number; level: number };
+  highlightRange?: { start: number; end: number; color?: string; label?: string };
   caption?: string;
 }
 

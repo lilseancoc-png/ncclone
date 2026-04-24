@@ -118,6 +118,178 @@ function customVisual(problem: Problem): DataStructureState | null {
         caption: `Water trapped = ${total} (shaded in cyan)`,
       };
     }
+
+    case "maximum-subarray": {
+      // Kadane's: find the contiguous subarray with the largest sum.
+      let bestSum = values[0];
+      let bestStart = 0;
+      let bestEnd = 0;
+      let curSum = values[0];
+      let curStart = 0;
+      for (let i = 1; i < values.length; i++) {
+        if (curSum < 0) {
+          curSum = values[i];
+          curStart = i;
+        } else {
+          curSum += values[i];
+        }
+        if (curSum > bestSum) {
+          bestSum = curSum;
+          bestStart = curStart;
+          bestEnd = i;
+        }
+      }
+      const barColors: Record<number, string> = {};
+      for (let i = 0; i < values.length; i++) {
+        barColors[i] = i >= bestStart && i <= bestEnd ? "max" : "dim";
+      }
+      const slice = values.slice(bestStart, bestEnd + 1);
+      return {
+        type: "barchart",
+        label: "Example 1 — nums",
+        values,
+        barColors,
+        highlightRange: { start: bestStart, end: bestEnd },
+        caption: `Max subarray = [${slice.join(", ")}] (indices ${bestStart}–${bestEnd}) · sum = ${bestSum}`,
+      };
+    }
+
+    case "sliding-window-maximum": {
+      const k = problem.testCases?.[0]?.inputArgs?.[1];
+      if (typeof k !== "number" || k <= 0 || k > values.length) return null;
+      // Show the first window shaded with its max bar highlighted, plus
+      // the full per-window output list in the caption.
+      let firstMaxIdx = 0;
+      for (let i = 1; i < k; i++) {
+        if (values[i] > values[firstMaxIdx]) firstMaxIdx = i;
+      }
+      const allMaxes: number[] = [];
+      for (let start = 0; start + k <= values.length; start++) {
+        let m = values[start];
+        for (let i = start + 1; i < start + k; i++) if (values[i] > m) m = values[i];
+        allMaxes.push(m);
+      }
+      return {
+        type: "barchart",
+        label: `Example 1 — nums (k=${k})`,
+        values,
+        barColors: { [firstMaxIdx]: "max" },
+        topLabels: { [firstMaxIdx]: "max" },
+        highlightRange: {
+          start: 0,
+          end: k - 1,
+          color: "rgba(59, 130, 246, 0.15)",
+        },
+        caption: `First window → max = ${values[firstMaxIdx]} · full output: [${allMaxes.join(", ")}]`,
+      };
+    }
+
+    case "two-sum": {
+      const target = problem.testCases?.[0]?.inputArgs?.[1];
+      if (typeof target !== "number") return null;
+      const seen = new Map<number, number>();
+      for (let i = 0; i < values.length; i++) {
+        const need = target - values[i];
+        if (seen.has(need)) {
+          const j = seen.get(need)!;
+          return {
+            type: "array",
+            label: `Example 1 — nums (target = ${target})`,
+            values,
+            highlights: { [j]: "success", [i]: "success" },
+            pointers: [
+              { index: j, label: `${values[j]}` },
+              { index: i, label: `+${values[i]}=${target}` },
+            ],
+          };
+        }
+        seen.set(values[i], i);
+      }
+      return null;
+    }
+
+    case "binary-search": {
+      const target = problem.testCases?.[0]?.inputArgs?.[1];
+      if (typeof target !== "number") return null;
+      const idx = values.indexOf(target);
+      if (idx < 0) return null;
+      return {
+        type: "array",
+        label: `Example 1 — nums (target = ${target})`,
+        values,
+        highlights: { [idx]: "found" },
+        pointers: [{ index: idx, label: "target" }],
+      };
+    }
+
+    case "search-in-rotated-sorted-array": {
+      const target = problem.testCases?.[0]?.inputArgs?.[1];
+      if (typeof target !== "number") return null;
+      const idx = values.indexOf(target);
+      // Find rotation point (where the sequence drops).
+      let pivot = 0;
+      for (let i = 1; i < values.length; i++) {
+        if (values[i] < values[i - 1]) {
+          pivot = i;
+          break;
+        }
+      }
+      const pointers: { index: number; label: string }[] = [];
+      if (pivot > 0) pointers.push({ index: pivot, label: "pivot" });
+      if (idx >= 0 && idx !== pivot) pointers.push({ index: idx, label: "target" });
+      else if (idx >= 0) pointers[0] = { index: idx, label: "pivot/target" };
+      const highlights: Record<number, string> = {};
+      if (idx >= 0) highlights[idx] = "found";
+      return {
+        type: "array",
+        label: `Example 1 — nums (target = ${target})`,
+        values,
+        highlights,
+        pointers,
+      };
+    }
+
+    case "find-minimum-in-rotated-sorted-array": {
+      let minIdx = 0;
+      for (let i = 1; i < values.length; i++) {
+        if (values[i] < values[minIdx]) minIdx = i;
+      }
+      return {
+        type: "array",
+        label: "Example 1 — nums",
+        values,
+        highlights: { [minIdx]: "success" },
+        pointers: [{ index: minIdx, label: "min" }],
+      };
+    }
+
+    case "longest-consecutive-sequence": {
+      const set = new Set(values);
+      let bestRun: number[] = [];
+      for (const v of set) {
+        if (set.has(v - 1)) continue;
+        const run: number[] = [];
+        let cur = v;
+        while (set.has(cur)) {
+          run.push(cur);
+          cur++;
+        }
+        if (run.length > bestRun.length) bestRun = run;
+      }
+      if (bestRun.length < 2) return null;
+      const runSet = new Set(bestRun);
+      const highlights: Record<number, string> = {};
+      values.forEach((v, i) => {
+        if (runSet.has(v)) highlights[i] = "success";
+      });
+      return {
+        type: "array",
+        label: "Example 1 — nums",
+        values,
+        highlights,
+        caption: `Longest run = [${bestRun.join(", ")}] (length ${bestRun.length})`,
+      };
+    }
   }
 
   return null;

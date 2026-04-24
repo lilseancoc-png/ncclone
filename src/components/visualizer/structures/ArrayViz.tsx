@@ -51,6 +51,9 @@ export default function ArrayViz({ state }: { state: ArrayVisualState }) {
           );
         })}
       </div>
+      {state.caption && (
+        <div className="text-[11px] text-gray-400">{state.caption}</div>
+      )}
     </div>
   );
 }
