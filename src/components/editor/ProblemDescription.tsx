@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Problem, Category, Language } from "@/data/types";
 import DifficultyBadge from "@/components/DifficultyBadge";
@@ -8,6 +8,7 @@ import { useProgress } from "@/hooks/useProgress";
 import { hasSolution } from "@/data/solutions";
 import { useAdaptiveHints } from "@/hooks/useAdaptiveHints";
 import { useProblemExplainer } from "@/hooks/useProblemExplainer";
+import { useApproachCheck } from "@/hooks/useApproachCheck";
 import { findSimilarProblems } from "@/lib/utils";
 import { categories as allCategories } from "@/data/problems";
 import SolutionTab from "./SolutionTab";
@@ -206,6 +207,10 @@ export default function ProblemDescription({
                 </div>
               )}
             </div>
+
+            {/* "Check my approach" — pre-coding gut check on the user's plan.
+                Keyed by slug so navigating problems resets local state cleanly. */}
+            <ApproachCheckPanel key={problem.slug} problem={problem} />
 
             {problem.testCases && problem.testCases.length > 0 && (
               <div className="space-y-2">
@@ -505,6 +510,123 @@ export default function ProblemDescription({
           <ErrorBoundary>
             <SolutionTab slug={problem.slug} />
           </ErrorBoundary>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ApproachCheckPanel({ problem }: { problem: Problem }) {
+  const {
+    verdict,
+    isLoading,
+    error,
+    check,
+    clear,
+  } = useApproachCheck(problem);
+
+  const [open, setOpen] = useState(false);
+  const [plan, setPlan] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (open) textareaRef.current?.focus();
+  }, [open]);
+
+  const submit = () => {
+    const trimmed = plan.trim();
+    if (!trimmed || isLoading) return;
+    check(trimmed);
+  };
+
+  const hasVerdict = verdict.length > 0 || isLoading;
+
+  if (!open && !hasVerdict) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-200 text-xs font-medium transition-colors"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        Check my approach
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-blue-500/25 bg-[#151525]">
+      <div className="flex items-center justify-between px-3.5 py-2 border-b border-blue-500/15">
+        <div className="flex items-center gap-1.5">
+          <svg className="w-3.5 h-3.5 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-200">
+            Pre-coding gut check
+          </span>
+        </div>
+        <button
+          onClick={() => {
+            clear();
+            setPlan("");
+            setOpen(false);
+          }}
+          className="text-[10px] text-gray-500 hover:text-foreground transition-colors"
+          aria-label="Close approach check"
+        >
+          Close
+        </button>
+      </div>
+      <div className="px-3.5 py-3 space-y-2.5">
+        <textarea
+          ref={textareaRef}
+          value={plan}
+          onChange={(e) => setPlan(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          rows={3}
+          placeholder="In one or two sentences, how would you solve this?"
+          className="w-full resize-none rounded-md border border-border/40 bg-[#0d0d1a] px-3 py-2 text-sm text-foreground/90 placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors"
+        />
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] text-gray-500">
+            AI returns a 3-line verdict — no spoilers.
+          </span>
+          <button
+            onClick={submit}
+            disabled={!plan.trim() || isLoading}
+            className="px-3 py-1 text-xs font-medium rounded-md bg-blue-500/20 text-blue-200 border border-blue-500/40 hover:bg-blue-500/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Checking…" : verdict ? "Re-check" : "Check"}
+          </button>
+        </div>
+        {hasVerdict && (
+          <div className="rounded-md bg-[#0d0d1a] border border-border/30 px-3 py-2.5 text-sm text-foreground/85 leading-relaxed">
+            {verdict ? (
+              <MarkdownMessage text={verdict} />
+            ) : (
+              <span className="text-gray-500 italic">Thinking…</span>
+            )}
+            {isLoading && (
+              <span className="inline-block w-1.5 h-3.5 ml-0.5 align-middle bg-blue-400 animate-pulse" />
+            )}
+          </div>
+        )}
+        {error && !isLoading && (
+          <div className="flex items-center gap-2 text-[11px] text-hard">
+            <span>{error}</span>
+            <button
+              onClick={submit}
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              Try again
+            </button>
+          </div>
         )}
       </div>
     </div>
