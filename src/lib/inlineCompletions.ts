@@ -1,29 +1,49 @@
 import type * as MonacoT from "monaco-editor";
 import type { Language, Problem } from "@/data/types";
-import type { PuterChatMessage, PuterChatResponse } from "@/types/puter";
+import type { PuterChatChunk, PuterChatMessage } from "@/types/puter";
 
 type Monaco = typeof MonacoT;
 
 const COMPLETION_MODEL = "claude-sonnet-4-5";
 
-const SYSTEM_PROMPT = `You provide inline single-shot code completions for a candidate solving a LeetCode-style problem.
+// Debounce at the provider level — Monaco still invokes us per keystroke, but
+// it will wait this long after the latest invocation before actually firing.
+const DEBOUNCE_MS = 300;
+
+// Hard early-stop: enough text for one logical chunk, before the model rambles.
+const MAX_CHARS = 400;
+const MAX_NEWLINES = 4;
+
+const MIN_CHARS_BEFORE = 2;
+
+const SYSTEM_PROMPT = `You provide inline code completions for a candidate solving a LeetCode-style problem.
 
 Hard rules:
-- Output ONLY the code that should appear at the cursor — no markdown, no fences, no explanations, no echoing of the surrounding code.
-- Complete the current logical unit only (one to three lines). Do not write the whole solution.
-- The first line you emit will be inserted at the cursor with NO extra leading whitespace — if the cursor sits at the start of a fresh indented line, the editor already has the indent; you supply only the code.
-- Subsequent lines must include their own indentation appropriate to the language and surrounding code.
-- Never invent variables that don't exist in the surrounding code unless you are clearly introducing a new local.
-- If you cannot offer something genuinely useful, output an empty string.`;
+- Output ONLY the code that should appear at the cursor. No markdown, no code fences, no explanations, no preface.
+- Complete the current logical unit only (one to four lines). Do not write the whole solution.
+- Match the surrounding indentation exactly. If the cursor is at the end of a line and the next logical step belongs on a new line, BEGIN your output with a newline and the appropriate indent.
+- Never invent variables that don't already exist in the surrounding code unless you are clearly declaring a new local.
+- Respect the exact syntax of the language.
+- If you can't offer something genuinely useful, output an empty string.`;
 
 interface CompletionContext {
   problem: Problem;
   language: Language;
 }
 
+export type InlineCompletionStatus = "idle" | "loading";
+
 let activeContext: CompletionContext | null = null;
 let enabled = false;
 let registered = false;
+let status: InlineCompletionStatus = "idle";
+const statusListeners = new Set<(s: InlineCompletionStatus) => void>();
+
+function setStatus(next: InlineCompletionStatus) {
+  if (status === next) return;
+  status = next;
+  for (const listener of statusListeners) listener(status);
+}
 
 export function setInlineCompletionContext(ctx: CompletionContext | null) {
   activeContext = ctx;
@@ -31,10 +51,21 @@ export function setInlineCompletionContext(ctx: CompletionContext | null) {
 
 export function setInlineCompletionEnabled(value: boolean) {
   enabled = value;
+  if (!value) setStatus("idle");
 }
 
 export function isInlineCompletionEnabled(): boolean {
   return enabled;
+}
+
+export function subscribeInlineCompletionStatus(
+  listener: (s: InlineCompletionStatus) => void,
+): () => void {
+  statusListeners.add(listener);
+  listener(status);
+  return () => {
+    statusListeners.delete(listener);
+  };
 }
 
 function buildPrompt({
@@ -62,34 +93,33 @@ function buildPrompt({
   parts.push(`${before}<CURSOR>${after}`);
   parts.push("```");
   parts.push(
-    `\nReturn ONLY the code that should replace <CURSOR>. Keep it short (1–3 lines). No prose, no fences.`,
+    `\nReturn ONLY the code that should replace <CURSOR>. Short (1–4 lines). No prose, no fences.`,
   );
   return parts.join("\n");
 }
 
-function extractText(resp: PuterChatResponse | string | unknown): string {
-  if (typeof resp === "string") return resp;
-  if (resp && typeof resp === "object") {
-    const r = resp as PuterChatResponse;
-    if (r.message?.content) return r.message.content;
-    if (typeof r.text === "string") return r.text;
-    if (typeof r.toString === "function") {
-      const s = r.toString();
-      if (s && s !== "[object Object]") return s;
+function cleanCompletion(raw: string): string {
+  if (!raw) return "";
+  let s = raw;
+  // Trim trailing whitespace; leading whitespace may be intentional (indent).
+  s = s.replace(/[ \t\r\n]+$/, "");
+  // If the model wrapped its answer in a fence, prefer the fence body.
+  const fenceMatch = s.match(/```[a-zA-Z0-9_+-]*\r?\n?([\s\S]*?)```/);
+  if (fenceMatch) {
+    s = fenceMatch[1].replace(/[ \t\r\n]+$/, "");
+  } else {
+    // Drop a single leading prose line ("Sure! Here's...:") if present.
+    const firstLineEnd = s.indexOf("\n");
+    if (firstLineEnd > 0) {
+      const firstLine = s.slice(0, firstLineEnd);
+      if (
+        /^(Sure|Here|This|That|The|Below|Try|You|Okay|Got it)\b/i.test(firstLine) &&
+        firstLine.trimEnd().endsWith(":")
+      ) {
+        s = s.slice(firstLineEnd + 1);
+      }
     }
   }
-  return "";
-}
-
-function stripFences(raw: string): string {
-  if (!raw) return "";
-  let s = raw.replace(/^﻿/, "");
-  // Trim only trailing whitespace (leading whitespace may matter for indentation).
-  s = s.replace(/\s+$/, "");
-  // Strip a leading code-fence opener line, if any.
-  s = s.replace(/^[ \t]*```[a-zA-Z0-9_+-]*\s*\n?/, "");
-  // Strip a trailing fence.
-  s = s.replace(/\n?[ \t]*```\s*$/, "");
   return s;
 }
 
@@ -115,12 +145,30 @@ async function fetchCompletion(
     },
   ];
 
-  const resp = (await window.puter.ai.chat(messages, {
+  // Stream so we can stop early once we have enough — much snappier than
+  // waiting for the model to finish a long monologue.
+  const stream = await window.puter.ai.chat(messages, {
     model: COMPLETION_MODEL,
-  })) as PuterChatResponse;
+    stream: true,
+  });
 
   if (signal.aborted) return "";
-  return stripFences(extractText(resp));
+
+  let acc = "";
+  for await (const chunk of stream) {
+    if (signal.aborted) break;
+    const delta =
+      typeof chunk === "string"
+        ? chunk
+        : (chunk as PuterChatChunk)?.text ?? "";
+    if (!delta) continue;
+    acc += delta;
+    if (acc.length >= MAX_CHARS) break;
+    const newlines = (acc.match(/\n/g) ?? []).length;
+    if (newlines >= MAX_NEWLINES) break;
+  }
+
+  return cleanCompletion(acc);
 }
 
 interface PendingRequest {
@@ -131,13 +179,10 @@ interface PendingRequest {
 }
 let pending: PendingRequest | null = null;
 
-const MIN_CHARS_BEFORE = 8;
-
 function shouldSkip(before: string, after: string): boolean {
   if (!enabled || !activeContext) return true;
   if (before.length < MIN_CHARS_BEFORE) return true;
-  // Don't fire mid-token: if the char immediately before cursor is an
-  // identifier char and the next is too, we're likely in the middle of a word.
+  // Don't fire mid-identifier — would insert in the middle of a word.
   const prev = before.charAt(before.length - 1);
   const next = after.charAt(0);
   const isWord = (c: string) => /[A-Za-z0-9_]/.test(c);
@@ -153,6 +198,7 @@ export function registerInlineCompletions(monaco: Monaco) {
 
   for (const lang of languages) {
     monaco.languages.registerInlineCompletionsProvider(lang, {
+      debounceDelayMs: DEBOUNCE_MS,
       async provideInlineCompletions(model, position, _ctx, token) {
         if (!enabled || !activeContext) return { items: [] };
 
@@ -205,9 +251,13 @@ export function registerInlineCompletions(monaco: Monaco) {
         token.onCancellationRequested(() => controller.abort());
 
         const ctx = activeContext;
-        const promise = fetchCompletion(ctx, before, after, controller.signal).catch(
-          () => "",
-        );
+        setStatus("loading");
+        const promise = fetchCompletion(ctx, before, after, controller.signal)
+          .catch(() => "")
+          .finally(() => {
+            // Drop status only if no other request raced ahead.
+            if (pending && pending.controller === controller) setStatus("idle");
+          });
         pending = { controller, promise, before, after };
 
         let text = "";

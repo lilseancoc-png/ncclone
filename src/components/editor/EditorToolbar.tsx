@@ -3,7 +3,11 @@
 import { useState, useEffect } from "react";
 import { Language } from "@/data/types";
 import LanguageSelector from "./LanguageSelector";
-import { setInlineCompletionEnabled } from "@/lib/inlineCompletions";
+import {
+  setInlineCompletionEnabled,
+  subscribeInlineCompletionStatus,
+  type InlineCompletionStatus,
+} from "@/lib/inlineCompletions";
 
 const AI_SUGGEST_KEY = "neetcode-ai-suggest";
 
@@ -34,6 +38,7 @@ export default function EditorToolbar({
 }: EditorToolbarProps) {
   const [isMac, setIsMac] = useState(false);
   const [aiSuggest, setAiSuggest] = useState(false);
+  const [aiStatus, setAiStatus] = useState<InlineCompletionStatus>("idle");
 
   useEffect(() => {
     setIsMac(navigator.platform.toUpperCase().includes("MAC"));
@@ -45,6 +50,7 @@ export default function EditorToolbar({
     } catch {
       // Storage may be unavailable; default off.
     }
+    return subscribeInlineCompletionStatus((s) => setAiStatus(s));
   }, []);
 
   const toggleAiSuggest = () => {
@@ -69,8 +75,10 @@ export default function EditorToolbar({
           onClick={toggleAiSuggest}
           title={
             aiSuggest
-              ? "AI inline suggestions are ON. Press Tab to accept."
-              : "Turn on AI inline suggestions while you type."
+              ? aiStatus === "loading"
+                ? "AI is generating a suggestion… (Tab to accept)"
+                : "AI autocomplete is ON. Type and press Tab to accept."
+              : "Turn on AI autocomplete while you type."
           }
           aria-pressed={aiSuggest}
           className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium rounded-md border transition-colors ${
@@ -82,10 +90,14 @@ export default function EditorToolbar({
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
           </svg>
-          AI
+          AI autocomplete
           <span
             className={`inline-block w-1.5 h-1.5 rounded-full ${
-              aiSuggest ? "bg-violet-300" : "bg-gray-600"
+              aiSuggest
+                ? aiStatus === "loading"
+                  ? "bg-violet-300 animate-pulse"
+                  : "bg-violet-300"
+                : "bg-gray-600"
             }`}
           />
         </button>
