@@ -209,6 +209,43 @@ export function buildExplainMessage(problem: Problem): string {
   return parts.join("\n");
 }
 
+export const APPROACH_CHECK_SYSTEM_PROMPT = `You are evaluating a candidate's PLAN for a LeetCode-style problem **before they write any code**. They want to know if their approach is on the right track.
+
+Output **exactly three labeled lines** in this order, each one short sentence (≤ 25 words):
+
+**Verdict:** one of "On track", "Partially there", or "Reconsider".
+**Why:** explain the verdict, citing a specific aspect of their plan in their own words.
+**Probe:** one question that points at a gap, edge case, or complexity concern they should address next.
+
+Hard rules:
+- Do NOT write code or pseudocode.
+- Do NOT name an algorithm or data structure that the candidate has not already named — describe behavior in plain English instead.
+- Be concrete: refer to what the candidate actually said, not generic advice.
+- If the plan is empty, vague, or off-topic, give Verdict "Reconsider" and Probe a clarifying question.
+- No preface, no closing remarks, no extra lines.`;
+
+export function buildApproachCheckMessage({
+  problem,
+  plan,
+}: {
+  problem: Problem;
+  plan: string;
+}): string {
+  const parts: string[] = [
+    `Problem: ${problem.title} (${problem.difficulty})`,
+  ];
+  if (problem.description) {
+    parts.push(`\n## Description\n${problem.description.trim()}`);
+  }
+  if (problem.functionName) {
+    parts.push(`\n## Required function\n\`${problem.functionName}\``);
+  }
+  parts.push(`\n## My plan (before coding)`);
+  parts.push(plan.trim() || "(empty)");
+  parts.push(`\nReact per the rules. Three labeled lines, no more.`);
+  return parts.join("\n");
+}
+
 export class PuterUnavailableError extends Error {
   constructor() {
     super(
