@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { Language } from "@/data/types";
 import LanguageSelector from "./LanguageSelector";
+import { setInlineCompletionEnabled } from "@/lib/inlineCompletions";
+
+const AI_SUGGEST_KEY = "neetcode-ai-suggest";
 
 interface EditorToolbarProps {
   language: Language;
@@ -30,16 +33,63 @@ export default function EditorToolbar({
   leetcodeUrl,
 }: EditorToolbarProps) {
   const [isMac, setIsMac] = useState(false);
+  const [aiSuggest, setAiSuggest] = useState(false);
+
   useEffect(() => {
     setIsMac(navigator.platform.toUpperCase().includes("MAC"));
+    try {
+      const stored = localStorage.getItem(AI_SUGGEST_KEY);
+      const initial = stored === "1";
+      setAiSuggest(initial);
+      setInlineCompletionEnabled(initial);
+    } catch {
+      // Storage may be unavailable; default off.
+    }
   }, []);
+
+  const toggleAiSuggest = () => {
+    setAiSuggest((prev) => {
+      const next = !prev;
+      setInlineCompletionEnabled(next);
+      try {
+        localStorage.setItem(AI_SUGGEST_KEY, next ? "1" : "0");
+      } catch {}
+      return next;
+    });
+  };
 
   const canRun = language === "javascript" || language === "python";
   const busy = isRunning || isSubmitting || isReviewing;
 
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e2e] border-b border-border/50">
-      <LanguageSelector language={language} onChange={onLanguageChange} />
+      <div className="flex items-center gap-2">
+        <LanguageSelector language={language} onChange={onLanguageChange} />
+        <button
+          onClick={toggleAiSuggest}
+          title={
+            aiSuggest
+              ? "AI inline suggestions are ON. Press Tab to accept."
+              : "Turn on AI inline suggestions while you type."
+          }
+          aria-pressed={aiSuggest}
+          className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium rounded-md border transition-colors ${
+            aiSuggest
+              ? "bg-violet-500/15 text-violet-200 border-violet-500/40 hover:bg-violet-500/25"
+              : "bg-white/5 text-gray-500 border-white/10 hover:text-foreground hover:bg-white/10"
+          }`}
+        >
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+          </svg>
+          AI
+          <span
+            className={`inline-block w-1.5 h-1.5 rounded-full ${
+              aiSuggest ? "bg-violet-300" : "bg-gray-600"
+            }`}
+          />
+        </button>
+      </div>
       <div className="flex items-center gap-2">
         {canRun && (
           <kbd className="text-[10px] text-gray-600 mr-1 hidden sm:inline px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono">

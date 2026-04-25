@@ -1,9 +1,13 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import Editor, { OnMount, BeforeMount } from "@monaco-editor/react";
-import { Language } from "@/data/types";
+import { Language, Problem } from "@/data/types";
 import { registerEditorCompletions } from "@/lib/editorCompletions";
+import {
+  registerInlineCompletions,
+  setInlineCompletionContext,
+} from "@/lib/inlineCompletions";
 
 const MONACO_LANGUAGE_MAP: Record<Language, string> = {
   javascript: "javascript",
@@ -17,6 +21,7 @@ interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
   onRun?: () => void;
+  problem?: Problem;
 }
 
 export default function CodeEditor({
@@ -24,11 +29,22 @@ export default function CodeEditor({
   value,
   onChange,
   onRun,
+  problem,
 }: CodeEditorProps) {
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
 
+  useEffect(() => {
+    if (problem) {
+      setInlineCompletionContext({ problem, language });
+    } else {
+      setInlineCompletionContext(null);
+    }
+    return () => setInlineCompletionContext(null);
+  }, [problem, language]);
+
   const handleBeforeMount: BeforeMount = (monaco) => {
     registerEditorCompletions(monaco);
+    registerInlineCompletions(monaco);
     monaco.editor.defineTheme("neetcode-dark", {
       base: "vs-dark",
       inherit: true,

@@ -477,6 +477,7 @@ function IDELayout({
                 value={code}
                 onChange={setCode}
                 onRun={handleRun}
+                problem={problem}
               />
             </ErrorBoundary>
           </div>
