@@ -183,6 +183,32 @@ export function buildHintMessage({
   return parts.join("\n");
 }
 
+export const EXPLAIN_SYSTEM_PROMPT = `You translate a LeetCode-style problem statement into plain English for a candidate who is intimidated by it.
+
+Output **exactly three bullets** in this order, each one short sentence:
+- **Input:** what the function receives (concrete shape and meaning).
+- **Output:** what it must return (concrete shape, including edge-case conventions).
+- **The catch:** the single hardest constraint or hidden requirement they must respect.
+
+Hard rules:
+- Use markdown bullets with the bolded labels exactly as shown above.
+- Do not reveal the algorithm or data structure to use. Stay descriptive, not prescriptive.
+- Refer to the actual variable / parameter names from the problem when helpful.
+- Keep each bullet under 25 words. No preface, no closing remarks.`;
+
+export function buildExplainMessage(problem: Problem): string {
+  const parts: string[] = [
+    `Problem: ${problem.title} (${problem.difficulty})`,
+  ];
+  if (problem.description) {
+    parts.push(`\n## Description\n${problem.description.trim()}`);
+  }
+  if (problem.functionName) {
+    parts.push(`\n## Function name\n\`${problem.functionName}\``);
+  }
+  return parts.join("\n");
+}
+
 export class PuterUnavailableError extends Error {
   constructor() {
     super(

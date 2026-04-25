@@ -14,7 +14,7 @@ const SHORTCUTS = [
   { keys: ["Ctrl/Cmd", "D"], desc: "Select next occurrence" },
   { keys: ["Ctrl/Cmd", "Shift", "K"], desc: "Delete line" },
   { keys: ["Alt", "Up/Down"], desc: "Move line up/down" },
-  { keys: ["Tab"], desc: "Accept suggestion / indent" },
+  { keys: ["Tab"], desc: "Accept suggestion (AI or snippet) / indent" },
   { keys: ["Esc"], desc: "Dismiss suggestions" },
   { keys: ["?"], desc: "Show this modal" },
 ];
