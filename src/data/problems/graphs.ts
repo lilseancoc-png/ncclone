@@ -119,6 +119,7 @@ export const graphs: Category = {
       description:
         "Given a reference to a node in a connected undirected graph, return a deep copy of the graph. Each node contains a value and a list of its neighbors. The graph is represented as an adjacency list.",
       functionName: "cloneGraph",
+      runner: { kind: "graph-adjlist" },
       starterCode: {
         javascript: "function cloneGraph(adjList) {\n  \n}",
         python: "def clone_graph(adj_list):\n    pass",

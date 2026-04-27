@@ -65,11 +65,21 @@ export interface TreeRunner {
   returnsNodeValue?: boolean;
 }
 
+// Clone-Graph (LeetCode 133) takes a Node with `val` + `neighbors`, where
+// the test input is an adjacency list (1-indexed: adjList[0] is neighbors of
+// node 1). The runner reconstructs the graph as Node objects, calls the user
+// function, and serializes the returned graph back to an adjacency list.
+export interface GraphAdjListRunner {
+  kind: "graph-adjlist";
+  returnsGraph?: boolean;
+}
+
 export type RunnerMeta =
   | LinkedListRunner
   | ClassOpsRunner
   | RandomListRunner
-  | TreeRunner;
+  | TreeRunner
+  | GraphAdjListRunner;
 
 export interface Problem {
   id: number;
