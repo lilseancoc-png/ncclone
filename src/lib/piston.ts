@@ -28,6 +28,25 @@ function executeJavaScriptInWorker(
       }))
     );
 
+    // The "Node" class shape depends on the runner: clone-graph uses
+    // val/neighbors; copy-random-list (and the default) uses val/next/random.
+    // Each problem is mutually exclusive, so a per-template injection is safe.
+    const isGraphRunner = runner?.kind === "graph-adjlist";
+    const nodeClassDef = isGraphRunner
+      ? `class Node {
+        constructor(val, neighbors) {
+          this.val = val === undefined ? 0 : val;
+          this.neighbors = neighbors === undefined ? [] : neighbors;
+        }
+      }`
+      : `class Node {
+        constructor(val, next, random) {
+          this.val = val === undefined ? 0 : val;
+          this.next = next === undefined ? null : next;
+          this.random = random === undefined ? null : random;
+        }
+      }`;
+
     const workerCode = `
       "use strict";
       const __consoleOutput = [];
@@ -51,12 +70,36 @@ function executeJavaScriptInWorker(
           this.next = next === undefined ? null : next;
         }
       }
-      class Node {
-        constructor(val, next, random) {
-          this.val = val === undefined ? 0 : val;
-          this.next = next === undefined ? null : next;
-          this.random = random === undefined ? null : random;
+      ${nodeClassDef}
+
+      // Build a graph (returning the entry node, the one with val=1) from a
+      // 1-indexed adjacency list. adj[i] is the neighbor list of node i+1.
+      function __adjListToGraph(adj) {
+        if (!Array.isArray(adj) || adj.length === 0) return null;
+        const nodes = adj.map((_, i) => new Node(i + 1));
+        for (let i = 0; i < adj.length; i++) {
+          nodes[i].neighbors = (adj[i] || []).map((n) => nodes[n - 1]);
         }
+        return nodes[0];
+      }
+
+      // Walk a graph and emit an adjacency list keyed by node.val (sorted).
+      function __graphToAdjList(node) {
+        if (!node) return [];
+        const visited = new Map();
+        const stack = [node];
+        while (stack.length > 0) {
+          const n = stack.pop();
+          if (visited.has(n.val)) continue;
+          visited.set(n.val, n);
+          for (const neighbor of (n.neighbors || [])) {
+            if (!visited.has(neighbor.val)) stack.push(neighbor);
+          }
+        }
+        const sortedVals = [...visited.keys()].sort((a, b) => a - b);
+        return sortedVals.map((val) =>
+          (visited.get(val).neighbors || []).map((n) => n.val).sort((a, b) => a - b)
+        );
       }
 
       // Standard LeetCode binary tree node. Always available so user solutions
@@ -248,6 +291,12 @@ function executeJavaScriptInWorker(
           return __randomListToPairs(result);
         }
 
+        if (__runner && __runner.kind === "graph-adjlist") {
+          const head = __adjListToGraph(tc.args[0]);
+          const result = ${functionName}(head);
+          return __graphToAdjList(result);
+        }
+
         if (__runner && __runner.kind === "tree") {
           let args = tc.args.slice();
           const treeIdxs = __runner.treeInputIndices || [];
@@ -381,6 +430,22 @@ function buildPythonScript(
 ): string {
   // Build the Python test harness as a plain string.
   // Lines are joined with real newlines. No JS template literal nesting issues.
+  const isGraphRunner = runner?.kind === "graph-adjlist";
+  const nodeClassLines = isGraphRunner
+    ? [
+        "class Node:",
+        "    def __init__(self, val=0, neighbors=None):",
+        "        self.val = val",
+        "        self.neighbors = neighbors if neighbors is not None else []",
+      ]
+    : [
+        "class Node:",
+        "    def __init__(self, val=0, next=None, random=None):",
+        "        self.val = val",
+        "        self.next = next",
+        "        self.random = random",
+      ];
+
   const lines = [
     "import json, sys, io, time",
     "",
@@ -389,11 +454,30 @@ function buildPythonScript(
     "        self.val = val",
     "        self.next = next",
     "",
-    "class Node:",
-    "    def __init__(self, val=0, next=None, random=None):",
-    "        self.val = val",
-    "        self.next = next",
-    "        self.random = random",
+    ...nodeClassLines,
+    "",
+    "def __adj_list_to_graph(adj):",
+    "    if not adj:",
+    "        return None",
+    "    nodes = [Node(i + 1) for i in range(len(adj))]",
+    "    for i, ns in enumerate(adj):",
+    "        nodes[i].neighbors = [nodes[n - 1] for n in (ns or [])]",
+    "    return nodes[0]",
+    "",
+    "def __graph_to_adj_list(node):",
+    "    if node is None:",
+    "        return []",
+    "    visited = {}",
+    "    stack = [node]",
+    "    while stack:",
+    "        n = stack.pop()",
+    "        if n.val in visited:",
+    "            continue",
+    "        visited[n.val] = n",
+    "        for neighbor in (n.neighbors or []):",
+    "            if neighbor.val not in visited:",
+    "                stack.append(neighbor)",
+    "    return [sorted([m.val for m in (visited[v].neighbors or [])]) for v in sorted(visited.keys())]",
     "",
     "class TreeNode:",
     "    def __init__(self, val=0, left=None, right=None):",
@@ -596,6 +680,10 @@ function buildPythonScript(
     "        head = __pairs_to_random_list(tc['args'][0])",
     "        result = __fn(head)",
     "        return __random_list_to_pairs(result)",
+    "    if __runner and __runner.get('kind') == 'graph-adjlist':",
+    "        head = __adj_list_to_graph(tc['args'][0])",
+    "        result = __fn(head)",
+    "        return __graph_to_adj_list(result)",
     "    if __runner and __runner.get('kind') == 'tree':",
     "        args = list(tc['args'])",
     "        tree_idxs = __runner.get('treeInputIndices') or []",
