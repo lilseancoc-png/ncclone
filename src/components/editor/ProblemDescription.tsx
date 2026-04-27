@@ -92,23 +92,23 @@ export default function ProblemDescription({
   return (
     <div className="h-full flex flex-col bg-[#0d0d1a]">
       {/* Tab bar */}
-      <div className="flex items-center gap-1 px-4 py-2 border-b border-border/50 flex-shrink-0">
+      <div className="flex items-end gap-2 px-4 border-b border-border/50 flex-shrink-0">
         <button
           onClick={() => setTab("description")}
-          className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+          className={`relative px-3 h-9 -mb-px text-xs font-medium transition-colors flex items-center gap-1.5 border-b-2 ${
             tab === "description"
-              ? "bg-card text-foreground"
-              : "text-gray-500 hover:text-gray-300"
+              ? "text-foreground border-violet-400"
+              : "text-gray-500 hover:text-gray-300 border-transparent"
           }`}
         >
           Description
         </button>
         <button
           onClick={() => setTab("solution")}
-          className={`px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1.5 ${
+          className={`relative px-3 h-9 -mb-px text-xs font-medium transition-colors flex items-center gap-1.5 border-b-2 ${
             tab === "solution"
-              ? "bg-card text-foreground"
-              : "text-gray-500 hover:text-gray-300"
+              ? "text-foreground border-violet-400"
+              : "text-gray-500 hover:text-gray-300 border-transparent"
           }`}
         >
           Solution
@@ -332,17 +332,18 @@ export default function ProblemDescription({
             )}
 
             {/* Approach */}
-            <div>
+            <div className="rounded-lg border border-border/30 overflow-hidden">
               <button
                 onClick={() => setShowApproach(!showApproach)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-foreground transition-colors"
+                aria-expanded={showApproach}
+                className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left bg-[#151525] hover:bg-[#1a1a2e] transition-colors"
               >
                 <svg
-                  className={`w-3 h-3 transition-transform ${showApproach ? "rotate-90" : ""}`}
+                  className={`w-3 h-3 text-gray-500 transition-transform duration-200 ${showApproach ? "rotate-90" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                 >
                   <path
                     strokeLinecap="round"
@@ -350,42 +351,41 @@ export default function ProblemDescription({
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-                Approach
+                <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                  Approach
+                </span>
+                <span className="ml-auto flex items-center gap-2 text-[10px] tabular-nums">
+                  <span className="px-1.5 py-0.5 rounded bg-easy/10 border border-easy/20">
+                    <span className="text-gray-400">Time </span>
+                    <code className="text-easy font-mono">{problem.timeComplexity}</code>
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-medium/10 border border-medium/20">
+                    <span className="text-gray-400">Space </span>
+                    <code className="text-medium font-mono">{problem.spaceComplexity}</code>
+                  </span>
+                </span>
               </button>
               {showApproach && (
-                <div className="mt-2 text-sm text-foreground/70 leading-relaxed">
+                <div className="px-3.5 py-3 border-t border-border/30 text-sm text-foreground/75 leading-relaxed">
                   <p>{problem.approach}</p>
-                  <div className="flex gap-4 mt-3">
-                    <div>
-                      <span className="text-gray-400 text-xs">Time: </span>
-                      <code className="text-easy text-xs">
-                        {problem.timeComplexity}
-                      </code>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 text-xs">Space: </span>
-                      <code className="text-medium text-xs">
-                        {problem.spaceComplexity}
-                      </code>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
 
             {/* Key Intuition */}
             {problem.keyIntuition && (
-              <div>
+              <div className="rounded-lg border border-easy/15 overflow-hidden">
                 <button
                   onClick={() => setShowIntuition(!showIntuition)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-foreground transition-colors"
+                  aria-expanded={showIntuition}
+                  className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left bg-[#151525] hover:bg-[#1a1a2e] transition-colors"
                 >
                   <svg
-                    className={`w-3 h-3 transition-transform ${showIntuition ? "rotate-90" : ""}`}
+                    className={`w-3 h-3 text-gray-500 transition-transform duration-200 ${showIntuition ? "rotate-90" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                   >
                     <path
                       strokeLinecap="round"
@@ -393,10 +393,22 @@ export default function ProblemDescription({
                       d="M9 5l7 7-7 7"
                     />
                   </svg>
-                  Key Intuition
+                  <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                    Key Intuition
+                  </span>
+                  <svg
+                    className="w-3.5 h-3.5 ml-auto text-easy/70"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
                 </button>
                 {showIntuition && (
-                  <div className="mt-2 bg-[#151525] rounded-lg p-4 border border-easy/15">
+                  <div className="px-3.5 py-3 border-t border-easy/15 bg-[#0f0f1f]">
                     <p className="text-sm text-foreground/75 leading-relaxed">
                       {problem.keyIntuition}
                     </p>

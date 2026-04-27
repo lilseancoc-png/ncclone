@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Language } from "@/data/types";
 import LanguageSelector from "./LanguageSelector";
 import {
@@ -39,6 +39,8 @@ export default function EditorToolbar({
   const [isMac, setIsMac] = useState(false);
   const [aiSuggest, setAiSuggest] = useState(false);
   const [aiStatus, setAiStatus] = useState<InlineCompletionStatus>("idle");
+  const [confirmReset, setConfirmReset] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setIsMac(navigator.platform.toUpperCase().includes("MAC"));
@@ -53,6 +55,12 @@ export default function EditorToolbar({
     return subscribeInlineCompletionStatus((s) => setAiStatus(s));
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
+
   const toggleAiSuggest = () => {
     setAiSuggest((prev) => {
       const next = !prev;
@@ -64,11 +72,26 @@ export default function EditorToolbar({
     });
   };
 
+  const handleResetClick = () => {
+    if (confirmReset) {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      setConfirmReset(false);
+      onReset();
+      return;
+    }
+    setConfirmReset(true);
+    resetTimerRef.current = setTimeout(() => setConfirmReset(false), 3000);
+  };
+
   const canRun = language === "javascript" || language === "python";
   const busy = isRunning || isSubmitting || isReviewing;
 
+  // Shared button sizing for consistent heights across the toolbar.
+  const btnBase =
+    "inline-flex items-center justify-center gap-1.5 h-8 px-3 text-xs font-semibold rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e2e] border-b border-border/50">
+    <div className="flex items-center justify-between gap-2 px-4 py-2 bg-[#1e1e2e] border-b border-border/50">
       <div className="flex items-center gap-2">
         <LanguageSelector language={language} onChange={onLanguageChange} />
         <button
@@ -81,7 +104,7 @@ export default function EditorToolbar({
               : "Turn on AI autocomplete while you type."
           }
           aria-pressed={aiSuggest}
-          className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium rounded-md border transition-colors ${
+          className={`hidden sm:inline-flex items-center gap-1.5 h-8 px-2.5 text-[11px] font-medium rounded-md border transition-colors ${
             aiSuggest
               ? "bg-violet-500/15 text-violet-200 border-violet-500/40 hover:bg-violet-500/25"
               : "bg-white/5 text-gray-500 border-white/10 hover:text-foreground hover:bg-white/10"
@@ -104,26 +127,35 @@ export default function EditorToolbar({
       </div>
       <div className="flex items-center gap-2">
         {canRun && (
-          <kbd className="text-[10px] text-gray-600 mr-1 hidden sm:inline px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono">
-            {isMac ? "\u2318" : "Ctrl"}+Enter
+          <kbd className="text-[10px] text-gray-500 mr-1 hidden sm:inline px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono">
+            {isMac ? "⌘" : "Ctrl"}+Enter
           </kbd>
         )}
         <button
-          onClick={() => {
-            if (window.confirm("Reset to starter code? Your current code will be lost.")) {
-              onReset();
-            }
-          }}
-          className="px-3 py-1.5 text-xs text-gray-400 hover:text-foreground border border-border/50 rounded-md hover:bg-card-hover transition-colors"
+          onClick={handleResetClick}
+          aria-label={confirmReset ? "Confirm reset" : "Reset to starter code"}
+          title={
+            confirmReset
+              ? "Click again to discard your code and reset"
+              : "Reset to starter code"
+          }
+          className={`${btnBase} ${
+            confirmReset
+              ? "bg-hard/15 text-hard border-hard/40 hover:bg-hard/25"
+              : "bg-white/5 text-gray-400 border-white/10 hover:text-foreground hover:bg-white/10"
+          }`}
         >
-          Reset
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v6h6M20 20v-6h-6M5.07 9A7.002 7.002 0 0119 12M18.93 15A7.002 7.002 0 015 12" />
+          </svg>
+          {confirmReset ? "Click to confirm" : "Reset"}
         </button>
         {canRun ? (
           <>
             <button
               onClick={onRun}
               disabled={busy}
-              className="px-3 py-1.5 text-xs font-semibold bg-white/5 text-gray-300 border border-white/10 rounded-md hover:bg-white/10 hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className={`${btnBase} bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:text-foreground`}
             >
               {isRunning ? (
                 <>
@@ -146,7 +178,7 @@ export default function EditorToolbar({
               onClick={onReview}
               disabled={busy}
               title="Have an AI mentor review your code (hints, not solutions)"
-              className="px-3 py-1.5 text-xs font-semibold bg-violet-500/15 text-violet-300 border border-violet-500/30 rounded-md hover:bg-violet-500/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className={`${btnBase} bg-violet-500/15 text-violet-300 border-violet-500/30 hover:bg-violet-500/25`}
             >
               {isReviewing ? (
                 <>
@@ -168,7 +200,7 @@ export default function EditorToolbar({
             <button
               onClick={onSubmit}
               disabled={busy}
-              className="px-4 py-1.5 text-xs font-semibold bg-easy/20 text-easy border border-easy/30 rounded-md hover:bg-easy/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className={`${btnBase} px-4 bg-easy/20 text-easy border-easy/30 hover:bg-easy/30`}
             >
               {isSubmitting ? (
                 <>
@@ -198,7 +230,7 @@ export default function EditorToolbar({
                 href={leetcodeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-1.5 text-xs font-semibold bg-medium/20 text-medium border border-medium/30 rounded-md hover:bg-medium/30 transition-colors flex items-center gap-1.5"
+                className={`${btnBase} px-4 bg-medium/20 text-medium border-medium/30 hover:bg-medium/30`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -210,7 +242,7 @@ export default function EditorToolbar({
               onClick={onReview}
               disabled={busy}
               title="Have an AI mentor review your code (hints, not solutions)"
-              className="px-3 py-1.5 text-xs font-semibold bg-violet-500/15 text-violet-300 border border-violet-500/30 rounded-md hover:bg-violet-500/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className={`${btnBase} bg-violet-500/15 text-violet-300 border-violet-500/30 hover:bg-violet-500/25`}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />

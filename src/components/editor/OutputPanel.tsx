@@ -121,56 +121,42 @@ export default function OutputPanel({
   const allPassed = totalCount > 0 && passedCount === totalCount;
   const failedCount = totalCount - passedCount;
 
+  const tabBtn = (active: boolean) =>
+    `relative px-3 h-9 -mb-px text-xs font-medium transition-colors flex items-center gap-1.5 border-b-2 ${
+      active
+        ? "text-foreground border-violet-400"
+        : "text-gray-500 hover:text-gray-300 border-transparent"
+    }`;
+
   return (
     <div className="flex flex-col h-full bg-[#151525]">
       {/* Tabs */}
-      <div className="flex items-center gap-1 px-4 py-1.5 border-t border-border border-b border-b-border/50">
-        <button
-          onClick={() => setTab("results")}
-          className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-            tab === "results"
-              ? "bg-card text-foreground"
-              : "text-gray-500 hover:text-gray-300"
-          }`}
-        >
+      <div className="flex items-end gap-2 px-4 border-t border-border border-b border-b-border/50">
+        <button onClick={() => setTab("results")} className={tabBtn(tab === "results")}>
           Test Results
           {results && (
             <span
-              className={`ml-1.5 ${allPassed ? "text-easy" : "text-hard"}`}
+              className={`ml-0.5 tabular-nums ${allPassed ? "text-easy" : "text-hard"}`}
             >
               {passedCount}/{totalCount}
             </span>
           )}
         </button>
-        <button
-          onClick={() => setTab("console")}
-          className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-            tab === "console"
-              ? "bg-card text-foreground"
-              : "text-gray-500 hover:text-gray-300"
-          }`}
-        >
+        <button onClick={() => setTab("console")} className={tabBtn(tab === "console")}>
           Console
           {consoleOutput.length > 0 && (
-            <span className="ml-1.5 text-medium">
+            <span className="ml-0.5 inline-flex items-center justify-center min-w-[1.25rem] h-4 px-1 rounded text-[10px] font-semibold bg-medium/20 text-medium tabular-nums">
               {consoleOutput.length}
             </span>
           )}
         </button>
-        <button
-          onClick={() => setTab("review")}
-          className={`px-3 py-1 text-xs font-medium rounded transition-colors flex items-center gap-1.5 ${
-            tab === "review"
-              ? "bg-card text-foreground"
-              : "text-gray-500 hover:text-gray-300"
-          }`}
-        >
+        <button onClick={() => setTab("review")} className={tabBtn(tab === "review")}>
           AI Chat
           {isReviewing && (
             <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
           )}
           {!isReviewing && reviewMessages.length > 0 && (
-            <span className="text-violet-300/80">
+            <span className="ml-0.5 inline-flex items-center justify-center min-w-[1.25rem] h-4 px-1 rounded text-[10px] font-semibold bg-violet-500/20 text-violet-200 tabular-nums">
               {reviewMessages.filter((m) => m.role === "assistant").length}
             </span>
           )}
@@ -182,7 +168,7 @@ export default function OutputPanel({
           onClearReview && (
             <button
               onClick={onClearReview}
-              className="ml-auto px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 hover:text-violet-200 border border-transparent hover:border-violet-500/30 rounded transition-colors"
+              className="ml-auto mb-1.5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-500 hover:text-violet-200 border border-transparent hover:border-violet-500/30 rounded transition-colors"
               title="Clear the chat history"
             >
               Clear
@@ -237,9 +223,18 @@ export default function OutputPanel({
         {!isRunning && tab === "results" && (
           <>
             {results === null && !error && (
-              <div className="text-gray-500">
-                Click <span className="text-easy font-semibold">Run</span> to execute your code
-                <span className="text-gray-600 ml-1.5">(Ctrl+Enter)</span>
+              <div className="flex flex-col items-center justify-center text-center py-8 text-gray-500 font-sans">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-easy/10 border border-easy/20 mb-3">
+                  <svg className="w-4 h-4 text-easy" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+                <div className="text-sm text-gray-400">
+                  Press <span className="text-easy font-semibold">Run</span> to execute your code
+                </div>
+                <div className="text-[11px] text-gray-600 mt-1">
+                  Shortcut: <kbd className="px-1 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">Ctrl/⌘ + Enter</kbd>
+                </div>
               </div>
             )}
             {results && results.length > 0 && (
@@ -289,21 +284,30 @@ export default function OutputPanel({
                   return (
                     <div
                       key={result.testCaseId}
-                      className={`p-3 rounded-lg border ${
+                      className={`relative pl-3.5 pr-3 py-2.5 rounded-lg border overflow-hidden ${
                         result.passed
                           ? "border-easy/20 bg-easy/5"
                           : "border-hard/20 bg-hard/5"
                       }`}
                     >
+                      <span
+                        className={`absolute left-0 top-0 bottom-0 w-1 ${
+                          result.passed ? "bg-easy/60" : "bg-hard/70"
+                        }`}
+                        aria-hidden="true"
+                      />
                       <div className="flex items-center gap-2 mb-1">
                         <span
-                          className={`text-sm ${
-                            result.passed ? "text-easy" : "text-hard"
+                          className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold ${
+                            result.passed
+                              ? "bg-easy/20 text-easy"
+                              : "bg-hard/20 text-hard"
                           }`}
+                          aria-hidden="true"
                         >
                           {result.passed ? "✓" : "✗"}
                         </span>
-                        <span className="text-foreground/80 text-xs">
+                        <span className="text-foreground/90 text-xs font-medium">
                           Test {i + 1}
                         </span>
                         <span
@@ -314,7 +318,7 @@ export default function OutputPanel({
                           {result.passed ? "PASS" : "FAIL"}
                         </span>
                         {result.durationMs != null && (
-                          <span className="text-[10px] text-gray-600 tabular-nums">
+                          <span className="text-[10px] text-gray-500 tabular-nums">
                             {result.durationMs < 0.1 ? "<0.1" : result.durationMs.toFixed(1)} ms
                           </span>
                         )}
@@ -374,7 +378,17 @@ export default function OutputPanel({
         {!isRunning && tab === "console" && (
           <>
             {consoleOutput.length === 0 && (
-              <div className="text-gray-500">No console output</div>
+              <div className="flex flex-col items-center justify-center text-center py-8 text-gray-500 font-sans">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 mb-3">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="text-sm text-gray-400">No console output yet</div>
+                <div className="text-[11px] text-gray-600 mt-1">
+                  Anything you <code className="font-mono text-gray-500">log</code> or <code className="font-mono text-gray-500">print</code> will appear here
+                </div>
+              </div>
             )}
             {consoleOutput.map((line, i) => (
               <div
@@ -396,10 +410,17 @@ export default function OutputPanel({
         {tab === "review" && (
           <div className="space-y-3">
             {reviewMessages.length === 0 && !isReviewing && !reviewError && (
-              <div className="text-gray-500">
-                Click <span className="text-violet-300 font-semibold">Review</span> to start a chat with the AI mentor.
-                <div className="text-gray-600 text-xs mt-1.5">
-                  After the first response you can ask follow-up questions below. Hints, not solutions.
+              <div className="flex flex-col items-center justify-center text-center py-8 text-gray-500 font-sans">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-violet-500/10 border border-violet-500/30 mb-3">
+                  <svg className="w-4 h-4 text-violet-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                  </svg>
+                </div>
+                <div className="text-sm text-gray-400">
+                  Press <span className="text-violet-300 font-semibold">Review</span> to chat with the AI mentor
+                </div>
+                <div className="text-[11px] text-gray-600 mt-1 max-w-xs">
+                  Get hints on your approach, edge cases, and complexity — not full solutions.
                 </div>
               </div>
             )}
