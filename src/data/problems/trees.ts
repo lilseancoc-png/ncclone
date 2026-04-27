@@ -13,6 +13,7 @@ export const trees: Category = {
       description:
         "Given the root of a binary tree, invert the tree by swapping the left and right children of every node, and return the root of the inverted tree.",
       functionName: "invertTree",
+      runner: { kind: "tree", treeInputIndices: [0], returnsTree: true },
       starterCode: {
         javascript: "function invertTree(root) {\n  \n}",
         python: "def invert_tree(root):\n    pass",
@@ -55,6 +56,7 @@ export const trees: Category = {
       description:
         "Given the root of a binary tree, return its maximum depth. The maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.",
       functionName: "maxDepth",
+      runner: { kind: "tree", treeInputIndices: [0] },
       starterCode: {
         javascript: "function maxDepth(root) {\n  \n}",
         python: "def max_depth(root):\n    pass",
@@ -97,6 +99,7 @@ export const trees: Category = {
       description:
         "Given the root of a binary tree, return the length of the diameter. The diameter is the length of the longest path between any two nodes, measured by the number of edges between them.",
       functionName: "diameterOfBinaryTree",
+      runner: { kind: "tree", treeInputIndices: [0] },
       starterCode: {
         javascript: "function diameterOfBinaryTree(root) {\n  \n}",
         python: "def diameter_of_binary_tree(root):\n    pass",
@@ -139,6 +142,7 @@ export const trees: Category = {
       description:
         "Given a binary tree, determine if it is height-balanced. A height-balanced binary tree is one in which the depth of the two subtrees of every node never differs by more than one.",
       functionName: "isBalanced",
+      runner: { kind: "tree", treeInputIndices: [0] },
       starterCode: {
         javascript: "function isBalanced(root) {\n  \n}",
         python: "def is_balanced(root):\n    pass",
@@ -181,6 +185,7 @@ export const trees: Category = {
       description:
         "Given the roots of two binary trees p and q, determine whether they are structurally identical and have the same node values at every position.",
       functionName: "isSameTree",
+      runner: { kind: "tree", treeInputIndices: [0, 1] },
       starterCode: {
         javascript: "function isSameTree(p, q) {\n  \n}",
         python: "def is_same_tree(p, q):\n    pass",
@@ -223,6 +228,7 @@ export const trees: Category = {
       description:
         "Given the roots of two binary trees root and subRoot, return true if there is a subtree of root with the same structure and node values as subRoot.",
       functionName: "isSubtree",
+      runner: { kind: "tree", treeInputIndices: [0, 1] },
       starterCode: {
         javascript: "function isSubtree(root, subRoot) {\n  \n}",
         python: "def is_subtree(root, sub_root):\n    pass",
@@ -269,6 +275,12 @@ export const trees: Category = {
       description:
         "Given a binary search tree and two nodes p and q, find the lowest common ancestor (LCA). The LCA is the deepest node that has both p and q as descendants (a node can be a descendant of itself).",
       functionName: "lowestCommonAncestor",
+      runner: {
+        kind: "tree",
+        treeInputIndices: [0],
+        nodeLookupArgIndices: [1, 2],
+        returnsNodeValue: true,
+      },
       starterCode: {
         javascript: "function lowestCommonAncestor(root, p, q) {\n  \n}",
         python: "def lowest_common_ancestor(root, p, q):\n    pass",
@@ -312,6 +324,7 @@ export const trees: Category = {
       description:
         "Given the root of a binary tree, return the level order traversal of its node values, grouped by level from left to right.",
       functionName: "levelOrder",
+      runner: { kind: "tree", treeInputIndices: [0] },
       starterCode: {
         javascript: "function levelOrder(root) {\n  \n}",
         python: "def level_order(root):\n    pass",
@@ -355,6 +368,7 @@ export const trees: Category = {
       description:
         "Given the root of a binary tree, return the values of the nodes you can see when looking at the tree from the right side, ordered from top to bottom.",
       functionName: "rightSideView",
+      runner: { kind: "tree", treeInputIndices: [0] },
       starterCode: {
         javascript: "function rightSideView(root) {\n  \n}",
         python: "def right_side_view(root):\n    pass",
@@ -398,6 +412,7 @@ export const trees: Category = {
       description:
         "Given a binary tree, a node is considered good if the path from the root to that node has no node with a value greater than that node's value. Return the number of good nodes in the tree.",
       functionName: "goodNodes",
+      runner: { kind: "tree", treeInputIndices: [0] },
       starterCode: {
         javascript: "function goodNodes(root) {\n  \n}",
         python: "def good_nodes(root):\n    pass",
@@ -441,6 +456,7 @@ export const trees: Category = {
       description:
         "Given the root of a binary tree, determine if it is a valid binary search tree. A valid BST requires that every node's left subtree contains only values less than the node, and the right subtree contains only values greater.",
       functionName: "isValidBST",
+      runner: { kind: "tree", treeInputIndices: [0] },
       starterCode: {
         javascript: "function isValidBST(root) {\n  \n}",
         python: "def is_valid_bst(root):\n    pass",
@@ -484,6 +500,7 @@ export const trees: Category = {
       description:
         "Given the root of a binary search tree and an integer k, return the kth smallest value (1-indexed) among all node values in the tree.",
       functionName: "kthSmallest",
+      runner: { kind: "tree", treeInputIndices: [0] },
       starterCode: {
         javascript: "function kthSmallest(root, k) {\n  \n}",
         python: "def kth_smallest(root, k):\n    pass",
@@ -527,6 +544,7 @@ export const trees: Category = {
       description:
         "Given two integer arrays preorder and inorder representing the preorder and inorder traversals of a binary tree, construct and return the binary tree.",
       functionName: "buildTree",
+      runner: { kind: "tree", returnsTree: true },
       starterCode: {
         javascript: "function buildTree(preorder, inorder) {\n  \n}",
         python: "def build_tree(preorder, inorder):\n    pass",
@@ -567,6 +585,7 @@ export const trees: Category = {
       description:
         "Given the root of a binary tree, return the maximum path sum of any non-empty path. A path is a sequence of nodes where each pair of adjacent nodes has an edge, and no node appears more than once. The path does not need to pass through the root.",
       functionName: "maxPathSum",
+      runner: { kind: "tree", treeInputIndices: [0] },
       starterCode: {
         javascript: "function maxPathSum(root) {\n  \n}",
         python: "def max_path_sum(root):\n    pass",

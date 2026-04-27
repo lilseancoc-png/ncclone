@@ -59,6 +59,77 @@ function executeJavaScriptInWorker(
         }
       }
 
+      // Standard LeetCode binary tree node. Always available so user solutions
+      // can write idiomatic "root.left / root.right / root.val" code.
+      class TreeNode {
+        constructor(val, left, right) {
+          this.val = val === undefined ? 0 : val;
+          this.left = left === undefined ? null : left;
+          this.right = right === undefined ? null : right;
+        }
+      }
+
+      // Build a TreeNode from a level-order array with explicit null placeholders
+      // for missing children, e.g. [3,9,20,null,null,15,7].
+      function __arrayToTree(arr) {
+        if (!Array.isArray(arr) || arr.length === 0) return null;
+        if (arr[0] === null || arr[0] === undefined) return null;
+        const root = new TreeNode(arr[0]);
+        const queue = [root];
+        let i = 1;
+        while (queue.length > 0 && i < arr.length) {
+          const node = queue.shift();
+          if (i < arr.length) {
+            const v = arr[i++];
+            if (v !== null && v !== undefined) {
+              node.left = new TreeNode(v);
+              queue.push(node.left);
+            }
+          }
+          if (i < arr.length) {
+            const v = arr[i++];
+            if (v !== null && v !== undefined) {
+              node.right = new TreeNode(v);
+              queue.push(node.right);
+            }
+          }
+        }
+        return root;
+      }
+
+      // Serialize a TreeNode to level-order with explicit nulls; trailing nulls trimmed.
+      function __treeToArray(root) {
+        if (!root) return [];
+        const out = [];
+        const queue = [root];
+        while (queue.length > 0) {
+          const node = queue.shift();
+          if (node === null) {
+            out.push(null);
+          } else {
+            out.push(node.val);
+            queue.push(node.left);
+            queue.push(node.right);
+          }
+        }
+        while (out.length > 0 && out[out.length - 1] === null) out.pop();
+        return out;
+      }
+
+      // Find the first node whose .val matches the target via BFS. Used by
+      // problems (LCA) whose signature takes TreeNode references, not values.
+      function __findNodeByVal(root, val) {
+        if (!root) return null;
+        const queue = [root];
+        while (queue.length > 0) {
+          const node = queue.shift();
+          if (node.val === val) return node;
+          if (node.left) queue.push(node.left);
+          if (node.right) queue.push(node.right);
+        }
+        return null;
+      }
+
       function __arrayToLL(arr) {
         if (!Array.isArray(arr) || arr.length === 0) return null;
         const dummy = new ListNode();
@@ -175,6 +246,25 @@ function executeJavaScriptInWorker(
           const head = __pairsToRandomList(tc.args[0]);
           const result = ${functionName}(head);
           return __randomListToPairs(result);
+        }
+
+        if (__runner && __runner.kind === "tree") {
+          let args = tc.args.slice();
+          const treeIdxs = __runner.treeInputIndices || [];
+          const nodeIdxs = __runner.nodeLookupArgIndices || [];
+          for (const i of treeIdxs) {
+            args[i] = __arrayToTree(args[i]);
+          }
+          if (nodeIdxs.length > 0 && treeIdxs.length > 0) {
+            const firstTree = args[treeIdxs[0]];
+            for (const i of nodeIdxs) {
+              args[i] = __findNodeByVal(firstTree, args[i]);
+            }
+          }
+          const result = ${functionName}(...args);
+          if (__runner.returnsTree) return __treeToArray(result);
+          if (__runner.returnsNodeValue) return result == null ? null : result.val;
+          return result;
         }
 
         if (__runner && __runner.kind === "linked-list") {
@@ -304,6 +394,63 @@ function buildPythonScript(
     "        self.val = val",
     "        self.next = next",
     "        self.random = random",
+    "",
+    "class TreeNode:",
+    "    def __init__(self, val=0, left=None, right=None):",
+    "        self.val = val",
+    "        self.left = left",
+    "        self.right = right",
+    "",
+    "def __array_to_tree(arr):",
+    "    if not arr or arr[0] is None:",
+    "        return None",
+    "    root = TreeNode(arr[0])",
+    "    queue = [root]",
+    "    i = 1",
+    "    while queue and i < len(arr):",
+    "        node = queue.pop(0)",
+    "        if i < len(arr):",
+    "            v = arr[i]; i += 1",
+    "            if v is not None:",
+    "                node.left = TreeNode(v)",
+    "                queue.append(node.left)",
+    "        if i < len(arr):",
+    "            v = arr[i]; i += 1",
+    "            if v is not None:",
+    "                node.right = TreeNode(v)",
+    "                queue.append(node.right)",
+    "    return root",
+    "",
+    "def __tree_to_array(root):",
+    "    if root is None:",
+    "        return []",
+    "    out = []",
+    "    queue = [root]",
+    "    while queue:",
+    "        node = queue.pop(0)",
+    "        if node is None:",
+    "            out.append(None)",
+    "        else:",
+    "            out.append(node.val)",
+    "            queue.append(node.left)",
+    "            queue.append(node.right)",
+    "    while out and out[-1] is None:",
+    "        out.pop()",
+    "    return out",
+    "",
+    "def __find_node_by_val(root, val):",
+    "    if root is None:",
+    "        return None",
+    "    queue = [root]",
+    "    while queue:",
+    "        node = queue.pop(0)",
+    "        if node.val == val:",
+    "            return node",
+    "        if node.left is not None:",
+    "            queue.append(node.left)",
+    "        if node.right is not None:",
+    "            queue.append(node.right)",
+    "    return None",
     "",
     "def __array_to_ll(arr):",
     "    if not arr: return None",
@@ -449,6 +596,22 @@ function buildPythonScript(
     "        head = __pairs_to_random_list(tc['args'][0])",
     "        result = __fn(head)",
     "        return __random_list_to_pairs(result)",
+    "    if __runner and __runner.get('kind') == 'tree':",
+    "        args = list(tc['args'])",
+    "        tree_idxs = __runner.get('treeInputIndices') or []",
+    "        node_idxs = __runner.get('nodeLookupArgIndices') or []",
+    "        for i in tree_idxs:",
+    "            args[i] = __array_to_tree(args[i])",
+    "        if node_idxs and tree_idxs:",
+    "            first_tree = args[tree_idxs[0]]",
+    "            for i in node_idxs:",
+    "                args[i] = __find_node_by_val(first_tree, args[i])",
+    "        result = __fn(*args)",
+    "        if __runner.get('returnsTree'):",
+    "            return __tree_to_array(result)",
+    "        if __runner.get('returnsNodeValue'):",
+    "            return None if result is None else result.val",
+    "        return result",
     "    if __runner and __runner.get('kind') == 'linked-list':",
     "        args = list(tc['args'])",
     "        list_idxs = __runner.get('listInputIndices') or []",
