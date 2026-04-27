@@ -21,20 +21,30 @@ export default function SolutionTab({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-40 text-gray-500 text-sm">
-        <svg className="w-4 h-4 animate-spin mr-2" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
-        Loading solution...
+      <div className="flex flex-col items-center justify-center text-center py-12 text-gray-500 font-sans">
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 mb-3">
+          <svg className="w-4 h-4 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        </div>
+        <div className="text-sm text-gray-400">Loading solution…</div>
       </div>
     );
   }
 
   if (solutions.length === 0) {
     return (
-      <div className="flex items-center justify-center h-40 text-gray-500 text-sm">
-        Solution walkthrough coming soon.
+      <div className="flex flex-col items-center justify-center text-center py-12 text-gray-500 font-sans">
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 mb-3">
+          <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
+        </div>
+        <div className="text-sm text-gray-400">Walkthrough coming soon</div>
+        <div className="text-[11px] text-gray-600 mt-1 max-w-xs">
+          A guided solution for this problem isn&apos;t available yet — try the hints in the Description tab.
+        </div>
       </div>
     );
   }
