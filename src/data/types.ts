@@ -48,7 +48,28 @@ export interface RandomListRunner {
   kind: "random-list";
 }
 
-export type RunnerMeta = LinkedListRunner | ClassOpsRunner | RandomListRunner;
+// Tree problems: arrays in test cases are level-order with explicit `null`
+// placeholders for missing children (LeetCode shape). The runner converts
+// listed input args from arrays to TreeNode chains, and optionally serializes
+// the return value back to a level-order array (with trailing nulls trimmed).
+//
+// For LCA-style problems whose signature takes node references (not values):
+// `nodeLookupArgIndices` says "after building the first tree input, look up
+// these args by .val and replace them with the matching TreeNode reference".
+// `returnsNodeValue` extracts `.val` from the returned TreeNode for comparison.
+export interface TreeRunner {
+  kind: "tree";
+  treeInputIndices?: number[];
+  nodeLookupArgIndices?: number[];
+  returnsTree?: boolean;
+  returnsNodeValue?: boolean;
+}
+
+export type RunnerMeta =
+  | LinkedListRunner
+  | ClassOpsRunner
+  | RandomListRunner
+  | TreeRunner;
 
 export interface Problem {
   id: number;
